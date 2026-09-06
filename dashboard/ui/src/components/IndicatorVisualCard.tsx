@@ -41,34 +41,51 @@ interface Props {
   animationDelay?: number;
 }
 
-/** Most-frequent numeric benchmark among points that are actually marked comparable — never draws
- * a reference line from a benchmark the sheet itself said couldn't be compared to what's plotted. */
-function representativeComparableBenchmark(series: CardSeries[]): number | null {
-  const counts = new Map<number, number>();
-  for (const s of series) {
+export interface SeriesBenchmark {
+  label: string;
+  color: string;
+  value: number | null;
+}
+
+/** Most-frequent numeric benchmark among a single series' points that are actually marked
+ * comparable — never draws a reference line from a benchmark the sheet itself said couldn't be
+ * compared to what's plotted. Scoped to one series (one DISCOM, or on the Compare page one
+ * jurisdiction) so a card spanning several can tell whether they genuinely share one benchmark or
+ * not, rather than silently pooling every series' benchmarks into one popular-vote number. Exported
+ * for the Compare page's single-FY bar card, which needs the exact same per-jurisdiction benchmark
+ * logic as this trend card. */
+export function perSeriesComparableBenchmarks(series: CardSeries[]): SeriesBenchmark[] {
+  return series.map((s) => {
+    const counts = new Map<number, number>();
     for (const p of s.points) {
       if (p.comparisonPossible === true && p.benchmark != null && !Number.isNaN(p.benchmark)) {
         counts.set(p.benchmark, (counts.get(p.benchmark) || 0) + 1);
       }
     }
-  }
-  let best: number | null = null;
-  let bestN = -1;
-  for (const [v, n] of counts) {
-    if (n > bestN) {
-      best = v;
-      bestN = n;
+    let best: number | null = null;
+    let bestN = -1;
+    for (const [v, n] of counts) {
+      if (n > bestN) {
+        best = v;
+        bestN = n;
+      }
     }
+    return { label: s.label, color: s.color, value: best };
+  });
+}
+
+function perSeriesValue<T>(s: CardSeries, pick: (p: CardPoint) => T | null | undefined): T | null {
+  for (const p of s.points) {
+    const v = pick(p);
+    if (v != null && v !== '') return v;
   }
-  return best;
+  return null;
 }
 
 function firstNonNull<T>(series: CardSeries[], pick: (p: CardPoint) => T | null | undefined): T | null {
   for (const s of series) {
-    for (const p of s.points) {
-      const v = pick(p);
-      if (v != null && v !== '') return v;
-    }
+    const v = perSeriesValue(s, pick);
+    if (v != null) return v;
   }
   return null;
 }
@@ -90,12 +107,12 @@ function truncated(text: string, max = 130): { short: string; needsMore: boolean
   return { short: text.slice(0, max).trimEnd() + '…', needsMore: true };
 }
 
-function StandardLens({ text }: { text: string }) {
+function StandardLens({ text, label = 'Standard' }: { text: string; label?: string }) {
   const [expanded, setExpanded] = useState(false);
   const { short, needsMore } = truncated(text);
   return (
     <ContextLens
-      label="Standard"
+      label={label}
       value={<span>{expanded ? text : short}</span>}
       sub={
         needsMore && (
@@ -115,14 +132,26 @@ function StandardLens({ text }: { text: string }) {
  * guide line, connecting "this year" to "this point" without a separate control. */
 export default function IndicatorVisualCard({ title, typeLabel, meaning, measuredAsLabel, unitSuffix, yAxisLabel, yearsAsc, activeYear, series, animationDelay }: Props) {
   const [hoverYear, setHoverYear] = useState<string | null>(null);
-  const effectiveYear = hoverYear ?? activeYear;
 
   const hasNumeric = series.some((s) => s.points.some((p) => p.value != null));
-  const bench = representativeComparableBenchmark(series);
+
+  // A card can span several series that are NOT the same DISCOM (the Compare page merges one
+  // series per jurisdiction onto the same card) — never silently pool their benchmarks/standards
+  // into one popular-vote value the way a single-jurisdiction card safely can. Only collapse to
+  // one shared lens when every series that has a value agrees; otherwise attribute each series'
+  // own value to it explicitly, never implying one benchmark/standard applies to all of them.
+  const perSeriesBench = perSeriesComparableBenchmarks(series);
+  const distinctBenchValues = Array.from(new Set(perSeriesBench.filter((x) => x.value != null).map((x) => x.value)));
+  const benchDiverges = series.length > 1 && distinctBenchValues.length > 1;
+  const bench = distinctBenchValues.length === 1 ? distinctBenchValues[0] : null;
   const benchmarkMeaning = firstNonNull(series, (p) => p.benchmarkMeaning);
-  const standardSpecified = firstNonNull(series, (p) => p.standardSpecified);
-  const reportedMeaning = measuredAsLabel ?? firstNonNull(series, (p) => p.reportedMeaning);
   const benchmarkValueText = benchmarkLensValue(series, bench, unitSuffix);
+
+  const perSeriesStandard = series.map((s) => ({ label: s.label, value: perSeriesValue(s, (p) => p.standardSpecified) }));
+  const standardShared = allSame(perSeriesStandard.map((x) => x.value));
+  const standardDiverges = series.length > 1 && !standardShared && perSeriesStandard.some((x) => x.value != null);
+
+  const reportedMeaning = measuredAsLabel ?? firstNonNull(series, (p) => p.reportedMeaning);
 
   const datasets = series.map((s) => ({
     label: s.label,
@@ -131,16 +160,14 @@ export default function IndicatorVisualCard({ title, typeLabel, meaning, measure
     borderWidth: 2,
     fill: series.length === 1,
     spanGaps: false,
-    tension: 0.3,
+    tension: 0,
     backgroundColor: hexToRgba(s.color, 0.07),
-    pointRadius: s.points.map((p) => (p.year === effectiveYear ? 6 : 3)),
+    pointRadius: s.points.map((p) => (hoverYear && p.year === hoverYear ? 6 : 3)),
     pointHoverRadius: 7,
     pointBackgroundColor: s.color,
     pointBorderColor: '#faf8f3',
     pointBorderWidth: 1.5,
   }));
-
-  const focusLabel = fyLabel(effectiveYear);
 
   return (
     <div className="chart-card visual-card animate-in" style={animationDelay ? { animationDelay: `${animationDelay}ms` } : undefined}>
@@ -153,14 +180,22 @@ export default function IndicatorVisualCard({ title, typeLabel, meaning, measure
       </div>
 
       <div className="context-lens-row">
-        <ContextLens label="Benchmark" value={benchmarkValueText} sub={benchmarkMeaning} />
+        {benchDiverges ? (
+          perSeriesBench
+            .filter((b) => b.value != null)
+            .map((b) => <ContextLens key={b.label} label={`${b.label} benchmark`} value={unitSuffix(b.value as number)} />)
+        ) : (
+          <ContextLens label="Benchmark" value={benchmarkValueText} sub={benchmarkMeaning} />
+        )}
         {reportedMeaning && <ContextLens label="Measured as" value={reportedMeaning} />}
-        {standardSpecified && <StandardLens text={standardSpecified} />}
+        {standardDiverges
+          ? perSeriesStandard.filter((s) => s.value != null).map((s) => <StandardLens key={s.label} text={s.value as string} label={`${s.label} — Standard`} />)
+          : standardShared && <StandardLens text={standardShared} />}
       </div>
 
-      {hasNumeric ? (
-        <div className="visual-card-chart">
-          <Line
+      {!hasNumeric && <div className="no-data-box" style={{ marginTop: 10 }}>No reported performance data available.</div>}
+      <div className="visual-card-chart">
+        <Line
             data={{ labels: yearsAsc.map((y) => fyLabel(y)), datasets }}
             options={{
               responsive: true,
@@ -178,36 +213,66 @@ export default function IndicatorVisualCard({ title, typeLabel, meaning, measure
                 },
                 annotation: {
                   annotations: {
-                    ...(bench != null
-                      ? {
-                          standard: {
-                            type: 'line' as const,
-                            yMin: bench,
-                            yMax: bench,
-                            borderColor: '#b1441c',
-                            borderWidth: 1.5,
-                            borderDash: [6, 4],
-                            label: {
-                              display: true,
-                              content: 'Benchmark: ' + unitSuffix(bench),
-                              position: 'start' as const,
-                              backgroundColor: '#b1441c',
-                              color: '#fff',
-                              font: { size: 9.5, weight: 600 },
-                              padding: { x: 5, y: 2 },
-                              borderRadius: 3,
+                    ...(benchDiverges
+                      ? Object.fromEntries(
+                          perSeriesBench
+                            .filter((b) => b.value != null)
+                            .map((b, i) => [
+                              `standard-${i}`,
+                              {
+                                type: 'line' as const,
+                                yMin: b.value as number,
+                                yMax: b.value as number,
+                                borderColor: b.color,
+                                borderWidth: 1.5,
+                                borderDash: [6, 4],
+                                label: {
+                                  display: true,
+                                  content: `${b.label}: ${unitSuffix(b.value as number)}`,
+                                  position: 'start' as const,
+                                  backgroundColor: b.color,
+                                  color: '#fff',
+                                  font: { size: 9.5, weight: 600 },
+                                  padding: { x: 5, y: 2 },
+                                  borderRadius: 3,
+                                },
+                              },
+                            ])
+                        )
+                      : bench != null
+                        ? {
+                            standard: {
+                              type: 'line' as const,
+                              yMin: bench,
+                              yMax: bench,
+                              borderColor: '#b1441c',
+                              borderWidth: 1.5,
+                              borderDash: [6, 4],
+                              label: {
+                                display: true,
+                                content: 'Benchmark: ' + unitSuffix(bench),
+                                position: 'start' as const,
+                                backgroundColor: '#b1441c',
+                                color: '#fff',
+                                font: { size: 9.5, weight: 600 },
+                                padding: { x: 5, y: 2 },
+                                borderRadius: 3,
+                              },
                             },
+                          }
+                        : {}),
+                    ...(hoverYear
+                      ? {
+                          focus: {
+                            type: 'line' as const,
+                            xMin: fyLabel(hoverYear),
+                            xMax: fyLabel(hoverYear),
+                            borderColor: 'rgba(59,95,224,0.35)',
+                            borderWidth: 1.5,
+                            borderDash: [3, 3],
                           },
                         }
                       : {}),
-                    focus: {
-                      type: 'line' as const,
-                      xMin: focusLabel,
-                      xMax: focusLabel,
-                      borderColor: 'rgba(59,95,224,0.35)',
-                      borderWidth: 1.5,
-                      borderDash: [3, 3],
-                    },
                   },
                 },
               },
@@ -221,13 +286,8 @@ export default function IndicatorVisualCard({ title, typeLabel, meaning, measure
                 x: { grid: { display: false }, ticks: { font: { size: 10.5 } } },
               },
             }}
-          />
-        </div>
-      ) : (
-        <div className="no-data-box" style={{ marginTop: 10 }}>
-          No numeric time-series figures reported for this indicator
-        </div>
-      )}
+        />
+      </div>
 
       {series.map((s) => {
         const notComparablePts = s.points.filter((p) => p.comparisonPossible === false);
@@ -252,7 +312,9 @@ export default function IndicatorVisualCard({ title, typeLabel, meaning, measure
             {notComparablePts.length > 0 && (
               <div className="exception-callout">
                 <div className="exception-callout-head">
-                  {notComparablePts.length === s.points.length ? 'Not comparable in every year shown' : `Not comparable in ${notComparablePts.length} of ${s.points.length} years`}
+                  {notComparablePts.length === s.points.length
+                    ? '⚠ Not comparable across all years shown'
+                    : `⚠ Not comparable in ${notComparablePts.length} of ${s.points.length} years`}
                 </div>
                 {constantReason && constantReason !== 'N/A' ? (
                   <div className="exception-callout-text">{constantReason}</div>

@@ -13,13 +13,13 @@ const SLIDES = [
     image: '/tour/map.png',
   },
   {
-    title: "Open a State's Performance Report",
-    body: 'Click on any state to explore its performance with respect to Quality and Reliability of Supply and the Quality of Service.',
+    title: "Open a State's or Union Territory's Performance Report",
+    body: 'Click on any state or union territory to explore the performance of its distribution companies.',
     image: '/tour/report.png',
   },
   {
     title: 'Compare performance side by side',
-    body: 'Turn on Compare mode from the Analysis Pane, click states to add them, then review their comparable indicators.',
+    body: 'Turn on Compare mode from the Analysis Pane, click states or union territories to add them, then review their comparable indicators.',
     image: '/tour/compare.png',
   },
 ];

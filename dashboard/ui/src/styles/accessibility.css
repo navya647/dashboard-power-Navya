@@ -41,6 +41,16 @@
   margin-top: 3px;
 }
 
+/* ---- compact current-coverage statement: quieter than the takeaway below it, since it's a scope
+   disclosure ("here's how much of India this page currently covers"), not an analytical finding ---- */
+.access-coverage-note {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--muted);
+  margin: 0 0 16px;
+  max-width: 620px;
+}
+
 /* ---- key takeaway: an editorial annotation, not a callout card ---- */
 .access-takeaway {
   font-size: 14px;
@@ -386,7 +396,7 @@ table.access-matrix td {
     text-transform: uppercase;
     color: var(--muted);
   }
-  table.access-matrix td[data-th='Licensee']::before {
+  table.access-matrix td[data-th='DISCOM']::before {
     content: '';
   }
   tr.access-matrix-group-row {

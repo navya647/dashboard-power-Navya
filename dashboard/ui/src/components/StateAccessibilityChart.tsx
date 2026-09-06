@@ -1,4 +1,4 @@
-import type { StateAccessibilityCoverage } from '@/lib/computations';
+import { machineReadableDisplayStatus, type StateAccessibilityCoverage } from '@/lib/computations';
 import type { DiscomAccessibility } from '@/lib/types';
 
 interface StateRow {
@@ -26,11 +26,12 @@ function DotRow({ discoms, pick }: { discoms: DiscomAccessibility[]; pick: (d: D
   );
 }
 
-/** One continuous comparative visual across all 12 states — never one card per state. Each dot is
- * one licensee (filled = accessible, hollow = gap, muted = N/A); the two rows per state make
+/** One continuous comparative visual across every currently tracked jurisdiction — never one card
+ * per jurisdiction, so it grows with the dataset rather than needing a redesign. Each dot is one
+ * DISCOM (filled = accessible, hollow = gap, muted = N/A); the two rows per jurisdiction make
  * publication and machine-readability both visible without collapsing them into a single score.
- * A state's name is a plain text button (no card chrome) that applies it as the licensee matrix's
- * filter. */
+ * A jurisdiction's name is a plain text button (no card chrome) that applies it as the DISCOM
+ * matrix's filter. */
 export default function StateAccessibilityChart({ rows, activeState, onSelectState }: Props) {
   return (
     <div className="dot-matrix">
@@ -52,20 +53,20 @@ export default function StateAccessibilityChart({ rows, activeState, onSelectSta
                 <div className="dot-matrix-line">
                   <span className="dot-matrix-line-label">Published</span>
                   <DotRow discoms={discoms} pick={(d) => d.available_on_serc} />
-                  <span className="dot-matrix-line-value" aria-label={`Published: ${coverage.publishedCount} of ${n} licensees`}>
+                  <span className="dot-matrix-line-value" aria-label={`Published: ${coverage.publishedCount} of ${n} DISCOMs`}>
                     {coverage.publishedCount}/{n}
                   </span>
                 </div>
                 <div className="dot-matrix-line">
                   <span className="dot-matrix-line-label">Machine-readable</span>
-                  <DotRow discoms={discoms} pick={(d) => d.machine_readable} />
-                  <span className="dot-matrix-line-value" aria-label={`Machine-readable: ${coverage.machineReadableCount} of ${n} licensees`}>
+                  <DotRow discoms={discoms} pick={machineReadableDisplayStatus} />
+                  <span className="dot-matrix-line-value" aria-label={`Machine-readable: ${coverage.machineReadableCount} of ${n} DISCOMs`}>
                     {coverage.machineReadableCount}/{n}
                   </span>
                 </div>
               </div>
             ) : (
-              <span className="dot-matrix-na">No licensees tracked</span>
+              <span className="dot-matrix-na">No DISCOMs tracked</span>
             )}
           </div>
         );

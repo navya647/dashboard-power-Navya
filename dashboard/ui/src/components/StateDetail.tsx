@@ -4,37 +4,42 @@ import '@/lib/chartSetup';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useData } from '@/lib/DataContext';
-import { CATEGORICAL, stateHueMap } from '@/lib/colors';
+import { stateHueMap } from '@/lib/colors';
 import { stateHasSopData } from '@/lib/computations';
-import { buildSopSeries } from '@/lib/sop';
-import { fmt, fyLabel, UNIT_LABEL, UNIT_LABEL_FULL } from '@/lib/format';
-import CompleteDataSection from './CompleteDataSection';
-import IndicatorVisualCard, { type CardSeries } from './IndicatorVisualCard';
-import SopGallery from './SopGallery';
+import { fyLabel } from '@/lib/format';
+import {
+  buildUnifiedAtoms,
+  buildUnifiedCards,
+  buildUnifiedTableRows,
+  categoryOptions,
+  discomOptions,
+  indicatorOptions,
+  matchesFilters,
+  typeOptions,
+  type UnifiedFilters,
+} from '@/lib/unifiedIndicators';
+import IndicatorVisualCard from './IndicatorVisualCard';
 import StateShape from './StateShape';
-import type { Discom, DiscomsData } from '@/lib/types';
+import UnifiedDataTable from './UnifiedDataTable';
+import YearPicker from './YearPicker';
 
-function firstIndicatorMeaning(ds: Discom[], yearsAsc: string[], key: string): string | null {
-  for (const d of ds) {
-    for (const y of yearsAsc) {
-      const m = d.years[y]?.indicators[key]?.indicator_meaning;
-      if (m) return m;
-    }
-  }
-  return null;
-}
-
+/** The State Performance page. One architecture serves every state regardless of whether it has a
+ * single reported figure yet: header, one DISCOM / Indicator Category / Indicator Type / Indicator
+ * filter bar, one chart-card gallery, one Data Table. Reported data and framework-only data (the 5
+ * states with a notified SoP regulation but no per-DISCOM reported-figures sheet — see CLAUDE.md)
+ * are unified into one flat list of indicator "atoms" by lib/unifiedIndicators before this
+ * component ever sees them, so there is no separate no-data layout to keep in sync with this one. */
 export default function StateDetail({ name }: { name: string }) {
   const { discoms, geojson, stateSpecific, loading, error } = useData();
   const router = useRouter();
 
-  // One filter bar drives the whole page — the trend-chart gallery (both datasets) and the
-  // Complete Data tables at the bottom — rather than each section owning its own picker. `null`
-  // year means "no explicit pick yet"; the actual default is resolved once `discoms` has loaded.
+  // One filter bar drives both the chart gallery and the Data Table below it.
   const [selectedDiscom, setSelectedDiscom] = useState('all');
   const [selectedYear, setSelectedYear] = useState<string | null>(null);
-  const [selectedGroup, setSelectedGroup] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedType, setSelectedType] = useState('all');
   const [selectedIndicator, setSelectedIndicator] = useState('all');
+  const [showAllYears, setShowAllYears] = useState(true);
 
   if (loading) return <p className="detail-placeholder">Loading…</p>;
   if (error || !discoms) return <p className="detail-placeholder">Could not load dashboard data.</p>;
@@ -42,7 +47,6 @@ export default function StateDetail({ name }: { name: string }) {
   const activeYear = selectedYear ?? (discoms.years.includes('2023-24') ? '2023-24' : discoms.years[0]);
   const YEARS_ASC = [...discoms.years].reverse();
   const allDs = discoms.discoms.filter((d) => d.state === name);
-  const ds = selectedDiscom === 'all' ? allDs : allDs.filter((d) => d.short_name === selectedDiscom);
 
   // a state can have zero reliability DISCOMs and still have real Standards-of-Performance
   // content to show (its own per-DISCOM sheets, or a regulatory-framework listing) — only bail
@@ -75,32 +79,29 @@ export default function StateDetail({ name }: { name: string }) {
   }
 
   const color = stateHueMap(discoms.state_order)[name] || '#8B1A1A';
-  // DISCOMs within a state are nominal identities with no inherent order — each gets its own
-  // fixed-order categorical hue (never a lightness ramp of one hue, which is the right encoding
-  // for an *ordered* series, not distinct companies). Indexed against the full (unfiltered) list
-  // so a DISCOM's color never shifts depending on what the DISCOM filter narrows it to.
-  const allCols = allDs.map((_, i) => CATEGORICAL[i]);
-  const cols = ds.map((d) => allCols[allDs.indexOf(d)]);
-  const keys = discoms.canonical_order;
 
-  // "Indicator Type" (from Common Indicators.xlsx's own grouping) narrows which indicators
-  // "Indicator" can offer, in source order rather than alphabetical.
-  const groups = Array.from(new Set(keys.map((k) => discoms.canonical_indicators[k].group)));
-  const groupKeys = selectedGroup === 'all' ? keys : keys.filter((k) => discoms.canonical_indicators[k].group === selectedGroup);
-  const filterKeys = selectedIndicator === 'all' ? groupKeys : groupKeys.filter((k) => k === selectedIndicator);
+  const atoms = buildUnifiedAtoms(discoms, allDs, stateSpecific, name, YEARS_ASC);
 
-  const chartableKeys = filterKeys.filter((key) => ds.some((d) => YEARS_ASC.some((y) => d.years[y]?.indicators[key]?.value != null)));
-  // Standards of Performance is a separate, non-canonicalized dataset — once the reliability
-  // Indicator Type/Indicator filter narrows to something specific, showing all of SoP alongside
-  // it would defeat "show just this indicator and nothing else".
-  const showSop = selectedGroup === 'all' && selectedIndicator === 'all';
+  const discomOpts = discomOptions(atoms);
+  const discomScope = atoms.filter((a) => selectedDiscom === 'all' || a.discomKey === selectedDiscom);
+  const categoryOpts = categoryOptions(discomScope);
+  const categoryScope = discomScope.filter((a) => selectedCategory === 'all' || a.category === selectedCategory);
+  const typeOpts = typeOptions(categoryScope);
+  const typeScope = categoryScope.filter((a) => selectedType === 'all' || a.type === selectedType);
+  const indicatorOpts = indicatorOptions(typeScope);
+
+  const filters: UnifiedFilters = { discom: selectedDiscom, category: selectedCategory, type: selectedType, indicator: selectedIndicator };
+  const filteredAtoms = atoms.filter((a) => matchesFilters(a, filters));
+  const cards = buildUnifiedCards(filteredAtoms);
+
+  const allTableRows = buildUnifiedTableRows(filteredAtoms);
+  const tableRows = showAllYears ? allTableRows : allTableRows.filter((r) => r.fy === fyLabel(activeYear) || r.fy === 'All years');
 
   // ---- Overview counts — plain counts of source records, never a derived score ----
-  const allSopDiscoms = stateSpecific?.discoms.filter((d) => d.state === name) ?? [];
-  const framework = stateSpecific?.frameworks.find((f) => f.state === name);
-  const discomNameSet = new Set([...allDs.map((d) => d.short_name), ...allSopDiscoms.map((d) => d.short_name)]);
-  const sopIndicatorCount = allSopDiscoms.reduce((n, d) => n + buildSopSeries(d, YEARS_ASC).length, 0) + (framework?.indicators.length ?? 0);
+  const discomCount = discomOpts.length;
   const fyRange = YEARS_ASC.length > 1 ? `${fyLabel(YEARS_ASC[0])}–${fyLabel(YEARS_ASC[YEARS_ASC.length - 1])}` : fyLabel(YEARS_ASC[0]);
+  // placeholder ownership label — not real per-DISCOM ownership data, see StateDetail.tsx history
+  const ownershipLabel = name === 'Odisha' ? 'All Private' : 'All Public';
 
   return (
     <div className="state-page">
@@ -130,13 +131,7 @@ export default function StateDetail({ name }: { name: string }) {
         </div>
         <div className="state-hero-stats-inline">
           <span>
-            <b>{discomNameSet.size}</b> DISCOM{discomNameSet.size === 1 ? '' : 's'}
-          </span>
-          <span>
-            <b>{keys.length}</b> reliability indicators
-          </span>
-          <span>
-            <b>{sopIndicatorCount}</b> SoP indicators
+            <b>{discomCount}</b> DISCOM{discomCount === 1 ? '' : 's'} · {ownershipLabel}
           </span>
           <span>
             <b>{fyRange}</b>
@@ -144,127 +139,124 @@ export default function StateDetail({ name }: { name: string }) {
         </div>
       </header>
 
-      {allDs.length > 0 && (
-        <div className="toolbar">
-          <div className="toolbar-field">
-            <label>Discom</label>
-            <select value={selectedDiscom} onChange={(e) => setSelectedDiscom(e.target.value)}>
-              <option value="all">All DISCOMs</option>
-              {allDs.map((d) => (
-                <option key={d.sheet} value={d.short_name}>
-                  {d.short_name}
-                </option>
-              ))}
-            </select>
-          </div>
+      <div className="toolbar">
+        <div className="toolbar-field">
+          <label>Discom</label>
+          <select
+            value={selectedDiscom}
+            onChange={(e) => {
+              setSelectedDiscom(e.target.value);
+              setSelectedCategory('all');
+              setSelectedType('all');
+              setSelectedIndicator('all');
+            }}
+          >
+            <option value="all">All DISCOMs</option>
+            {discomOpts.map((d) => (
+              <option key={d.key} value={d.key}>
+                {d.label}
+              </option>
+            ))}
+          </select>
+        </div>
 
-          <div className="toolbar-field">
-            <label>Type</label>
-            <select
-              value={selectedGroup}
-              onChange={(e) => {
-                setSelectedGroup(e.target.value);
-                setSelectedIndicator('all');
-              }}
-            >
-              <option value="all">All Types</option>
-              {groups.map((g) => (
-                <option key={g} value={g}>
-                  {g}
-                </option>
-              ))}
-            </select>
-          </div>
+        <div className="toolbar-field">
+          <label>Indicator Category</label>
+          <select
+            value={selectedCategory}
+            onChange={(e) => {
+              setSelectedCategory(e.target.value);
+              setSelectedType('all');
+              setSelectedIndicator('all');
+            }}
+          >
+            <option value="all">All Categories</option>
+            {categoryOpts.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </div>
 
-          <div className="toolbar-field">
-            <label>Indicator</label>
-            <select value={selectedIndicator} onChange={(e) => setSelectedIndicator(e.target.value)}>
-              <option value="all">All Indicators</option>
-              {groupKeys.map((k) => (
-                <option key={k} value={k}>
-                  {k}
-                </option>
-              ))}
-            </select>
-          </div>
+        <div className="toolbar-field">
+          <label>Indicator Type</label>
+          <select
+            value={selectedType}
+            onChange={(e) => {
+              setSelectedType(e.target.value);
+              setSelectedIndicator('all');
+            }}
+          >
+            <option value="all">All Types</option>
+            {typeOpts.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="toolbar-field">
+          <label>Indicator</label>
+          <select value={selectedIndicator} onChange={(e) => setSelectedIndicator(e.target.value)}>
+            <option value="all">All Indicators</option>
+            {indicatorOpts.map((i) => (
+              <option key={i} value={i}>
+                {i}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="section-header">
+        <span className="section-title">Regulatory standards, benchmarks and targets, reported performance, compliance, and year-wise trends</span>
+      </div>
+
+      {cards.length > 0 && (
+        <div className="chart-grid">
+          {cards.map((c, idx) => (
+            <IndicatorVisualCard
+              key={c.id}
+              title={c.indicator}
+              typeLabel={c.type}
+              meaning={c.meaning}
+              unitSuffix={c.unitSuffix}
+              yAxisLabel={c.yAxisLabel}
+              yearsAsc={YEARS_ASC}
+              activeYear={activeYear}
+              series={c.series}
+              animationDelay={idx * 60}
+            />
+          ))}
         </div>
       )}
 
-      <div className="section-header">
-        <span className="section-label">Visual Analysis</span>
-        <span className="section-title">Chart Gallery</span>
-        <span className="section-sub">Trends, regulatory targets and compliance context</span>
+      <div className="complete-data-band">
+        <div className="section-header">
+          <span className="section-title">Data Table</span>
+        </div>
+
+        <div className="complete-data-toggle complete-data-toggle-sticky">
+          <span>{showAllYears ? `Showing all ${discoms.years.length} fiscal years` : `Focused on ${fyLabel(activeYear)}`}</span>
+          {discoms.years.length > 1 && (
+            <YearPicker
+              years={discoms.years}
+              active={activeYear}
+              onChange={(y) => {
+                setSelectedYear(y);
+                setShowAllYears(false);
+              }}
+            />
+          )}
+          <button type="button" className="complete-data-toggle-btn" onClick={() => setShowAllYears((v) => !v)}>
+            {showAllYears ? 'Show one year' : 'Show all years'}
+          </button>
+        </div>
+
+        <UnifiedDataTable rows={tableRows} />
       </div>
-
-      {allDs.length > 0 && (
-        <>
-          <div className="chart-group-title">Reliability &amp; Power Quality</div>
-          <div className="chart-grid">
-            {chartableKeys.length === 0 ? (
-              <p className="detail-placeholder">No indicator in the current filter scope has any reported data for this state.</p>
-            ) : (
-              chartableKeys.map((key, idx) => {
-                const meta = discoms.canonical_indicators[key];
-                const unit = UNIT_LABEL[meta.unit];
-                const unitSuffix = (v: number) => fmt(v, unit === '/yr' ? 2 : 1) + (unit === '%' ? '%' : ' ' + unit);
-                const series: CardSeries[] = ds.map((d, i) => ({
-                  label: d.short_name,
-                  color: cols[i],
-                  points: YEARS_ASC.map((y) => {
-                    const ind = d.years[y]?.indicators[key];
-                    const benchNum = ind?.benchmark != null && !Number.isNaN(parseFloat(ind.benchmark)) ? parseFloat(ind.benchmark) : null;
-                    return {
-                      year: y,
-                      value: ind?.value ?? null,
-                      benchmark: benchNum,
-                      benchmarkMeaning: ind?.benchmark_meaning ?? null,
-                      reportedMeaning: ind?.reported_meaning ?? null,
-                      standardSpecified: ind?.standard_specified ?? null,
-                      comparisonPossible: ind?.comparison_possible ?? null,
-                      standardMet: ind?.standard_met ?? null,
-                      reasonNotComparable: ind?.reason_not_comparable ?? null,
-                      regulation: d.years[y]?.regulation || null,
-                    };
-                  }),
-                }));
-                return (
-                  <IndicatorVisualCard
-                    key={key}
-                    title={key}
-                    typeLabel={meta.group}
-                    meaning={firstIndicatorMeaning(ds, YEARS_ASC, key)}
-                    unitSuffix={unitSuffix}
-                    yAxisLabel={UNIT_LABEL_FULL[meta.unit]}
-                    yearsAsc={YEARS_ASC}
-                    activeYear={activeYear}
-                    series={series}
-                    animationDelay={idx * 90}
-                  />
-                );
-              })
-            )}
-          </div>
-        </>
-      )}
-
-      {/* SoP indicators aren't part of the reliability Indicator Type/Indicator scoping (they're
-          a separate, non-canonicalized dataset) — so narrowing to one reliability indicator (e.g.
-          SAIDI) hides Standards of Performance entirely rather than showing an unrelated dataset
-          alongside a single-indicator view. */}
-      {showSop && stateSpecific && <SopGallery stateSpecific={stateSpecific} stateName={name} activeYear={activeYear} discomFilter={selectedDiscom} yearsAsc={YEARS_ASC} />}
-
-      <CompleteDataSection
-        discomsData={discoms as DiscomsData}
-        ds={ds}
-        cols={cols}
-        years={discoms.years}
-        focusYear={activeYear}
-        onFocusYearChange={setSelectedYear}
-        stateSpecific={showSop ? stateSpecific : null}
-        stateName={name}
-        discomFilter={selectedDiscom}
-        indicatorKeys={filterKeys}
-      />
     </div>
   );
 }

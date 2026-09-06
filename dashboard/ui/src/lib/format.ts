@@ -25,12 +25,6 @@ export function mode(arr: number[]): number | null {
   return best;
 }
 
-export const UNIT_LABEL: Record<string, string> = { hours: 'h', count: '/yr', pct: '%' };
-
-/** Spelled-out counterpart to UNIT_LABEL — for a chart's Y-axis title, where the short form
- * ("h", "/yr") reads as cryptic on its own without a value or indicator name next to it. */
-export const UNIT_LABEL_FULL: Record<string, string> = { hours: 'Hours', count: 'Per Year', pct: 'Percentage' };
-
 /** "2023-24" -> "FY24" — the standard Indian financial-year shorthand (named for the ending
  * year), used everywhere a year string from the extracted data is shown to the user instead of
  * spelling out the full "FY 2023-24" range. */

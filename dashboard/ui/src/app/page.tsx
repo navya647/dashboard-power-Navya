@@ -19,21 +19,18 @@ export default function OverviewPage() {
   if (loading) return <p className="detail-placeholder">Loading dashboard data…</p>;
   if (error || !discoms || !geojson) return <p className="detail-placeholder">Could not load dashboard data: {error}</p>;
 
-  // the map itself no longer has a year selector (every tracked state is shown regardless of
-  // which years it reported in — see stateFillColor); this is still the year the Compare page's
-  // initial view uses for its own indicator snapshot.
-  const activeYear = discoms.years.includes('2023-24') ? '2023-24' : discoms.years[0];
-
   function removeState(name: string) {
     setCompareSet((prev) => prev.filter((s) => s !== name));
   }
   // only reachable in compare mode — outside it, HeroSection sends a click straight to
-  // onViewFullReport instead of here.
+  // onViewFullReport instead of here. HeroMap itself already refuses the click for a jurisdiction
+  // with no captured evidence in either dataset (stateMapStatus === 'idle'), so toggleState is
+  // never called with one.
   function toggleState(name: string) {
     setCompareSet((prev) => (prev.includes(name) ? prev.filter((s) => s !== name) : [...prev, name]));
   }
   function goToCompare() {
-    const qs = new URLSearchParams({ states: compareSet.join(','), year: activeYear }).toString();
+    const qs = new URLSearchParams({ states: compareSet.join(',') }).toString();
     router.push(`/compare?${qs}`);
   }
 

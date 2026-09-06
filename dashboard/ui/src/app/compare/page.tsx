@@ -11,9 +11,8 @@ import CompareView from '@/components/CompareView';
 function ComparePageContent() {
   const searchParams = useSearchParams();
   const states = searchParams.get('states');
-  const year = searchParams.get('year') ?? undefined;
   const stateList = states ? states.split(',').filter(Boolean) : [];
-  return <CompareView states={stateList} year={year} />;
+  return <CompareView states={stateList} />;
 }
 
 export default function ComparePage() {

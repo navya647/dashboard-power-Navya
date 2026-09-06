@@ -1,32 +1,55 @@
 'use client';
 
 import '@/lib/chartSetup';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Bar } from 'react-chartjs-2';
 import { useData } from '@/lib/DataContext';
-import { compareColor, comparableIndicators, representativeBenchmark } from '@/lib/computations';
-import { fmt, fyLabel, median, UNIT_LABEL } from '@/lib/format';
+import { compareColor, stateHasReportedData } from '@/lib/computations';
+import { fyLabel } from '@/lib/format';
+import { buildComparableCards, buildJurisdictionAtoms, buildUnifiedTableRows } from '@/lib/unifiedIndicators';
+import IndicatorVisualCard from './IndicatorVisualCard';
 import StateShape from './StateShape';
-import type { Discom, DiscomsData } from '@/lib/types';
+import UnifiedDataTable from './UnifiedDataTable';
+import YearPicker from './YearPicker';
 
 interface Props {
   states: string[];
-  year?: string;
 }
 
-export default function CompareView({ states, year }: Props) {
-  const { discoms, geojson, loading, error } = useData();
+/** "One selected jurisdiction has nothing reported" / "none of them do" — phrased as *currently*
+ * unavailable (data may arrive later) and never as "they don't overlap", which would misattribute
+ * a missing-reported-data situation to some sort of mismatch between the jurisdictions. */
+function dataAvailabilityMessage(jurisdictions: string[], lacking: string[]): string | null {
+  if (lacking.length === 0) return null;
+  if (lacking.length === jurisdictions.length) {
+    return jurisdictions.length === 2
+      ? 'Reported performance data is currently unavailable for both selected jurisdictions. Standards and benchmarks are shown where available.'
+      : 'Reported performance data is currently unavailable for all selected jurisdictions. Standards and benchmarks are shown where available.';
+  }
+  const names = lacking.length === 1 ? lacking[0] : lacking.slice(0, -1).join(', ') + ' and ' + lacking[lacking.length - 1];
+  return `Reported performance data is currently unavailable for ${names}. Available standards and benchmarks are shown where captured.`;
+}
+
+/** The Compare results view — same page architecture as the State Performance page: one chart
+ * gallery (always the full FY-axis trend, never re-scoped by a year control) and one Data Table
+ * beneath it, with its own fiscal-year focus control that narrows only the table, exactly like
+ * `StateDetail.tsx`. `buildComparableCards` matches indicators on the captured record across every
+ * selected jurisdiction, never on whether a reported value exists — a jurisdiction with nothing
+ * reported yet still gets its own line/status on every matching card rather than triggering a
+ * different layout; see CLAUDE.md and the unified State page this mirrors. */
+export default function CompareView({ states }: Props) {
+  const { discoms, stateSpecific, geojson, loading, error } = useData();
   const router = useRouter();
+  const [selectedYear, setSelectedYear] = useState<string | null>(null);
+  const [showAllYears, setShowAllYears] = useState(true);
 
   if (loading) return <p className="detail-placeholder">Loading…</p>;
   if (error || !discoms || !geojson) return <p className="detail-placeholder">Could not load dashboard data.</p>;
 
-  const activeYear = year && discoms.years.includes(year) ? year : discoms.years.includes('2023-24') ? '2023-24' : discoms.years[0];
-
   if (states.length < 2) {
     return (
       <div className="state-page">
-        <p className="detail-placeholder">Pick at least 2 states to compare from the map explorer.</p>
+        <p className="detail-placeholder">Pick at least 2 jurisdictions to compare from the map explorer.</p>
         <button type="button" className="back-btn" onClick={() => router.back()}>
           Back to Home
         </button>
@@ -34,9 +57,21 @@ export default function CompareView({ states, year }: Props) {
     );
   }
 
-  const comparableKeys = comparableIndicators(discoms.discoms, discoms.canonical_order, states, activeYear)
-    .filter((x) => x.comparable)
-    .map((x) => x.key);
+  const YEARS_ASC = [...discoms.years].reverse();
+  const activeYear = selectedYear ?? (discoms.years.includes('2023-24') ? '2023-24' : discoms.years[0]);
+
+  const atoms = states.flatMap((name) => buildJurisdictionAtoms(discoms, stateSpecific, name, compareColor(states, name) ?? '#999', YEARS_ASC));
+  const cards = buildComparableCards(atoms, states);
+
+  // the Data Table shows exactly the same comparable indicators as the chart gallery above it —
+  // scoped to the atoms that actually made it onto a card, not every atom either jurisdiction has.
+  const cardKeys = new Set(cards.map((c) => c.id));
+  const comparableAtoms = atoms.filter((a) => cardKeys.has(`${a.dataset}::${a.category}::${a.type}::${a.indicator}`));
+  const allTableRows = buildUnifiedTableRows(comparableAtoms);
+  const tableRows = showAllYears ? allTableRows : allTableRows.filter((r) => r.fy === fyLabel(activeYear) || r.fy === 'All years');
+
+  const lacking = states.filter((name) => !stateHasReportedData(discoms.discoms, name, stateSpecific));
+  const availabilityMessage = dataAvailabilityMessage(states, lacking);
 
   return (
     <div className="state-page">
@@ -54,8 +89,7 @@ export default function CompareView({ states, year }: Props) {
 
       <div className="state-hero">
         <div>
-          <span className="panel-hint">{fyLabel(activeYear)}</span>
-          <h1>Comparing {states.length} states</h1>
+          <h1>Performance comparison</h1>
           <div className="compare-shapes">
             {states.map((name) => (
               <div className="compare-shape" key={name}>
@@ -64,108 +98,65 @@ export default function CompareView({ states, year }: Props) {
               </div>
             ))}
           </div>
+          <p className="control-hint">{states.length} jurisdictions selected</p>
         </div>
       </div>
 
-      <div className="chart-grid">
-        {comparableKeys.length === 0 ? (
-          <p className="detail-placeholder">No indicator is comparable across all selected states for {fyLabel(activeYear)}: they don&rsquo;t overlap on reported data.</p>
-        ) : (
-          comparableKeys.map((key, idx) => (
-            <CompareChart key={key} discoms={discoms} allDiscoms={discoms.discoms} indicatorKey={key} compareSet={states} year={activeYear} animationDelay={idx * 90} />
-          ))
-        )}
+      {availabilityMessage && (
+        <div className="no-data-box" style={{ marginTop: 12 }}>
+          {availabilityMessage}
+        </div>
+      )}
+
+      <div className="section-header">
+        <span className="section-label">Comparable Indicators</span>
+        <span className="section-title">Regulatory standards, benchmarks and targets, reported performance, compliance, and year-wise trends</span>
       </div>
-    </div>
-  );
-}
 
-function CompareChart({
-  discoms,
-  allDiscoms,
-  indicatorKey,
-  compareSet,
-  year,
-  animationDelay,
-}: {
-  discoms: DiscomsData;
-  allDiscoms: Discom[];
-  indicatorKey: string;
-  compareSet: string[];
-  year: string;
-  animationDelay: number;
-}) {
-  const meta = discoms.canonical_indicators[indicatorKey];
-  const unit = UNIT_LABEL[meta.unit];
-  const unitSuffix = (v: number) => fmt(v, unit === '/yr' ? 2 : 1) + (unit === '%' ? '%' : ' ' + unit);
+      {cards.length === 0 ? (
+        <p className="detail-placeholder">No comparable indicator is currently captured across every selected jurisdiction.</p>
+      ) : (
+        <div className="chart-grid">
+          {cards.map((c, idx) => (
+            <IndicatorVisualCard
+              key={c.id}
+              title={c.indicator}
+              typeLabel={c.type}
+              meaning={c.meaning}
+              unitSuffix={c.unitSuffix}
+              yAxisLabel={c.yAxisLabel}
+              yearsAsc={YEARS_ASC}
+              activeYear={activeYear}
+              series={c.series}
+              animationDelay={idx * 60}
+            />
+          ))}
+        </div>
+      )}
 
-  const perState = compareSet.map((name) => {
-    const ds = allDiscoms.filter((d) => d.state === name);
-    const vals = ds.map((d) => d.years[year]?.indicators[indicatorKey]?.value).filter((v): v is number => v != null);
-    return { name, value: median(vals) };
-  });
-  const entries = compareSet.flatMap((name) => allDiscoms.filter((d) => d.state === name).map((d) => d.years[year]?.indicators[indicatorKey]).filter(Boolean)) as NonNullable<
-    Discom['years'][string]
-  >['indicators'][string][];
-  const bench = representativeBenchmark(entries);
-  const colors = compareSet.map((name) => compareColor(compareSet, name) ?? '#999');
+      <div className="complete-data-band">
+        <div className="section-header">
+          <span className="section-title">Data Table</span>
+        </div>
 
-  return (
-    <div className="chart-card animate-in" style={{ animationDelay: `${animationDelay}ms` }}>
-      <h4>{indicatorKey}</h4>
-      <div className="chart-sub">
-        {meta.group} · {unit}
-      </div>
-      <div style={{ height: 280 }}>
-        <Bar
-          data={{
-            labels: perState.map((p) => p.name),
-            datasets: [{ label: indicatorKey, data: perState.map((p) => p.value), backgroundColor: colors, borderRadius: 6, maxBarThickness: 70 }],
-          }}
-          options={{
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: { duration: 800, easing: 'easeOutQuart' },
-            plugins: {
-              legend: { display: false },
-              tooltip: {
-                backgroundColor: '#1c2127',
-                padding: 10,
-                cornerRadius: 8,
-                callbacks: { label: (c) => (c.raw == null ? 'no data' : unitSuffix(c.raw as number)) },
-              },
-              annotation:
-                bench == null
-                  ? { annotations: {} }
-                  : {
-                      annotations: {
-                        standard: {
-                          type: 'line',
-                          yMin: bench,
-                          yMax: bench,
-                          borderColor: '#a12f2f',
-                          borderWidth: 2,
-                          borderDash: [7, 5],
-                          label: {
-                            display: true,
-                            content: 'SERC Standard: ' + unitSuffix(bench),
-                            position: 'end',
-                            backgroundColor: '#a12f2f',
-                            color: '#fff',
-                            font: { size: 10.5, weight: 600 },
-                            padding: { x: 6, y: 3 },
-                            borderRadius: 4,
-                          },
-                        },
-                      },
-                    },
-            },
-            scales: {
-              y: { beginAtZero: true, grid: { color: 'rgba(18,23,42,0.07)' }, ticks: { font: { size: 11.5 } } },
-              x: { grid: { display: false }, ticks: { font: { size: 12.5 } } },
-            },
-          }}
-        />
+        <div className="complete-data-toggle complete-data-toggle-sticky">
+          <span>{showAllYears ? `Showing all ${discoms.years.length} fiscal years` : `Focused on ${fyLabel(activeYear)}`}</span>
+          {discoms.years.length > 1 && (
+            <YearPicker
+              years={discoms.years}
+              active={activeYear}
+              onChange={(y) => {
+                setSelectedYear(y);
+                setShowAllYears(false);
+              }}
+            />
+          )}
+          <button type="button" className="complete-data-toggle-btn" onClick={() => setShowAllYears((v) => !v)}>
+            {showAllYears ? 'Show one year' : 'Show all years'}
+          </button>
+        </div>
+
+        <UnifiedDataTable rows={tableRows} />
       </div>
     </div>
   );

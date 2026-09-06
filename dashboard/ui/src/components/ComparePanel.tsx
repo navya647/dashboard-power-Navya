@@ -24,14 +24,14 @@ export default function ComparePanel({ stateHue, compareSet, onRemove, onCompare
     <aside className="control-panel">
       <div className="control-panel-head">
         <span className="control-panel-eyebrow">Analysis</span>
-        <h3>Compare performance among states</h3>
+        <h3>Compare performance across jurisdictions</h3>
       </div>
 
       <button type="button" className="toggle-row" role="switch" aria-checked={compareMode} onClick={onToggleCompareMode}>
         <span className="toggle-switch" data-on={compareMode}>
           <span className="toggle-thumb" />
         </span>
-        <span>Select states on the map</span>
+        <span>Select states or UTs on the map</span>
       </button>
 
       {n > 0 && (
@@ -49,9 +49,9 @@ export default function ComparePanel({ stateHue, compareSet, onRemove, onCompare
       )}
 
       <p className="control-hint">
-        {n === 0 && 'Turn on map selection above, then click states on the map to compare performance.'}
-        {n === 1 && 'Select at least one more state to compare.'}
-        {n >= 2 && `${n} states selected.`}
+        {n === 0 && 'Turn on map selection above, then click on jurisdictions to compare their performance.'}
+        {n === 1 && 'Select at least one more jurisdiction to compare.'}
+        {n >= 2 && `${n} jurisdictions selected.`}
       </p>
 
       <div style={{ display: 'flex', gap: 8 }}>

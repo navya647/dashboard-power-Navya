@@ -1,10 +1,10 @@
 const STEPS = [
-  { n: '01', title: 'Identify Standards', body: 'Review SERC regulations and applicable tariff orders and amendments, if any.' },
-  { n: '02', title: 'Collect Reported Data', body: 'Gather performance data from official SERC and DISCOM sources.' },
-  { n: '03', title: 'Check Accessibility', body: 'Record whether the data is publicly available and machine-readable.' },
-  { n: '04', title: 'Check Comparability', body: 'Assess whether the data can validly be compared across states, DISCOMs, and years.' },
-  { n: '05', title: 'Assess Whether Standards Are Met', body: 'Where comparison is valid, evaluate reported performance against the prescribed standard.' },
-  { n: '06', title: 'Build Dashboard Views', body: 'Structure the evidence into year-, state-, and DISCOM-level views.' },
+  { n: '01', title: 'Identify Standards', body: 'Review applicable electricity regulator Standards of Performance regulations, tariff orders and amendments where relevant.' },
+  { n: '02', title: 'Collect Reported Data', body: 'Gather reported performance data from official regulator and DISCOM sources.' },
+  { n: '03', title: 'Check Accessibility', body: 'Record whether performance data is publicly available and machine-readable.' },
+  { n: '04', title: 'Check Comparability', body: 'Assess whether reported values and regulatory standards are defined on a compatible basis.' },
+  { n: '05', title: 'Assess Standards', body: 'Where comparison is valid, assess reported performance against the applicable standard or benchmark.' },
+  { n: '06', title: 'Build Dashboard Views', body: 'Structure verified evidence into jurisdiction-, DISCOM-, indicator- and year-level views.' },
 ];
 
 /** The central visual of the page: a connected six-step research process rather than six ordinary

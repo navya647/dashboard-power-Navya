@@ -259,16 +259,18 @@ export default function HeroSection({
         </div>
         <div className="hero-ambient-glow" aria-hidden="true" />
 
+        <div className="hero-coverage-badge">
+          <strong>--%</strong> of India&rsquo;s population covered
+        </div>
+
         <div className="hero-editorial" ref={editorialRef}>
           <h1>India DISCOM Performance Dashboard</h1>
           <div className="hero-scope">
-            <span className="scope-pill scope-pill--a">Reliability of Supply</span>
-            <span className="scope-pill scope-pill--b">Quality of Supply</span>
-            <span className="scope-pill scope-pill--c">Quality of Service</span>
+            <span className="scope-pill scope-pill--a">India&rsquo;s First Power Quality Dashboard</span>
           </div>
           <p className="lede">
-            Understanding how electricity distribution companies in India perform with respect to the Standards of Performance specified by their
-            respective State Electricity Regulatory Commissions (SERCs), and assessing comparative performance among states.
+            Understanding how electricity distribution companies (DISCOMs) across India perform against regulator-specified Standards of
+            Performance, and enabling comparison across jurisdictions and utilities.
           </p>
           <div className="hero-cta">Scroll to expand the map ↓</div>
         </div>

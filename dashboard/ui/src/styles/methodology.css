@@ -56,96 +56,8 @@
   max-width: 680px;
   margin: 0 0 8px;
 }
-.method-context--note {
-  color: var(--muted);
-  font-style: italic;
-}
 
-/* ---- purpose flow diagram ---- */
-.purpose-diagram {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 6px;
-  padding: 16px 0 20px;
-}
-.purpose-fragments,
-.purpose-outcomes {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px 22px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--muted);
-}
-.purpose-connector {
-  width: 1.5px;
-  height: 22px;
-  background: var(--line);
-}
-.purpose-evidence {
-  font-family: var(--font-condensed);
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--ink);
-  padding: 8px 20px;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-}
-.purpose-outcomes span {
-  color: var(--accent);
-}
-
-/* ---- objectives journey ---- */
-.objectives-journey {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0;
-  margin: 8px 0 6px;
-}
-.objectives-step {
-  position: relative;
-  flex: 1 1 200px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 0 22px 0 0;
-}
-.objectives-marker {
-  font-family: var(--font-condensed);
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--accent-light);
-}
-.objectives-title {
-  font-size: 13.5px;
-  font-weight: 700;
-  color: var(--ink);
-}
-.objectives-text {
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.4;
-  margin: 0;
-}
-.objectives-arrow {
-  display: none;
-}
-@media (min-width: 900px) {
-  .objectives-arrow {
-    display: block;
-    position: absolute;
-    top: 10px;
-    right: 4px;
-    width: 16px;
-    height: 1.5px;
-    background: var(--line);
-  }
-}
-
-/* ---- scope strip ---- */
+/* ---- current coverage strip ---- */
 .scope-ribbon {
   font-size: 15px;
   font-weight: 600;
@@ -159,13 +71,6 @@
 .scope-sep {
   color: var(--line);
   margin: 0 2px;
-}
-.scope-ribbon-sub {
-  display: block;
-  font-size: 11.5px;
-  font-weight: 400;
-  color: var(--muted);
-  margin-top: 2px;
 }
 .scope-state-list {
   list-style: none;
@@ -190,36 +95,7 @@
   width: 18px;
 }
 
-/* ---- indicator universe ---- */
-.indicator-universe {
-  display: flex;
-  gap: 28px;
-  align-items: flex-start;
-}
-.indicator-universe-side {
-  flex: 1;
-  min-width: 0;
-}
-.indicator-universe-divider {
-  width: 1px;
-  align-self: stretch;
-  background: var(--line);
-}
-.indicator-universe-heading {
-  font-family: var(--font-condensed);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: 4px;
-}
-.indicator-universe-note {
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.4;
-  margin: 0 0 10px;
-}
+/* ---- what we track: dashboard navigation categories ---- */
 .indicator-chip-row {
   display: flex;
   flex-wrap: wrap;
@@ -232,21 +108,6 @@
   border: 1px solid var(--line);
   border-radius: var(--radius-pill);
   padding: 3px 11px;
-}
-.indicator-group-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.indicator-group-title {
-  font-size: 12.5px;
-  font-weight: 700;
-  color: var(--ink);
-}
-.indicator-group-examples {
-  font-size: 11px;
-  color: var(--muted);
-  line-height: 1.35;
 }
 
 /* ---- six-step methodology journey (the central visual) ---- */
@@ -300,6 +161,33 @@
     height: 1.5px;
     background: var(--line);
   }
+}
+
+/* ---- data rules: comparability, trend assessment, missing data ---- */
+.data-rules-subhead {
+  font-family: var(--font-condensed);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 18px 0 4px;
+}
+.data-rules-subhead:first-child {
+  margin-top: 4px;
+}
+.data-rules-list {
+  margin: 0 0 4px;
+  padding-left: 18px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.data-rules-list code {
+  font-size: 11px;
+  background: rgba(18, 23, 42, 0.06);
+  padding: 1px 5px;
+  border-radius: 3px;
 }
 
 /* ---- comparability decision tree ---- */
@@ -377,45 +265,17 @@
   margin-top: 14px;
 }
 
-/* ---- evidence sources diagram ---- */
-.sources-diagram {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 6px;
-  padding: 10px 0 4px;
-}
-.sources-list {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px 22px;
+/* ---- sources & data quality flow ---- */
+.sources-list-inline {
   font-size: 13px;
   font-weight: 600;
   color: var(--muted);
-}
-.sources-arrow {
-  width: 1.5px;
-  height: 20px;
-  background: var(--line);
-}
-.sources-evidence {
-  font-family: var(--font-condensed);
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--ink);
-  padding: 6px 18px;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
 }
 .sources-note {
   font-size: 12px;
   color: var(--muted);
   margin-top: 4px;
 }
-
-/* ---- data compilation flow ---- */
 .compilation-flow {
   display: flex;
   flex-wrap: wrap;
@@ -443,155 +303,20 @@
 .compilation-arrow::before {
   content: '→';
 }
-.compilation-milestone {
-  font-size: 12px;
-  color: var(--muted);
-  border-left: 2px solid var(--good);
-  padding-left: 10px;
-  margin: 0 0 16px;
-}
-.standardise-split {
-  display: flex;
-  gap: 24px;
-}
-.standardise-item {
-  flex: 1;
-}
-.standardise-title {
-  font-size: 12.5px;
-  font-weight: 700;
-  color: var(--ink);
-}
-.standardise-body {
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.4;
-  margin: 2px 0 0;
-}
 
-/* ---- quality assurance ---- */
-.qa-stages {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin: 8px 0 12px;
-}
-.qa-stage-wrap {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.qa-stage {
-  font-family: var(--font-condensed);
-  font-size: 12.5px;
-  font-weight: 700;
-  color: var(--ink);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  padding: 6px 14px;
-}
-.qa-arrow {
-  color: var(--muted);
-}
-.qa-arrow::before {
-  content: '→';
-}
-.qa-note {
-  font-size: 12px;
-  color: var(--muted);
-  margin: 0 0 6px;
-}
-.qa-field-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.qa-field-chip {
-  font-size: 11px;
-  color: var(--muted);
-  border: 1px dashed var(--line);
-  border-radius: var(--radius-pill);
-  padding: 2px 10px;
-}
-
-/* ---- illustrative example + missing-data rule ---- */
-.method-example {
-  border-left: 2px solid var(--accent);
-  padding-left: 14px;
-  margin-bottom: 18px;
-}
-.method-example-label {
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  color: var(--muted);
-  text-transform: uppercase;
-  margin-bottom: 8px;
-}
-.method-example-trend {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 8px;
-}
-.method-example-point {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-}
-.method-example-fy {
-  font-size: 10.5px;
-  color: var(--muted);
-}
-.method-example-value {
-  font-family: var(--font-condensed);
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--ink);
-}
-.method-example-value.na {
-  color: var(--muted);
-  font-size: 15px;
-}
-.method-example-arrow {
-  color: var(--line);
-}
-.method-example-note {
-  font-size: 12px;
-  color: var(--muted);
-  margin: 8px 0 0;
-}
+/* ---- missing-data rule ---- */
 .missing-data-rule {
   background: var(--paper);
   border-radius: var(--radius-sm);
   padding: 12px 16px;
 }
-.missing-data-rule-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  font-weight: 600;
-  padding: 3px 0;
-}
-.missing-data-rule-good {
-  color: var(--good-deep);
-}
-.missing-data-rule-bad {
-  color: var(--critical-deep);
-}
-.missing-data-rule-strike {
-  text-decoration: line-through;
-  color: var(--muted);
-}
 .missing-data-rule-note {
-  font-size: 11.5px;
-  color: var(--muted);
-  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--ink);
+  line-height: 1.5;
 }
 
-/* ---- challenges & limitations ---- */
+/* ---- limitations ---- */
 .limitations-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -613,16 +338,10 @@
   font-size: 13px;
   color: var(--ink);
   line-height: 1.45;
-  margin: 4px 0 6px;
-}
-.limitation-detail {
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.45;
-  margin: 6px 0 0;
+  margin: 4px 0 0;
 }
 
-/* ---- map coverage semantics ---- */
+/* ---- map status ---- */
 .coverage-semantics {
   display: flex;
   flex-direction: column;
@@ -639,59 +358,6 @@
 .coverage-semantics-item .map-legend-dot {
   flex: none;
   transform: translateY(1px);
-}
-
-/* ---- three dataset lanes ---- */
-.lanes {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 0;
-  padding: 6px 0 4px;
-}
-.lanes-head,
-.lanes-foot {
-  font-family: var(--font-condensed);
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--ink);
-  padding: 4px 0;
-}
-.lanes-trunk {
-  width: 1.5px;
-  height: 18px;
-  background: var(--line);
-}
-.lanes-branches {
-  display: flex;
-  gap: 24px;
-  padding: 10px 0;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  margin: 4px 0;
-}
-.lane {
-  flex: 1;
-  max-width: 240px;
-  text-align: left;
-}
-.lane-title {
-  font-size: 12.5px;
-  font-weight: 700;
-  color: var(--accent);
-}
-.lane-body {
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.4;
-  margin: 4px 0 4px;
-}
-.lane-note {
-  font-size: 11px;
-  color: var(--ink);
-  font-weight: 600;
-  margin: 0;
 }
 
 /* ---- methodological principles ---- */
@@ -728,51 +394,11 @@
   margin: 2px 0 0;
 }
 
-/* ---- technical provenance ---- */
-.provenance-flows {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.provenance-flow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-}
-.provenance-flow code {
-  background: rgba(18, 23, 42, 0.06);
-  padding: 2px 8px;
-  border-radius: var(--radius-sm);
-}
-.provenance-flow span {
-  color: var(--muted);
-}
-
 @media (max-width: 720px) {
-  .indicator-universe {
-    flex-direction: column;
-    gap: 18px;
-  }
-  .indicator-universe-divider {
-    display: none;
-  }
   .comparability-branches {
     flex-direction: column;
     gap: 16px;
     align-items: center;
-  }
-  .standardise-split {
-    flex-direction: column;
-    gap: 12px;
-  }
-  .lanes-branches {
-    flex-direction: column;
-    gap: 14px;
-  }
-  .lane {
-    max-width: none;
   }
   .limitations-grid {
     grid-template-columns: 1fr;

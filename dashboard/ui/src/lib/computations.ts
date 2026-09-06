@@ -1,5 +1,5 @@
 import { CATEGORICAL, MAP_STATUS } from './colors';
-import type { AccessibilityData, Discom, DiscomsData, IndicatorEntry, StateSpecificData } from './types';
+import type { AccessibilityData, Discom, DiscomAccessibility, DiscomsData, StateSpecificData } from './types';
 
 export function indicatorsInScope(discoms: DiscomsData, group: string, indicator: string): string[] {
   return discoms.canonical_order.filter((k) => {
@@ -67,45 +67,6 @@ export function stateFillColor(status: StateMapStatus): string {
   return MAP_STATUS.idle;
 }
 
-/** Most common numeric benchmark among a set of indicator entries (raw, not reinterpreted). */
-export function representativeBenchmark(entries: IndicatorEntry[]): number | null {
-  const nums = entries.filter((e) => e.benchmark != null && !Number.isNaN(parseFloat(e.benchmark))).map((e) => parseFloat(e.benchmark as string));
-  if (!nums.length) return null;
-  const counts = new Map<number, number>();
-  for (const v of nums) counts.set(v, (counts.get(v) || 0) + 1);
-  let best: number | null = null;
-  let bestN = -1;
-  for (const [v, n] of counts) {
-    if (n > bestN) {
-      best = v;
-      bestN = n;
-    }
-  }
-  return best;
-}
-
-export function discomsInScope(discoms: Discom[], compareSet: string[]): Discom[] {
-  if (compareSet.length) return discoms.filter((d) => compareSet.includes(d.state));
-  return discoms;
-}
-
-export interface ComparableIndicator {
-  key: string;
-  comparable: boolean;
-  missingIn: string[];
-}
-
-export function comparableIndicators(discoms: Discom[], canonicalOrder: string[], compareSet: string[], year: string): ComparableIndicator[] {
-  return canonicalOrder.map((key) => {
-    const perState = compareSet.map((name) => {
-      const ds = discoms.filter((d) => d.state === name);
-      const hasData = ds.some((d) => d.years[year]?.indicators[key]?.value != null);
-      return { name, hasData };
-    });
-    return { key, comparable: perState.every((p) => p.hasData), missingIn: perState.filter((p) => !p.hasData).map((p) => p.name) };
-  });
-}
-
 /** One state's direct aggregation of its licensees' accessibility booleans — a count/percentage
  * summary, never a weighted or composite score. `publishedPct`/`machineReadablePct` are `null`
  * only when the state has zero tracked licensees to divide by. */
@@ -119,12 +80,32 @@ export interface StateAccessibilityCoverage {
   machineReadablePct: number | null;
 }
 
+/** The single source of truth for a DISCOM's *displayed* machine-readability — never
+ * independently "not machine-readable" when performance data was never published at all, since
+ * machine readability is only a meaningful question once something has actually been published.
+ * Today's workbook always leaves `machine_readable` null/blank for an unpublished row (see
+ * `extraction_accessibility.py`'s `to_bool()`), but nothing in the type system enforces that
+ * convention — every place this page shows or filters on machine-readability derives it from this
+ * function (which forces `null` whenever `available_on_serc` isn't `true`) rather than trusting
+ * `d.machine_readable` directly, so a future data-entry mistake (e.g. `available_on_serc: false,
+ * machine_readable: true`) can never surface as a contradictory or misleading status. */
+export function machineReadableDisplayStatus(d: DiscomAccessibility): boolean | null {
+  return d.available_on_serc === true ? d.machine_readable : null;
+}
+
+/** A DISCOM has an accessibility gap when its performance data isn't published at all, OR is
+ * published but not machine-readable — an unpublished DISCOM is never counted as a *second*,
+ * separate "not machine-readable" gap. */
+export function hasAccessibilityGap(d: DiscomAccessibility): boolean {
+  return d.available_on_serc !== true || machineReadableDisplayStatus(d) !== true;
+}
+
 export function accessibilityByState(accessibility: AccessibilityData): StateAccessibilityCoverage[] {
   const regByState = new Map(accessibility.states.map((s) => [s.state, s.regulation_available]));
   return accessibility.state_order.map((state) => {
     const group = accessibility.discoms.filter((d) => d.state === state);
     const publishedCount = group.filter((d) => d.available_on_serc === true).length;
-    const machineReadableCount = group.filter((d) => d.machine_readable === true).length;
+    const machineReadableCount = group.filter((d) => machineReadableDisplayStatus(d) === true).length;
     return {
       state,
       regulationAvailable: regByState.get(state) ?? null,
@@ -137,19 +118,21 @@ export function accessibilityByState(accessibility: AccessibilityData): StateAcc
   });
 }
 
-/** Sorted for the state comparison chart only (machine-readable % desc, then published % desc) —
- * every other view (grid, small-multiples, matrix) keeps `state_order` so it stays directly
- * comparable to the source workbook. Array.prototype.sort is stable, so states tied on both
- * percentages keep their original state_order position as the tie-break. */
+/** Sorted for the jurisdiction comparison chart only (machine-readable % desc, then published %
+ * desc, then jurisdiction name as a deterministic final tie-break) — every other view (grid,
+ * small-multiples, matrix) keeps `state_order` so it stays directly comparable to the source
+ * workbook. */
 export function sortStatesForComparison(coverage: StateAccessibilityCoverage[]): StateAccessibilityCoverage[] {
   return [...coverage].sort((a, b) => {
     const machineDelta = (b.machineReadablePct ?? -1) - (a.machineReadablePct ?? -1);
     if (machineDelta !== 0) return machineDelta;
-    return (b.publishedPct ?? -1) - (a.publishedPct ?? -1);
+    const publishedDelta = (b.publishedPct ?? -1) - (a.publishedPct ?? -1);
+    if (publishedDelta !== 0) return publishedDelta;
+    return a.state.localeCompare(b.state);
   });
 }
 
-/** Direct counts of where accessibility breaks down across every tracked licensee — never a
+/** Direct counts of where accessibility breaks down across every tracked DISCOM — never a
  * derived score. */
 export interface AccessibilityGaps {
   notPublished: number;
@@ -159,6 +142,10 @@ export interface AccessibilityGaps {
 export function accessibilityGaps(accessibility: AccessibilityData): AccessibilityGaps {
   return {
     notPublished: accessibility.discoms.filter((d) => d.available_on_serc !== true).length,
-    publishedNotMachineReadable: accessibility.discoms.filter((d) => d.available_on_serc === true && d.machine_readable !== true).length,
+    publishedNotMachineReadable: accessibility.discoms.filter((d) => d.available_on_serc === true && machineReadableDisplayStatus(d) !== true).length,
   };
+}
+
+export function accessibilityGapCount(accessibility: AccessibilityData): number {
+  return accessibility.discoms.filter(hasAccessibilityGap).length;
 }

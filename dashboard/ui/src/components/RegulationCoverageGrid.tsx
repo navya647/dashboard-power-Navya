@@ -14,7 +14,7 @@ interface Props {
 export default function RegulationCoverageGrid({ states, stateOrder, stateHue }: Props) {
   const byState = new Map(states.map((s) => [s.state, s.regulation_available]));
   const availableCount = stateOrder.filter((s) => byState.get(s) === true).length;
-  const allAvailable = availableCount === stateOrder.length;
+  const allAvailable = stateOrder.length > 0 && availableCount === stateOrder.length;
 
   return (
     <div>
@@ -29,8 +29,8 @@ export default function RegulationCoverageGrid({ states, stateOrder, stateHue }:
       </p>
       <p className="reg-coverage-summary">
         {allAvailable
-          ? `Full coverage — all ${stateOrder.length} tracked states publish their SoP regulation online.`
-          : `${availableCount} of ${stateOrder.length} tracked states publish their SoP regulation online.`}
+          ? `Full coverage — all currently tracked jurisdictions have their SoP regulations available online.`
+          : `${availableCount} of ${stateOrder.length} currently tracked jurisdictions have their SoP regulations available online.`}
       </p>
 
       <Collapsible label="View source detail">
@@ -38,7 +38,7 @@ export default function RegulationCoverageGrid({ states, stateOrder, stateHue }:
           <table className="std-table">
             <thead>
               <tr>
-                <th>State</th>
+                <th>Jurisdiction</th>
                 <th>Regulation Published Online</th>
               </tr>
             </thead>

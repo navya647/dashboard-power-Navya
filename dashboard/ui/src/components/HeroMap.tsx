@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { buildIndiaPaths } from '@/lib/geo2d';
 import { stateFillColor, stateMapStatus } from '@/lib/computations';
 import { lerpHex, MAP_BORDER, MAP_WASH } from '@/lib/colors';
+import { formatPopulation } from '@/lib/population';
 import type { Discom, IndiaGeoJSON, StateSpecificData } from '@/lib/types';
 
 interface Props {
@@ -83,9 +84,20 @@ export default function HeroMap({ discoms, stateSpecific, geojson, compareColorO
 
   const hoveredPath = hovered ? projection?.byName[hovered] : null;
   const hoveredStatus = hovered ? stateMapStatus(discoms, hovered, stateSpecific) : null;
-  const hoveredTip = hoveredStatus === 'tracked' ? 'Explore Performance →' : hoveredStatus === 'no-data' ? 'View Details →' : 'Coming soon →';
+  // In compare-selection mode, a jurisdiction with no captured evidence in either dataset
+  // ('idle') can't be added to a comparison at all — there is nothing to compare — so its tooltip
+  // says so explicitly rather than the ordinary "Coming soon" (which is about single-state lookup,
+  // where an idle state is still clickable through to its own "coming soon" report).
+  const hoveredDisabledForCompare = !!compareMode && hoveredStatus === 'idle';
+  const hoveredTip = hoveredDisabledForCompare
+    ? 'Not yet included in current dashboard coverage'
+    : hoveredStatus === 'tracked' || hoveredStatus === 'no-data'
+      ? 'Explore Performance →'
+      : 'Coming soon →';
+  const hoveredPopulation = hovered ? formatPopulation(hovered) : null;
 
-  function handleClick(name: string) {
+  function handleClick(name: string, disabledForCompare: boolean) {
+    if (disabledForCompare) return;
     // the preview/confirm gate exists only to stop a tap from jumping straight to a state's
     // full report before its been previewed. Compare mode never navigates — it just toggles the
     // state in/out of the comparison set, a reversible, in-place action — so it should always
@@ -121,6 +133,7 @@ export default function HeroMap({ discoms, stateSpecific, geojson, compareColorO
           <g>
             {projection.paths.map((p) => {
               const status = stateMapStatus(discoms, p.name, stateSpecific);
+              const disabledForCompare = !!compareMode && status === 'idle';
               const selectColor = compareColorOf(p.name);
               const isHovered = hovered === p.name;
               const isDimmed = hovered != null && !isHovered;
@@ -128,10 +141,11 @@ export default function HeroMap({ discoms, stateSpecific, geojson, compareColorO
               let fill = stateFillColor(status);
               if (selectColor) fill = lerpHex(fill, selectColor, 0.32);
               if (isDimmed) fill = lerpHex(fill, MAP_WASH, 0.22);
+              if (disabledForCompare) fill = lerpHex(fill, '#9a9a9a', 0.55);
 
               const strokeColor = selectColor ?? MAP_BORDER;
               const strokeWidth = selectColor ? 1.6 : isHovered ? 1.4 : 1.25;
-              const strokeOpacity = selectColor ? 0.9 : isHovered ? 0.95 : 0.85;
+              const strokeOpacity = disabledForCompare ? 0.5 : selectColor ? 0.9 : isHovered ? 0.95 : 0.85;
 
               return (
                 <path
@@ -142,10 +156,10 @@ export default function HeroMap({ discoms, stateSpecific, geojson, compareColorO
                   strokeWidth={strokeWidth}
                   strokeOpacity={strokeOpacity}
                   strokeLinejoin="round"
-                  className={`hero-state-path clickable${isHovered ? ' hovered' : ''}`}
+                  className={`hero-state-path${disabledForCompare ? ' disabled-for-compare' : ' clickable'}${isHovered ? ' hovered' : ''}`}
                   onMouseEnter={canHover ? () => setHovered(p.name) : undefined}
                   onMouseLeave={canHover ? () => setHovered((h) => (h === p.name ? null : h)) : undefined}
-                  onClick={() => handleClick(p.name)}
+                  onClick={() => handleClick(p.name, disabledForCompare)}
                 />
               );
             })}
@@ -155,6 +169,7 @@ export default function HeroMap({ discoms, stateSpecific, geojson, compareColorO
       {hoveredPath && (
         <div className="hero-map-tip" style={{ left: hoveredPath.centroid[0], top: hoveredPath.centroid[1] }}>
           <strong>{hovered}</strong>
+          {hoveredPopulation && <span className="hero-map-tip-population">Population: {hoveredPopulation}</span>}
           <span>{hoveredTip}</span>
         </div>
       )}

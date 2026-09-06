@@ -2,7 +2,7 @@ const PRINCIPLES = [
   { title: 'Source Fidelity', body: 'Reported wording and values are preserved exactly as extracted.' },
   { title: 'No Invented Data', body: 'Missing values remain N/A — never zero, never interpolated.' },
   { title: 'Compare Only When Valid', body: 'The dashboard never infers compliance across incompatible metrics.' },
-  { title: 'Raw SoP Definitions', body: 'State-specific indicator names remain exactly as each SERC defines them.' },
+  { title: 'Preserve Source Definitions', body: 'Original indicator names and definitions remain traceable to their source.' },
   { title: 'Traceable Evidence', body: 'Regulatory citations stay attached to the observations they govern.' },
 ];
 

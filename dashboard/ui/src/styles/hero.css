@@ -132,6 +132,37 @@
   background: linear-gradient(to right, var(--paper) 0%, var(--paper) 28%, transparent 60%);
 }
 
+/* top-right counterweight to the hamburger button (fixed top-left, see layout.css) — sits above
+   the tower photo/ambient glow but stays static (not part of the scroll-driven reveal) since it's
+   page-level context, not part of the "camera move" narrative. */
+.hero-coverage-badge {
+  position: absolute;
+  z-index: 2;
+  top: 20px;
+  right: var(--hero-gutter);
+  padding: 7px 16px;
+  border-radius: 999px;
+  background: rgba(216, 174, 63, 0.14);
+  border: 1px solid rgba(216, 174, 63, 0.35);
+  font-family: var(--font-condensed);
+  font-size: 12.5px;
+  letter-spacing: 0.02em;
+  color: #000;
+}
+.hero-coverage-badge strong {
+  color: #000;
+  font-size: 15px;
+  font-weight: 700;
+}
+:root[data-theme='dark'] .hero-coverage-badge {
+  background: rgba(216, 174, 63, 0.16);
+  border-color: rgba(216, 174, 63, 0.4);
+  color: #000;
+}
+:root[data-theme='dark'] .hero-coverage-badge strong {
+  color: #000;
+}
+
 /* ---------- editorial cover: headline block, anchored left. Recedes (fades, lifts left, scales
    down) as the camera moves in — see HeroSection's applyStyles — rather than staying static, so
    it genuinely "leaves the main visual field" instead of just sitting beside the map forever. ---------- */
@@ -267,6 +298,10 @@
 .hero-state-path.clickable:active {
   filter: brightness(0.94);
 }
+.hero-state-path.disabled-for-compare {
+  cursor: not-allowed;
+  filter: saturate(0.35);
+}
 
 /* small, clean hover tooltip — state name plus a one-line cue, not the full stats popup (that's
  * StatePopup.tsx, shown on click) */
@@ -295,6 +330,10 @@
   font-size: 12px;
   font-weight: 500;
 }
+.hero-map-tip span.hero-map-tip-population {
+  color: #1d4f8c;
+  font-weight: 700;
+}
 
 /* ---------- overlay chrome: compare tool (left-center) floats over the viewport; map-chrome
    (legend) floats over the map stage itself. Every one starts faded/lowered and cascades in
@@ -308,13 +347,22 @@
   opacity: 0;
   transform: translateY(14px);
 }
-/* not so low it collides with the legend at the map's own bottom-right (see .map-chrome) — the
- * two live in different corners at every height combo of Compare panel content (0/1/2+ selected
- * states) and current map sizing. */
+/* Anchored to the sticky viewport's own bottom edge, not a percentage-of-height `top` — a `top`
+ * anchor left the panel's bottom (the Compare/Clear buttons) at the mercy of however tall its
+ * content happened to be (selecting enough jurisdictions to wrap the chip list to extra rows, or
+ * simply a shorter browser window) and `.hero-sticky`'s own `overflow: hidden` clipped anything
+ * past 100vh rather than letting the page scroll to reveal it — the buttons could end up
+ * unreachable. Anchoring the bottom instead means the panel only ever grows *upward*, and its own
+ * `max-height`/`overflow-y` (with the chip list's own tighter cap, see `.multiselect-chips`) keep
+ * it from ever exceeding the viewport at all, so the button row is always in view regardless of
+ * selection count or window height. Left side keeps it clear of the legend, anchored to the map's
+ * own box at bottom-*right* (see `.map-chrome`). */
 .overlay-compare {
-  top: 55%;
+  bottom: 20px;
   left: var(--hero-gutter);
   width: 290px;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
   transition: left 260ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 /* the sidebar's push-and-narrow (see layout.css) leaves this panel's usual gutter crowding the

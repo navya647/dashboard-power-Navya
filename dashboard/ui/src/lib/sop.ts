@@ -1,4 +1,4 @@
-import type { SopDiscom, SopIndicator } from './types';
+import type { SopDiscom, SopFramework, SopIndicator } from './types';
 
 /** Identity key for grouping a DISCOM's SoP indicator rows into one time series across years.
  * SoP indicator names are never normalized/canonicalized (see CLAUDE.md) — this only groups rows
@@ -52,4 +52,20 @@ export function buildSopSeries(discom: SopDiscom, yearsAsc: string[]): SopSeries
 /** Whether a series has at least one year with a plottable numeric reported value. */
 export function sopSeriesHasNumericPoint(series: SopSeries): boolean {
   return series.points.some((p) => p.entry?.reported != null);
+}
+
+/** One series per notified indicator, for the 5 states with a SoP regulation but no per-DISCOM
+ * reported-figures sheet at all (see CLAUDE.md). A framework's indicators carry no per-year
+ * breakdown of their own — they're a static notified list, not a time series — so the same
+ * indicator row is reused as every year's "entry", giving each indicator a chart with a visible FY
+ * axis and its standard/benchmark context, but never a reported value (`reported` is always null
+ * on these rows already, since the source workbook never had a figure to extract). */
+export function buildFrameworkSeries(framework: SopFramework, yearsAsc: string[]): SopSeries[] {
+  return framework.indicators.map((ind, i) => ({
+    key: `framework::${sopSeriesKey(ind)}::${i}`,
+    type: ind.type,
+    indicator: ind.indicator,
+    meaning: ind.meaning,
+    points: yearsAsc.map((year) => ({ year, entry: ind })),
+  }));
 }

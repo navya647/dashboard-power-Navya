@@ -10,12 +10,19 @@ interface StatusMeta {
   cls: string;
 }
 
+/** Canonical status vocabulary used everywhere a compliance status is shown as text (the evidence
+ * rail's tooltip, the exception callout, the Data Table's status pill): ✓ Met = a reported value
+ * exists and the standard was met; ✕ Not met = a reported value exists and it wasn't; ⚠ Not
+ * comparable = a reported value exists but can't validly be checked against the standard; ○ Not
+ * assessable = no reported value exists at all. The rail's own per-year badge shows just the glyph
+ * (`short`) — full wording lives in its hover title and in the card-level dedup callout below it,
+ * so a run of identical years never repeats the whole phrase five times in a row. */
 export const STATUS_META: Record<EvidenceStatus, StatusMeta> = {
-  met: { text: 'Standard met', short: 'Met', cls: 'eviq-met' },
-  'not-met': { text: 'Standard not met', short: 'Miss', cls: 'eviq-not-met' },
-  'not-comparable': { text: 'Not comparable', short: 'N/C', cls: 'eviq-not-comparable' },
-  'no-benchmark': { text: 'No benchmark specified', short: 'No std', cls: 'eviq-no-benchmark' },
-  'no-value': { text: 'No value reported', short: 'No data', cls: 'eviq-no-value' },
+  met: { text: '✓ Met', short: '✓', cls: 'eviq-met' },
+  'not-met': { text: '✕ Not met', short: '✕', cls: 'eviq-not-met' },
+  'not-comparable': { text: '⚠ Not comparable', short: '⚠', cls: 'eviq-not-comparable' },
+  'no-benchmark': { text: 'No benchmark specified', short: '–', cls: 'eviq-no-benchmark' },
+  'no-value': { text: '○ Not assessable', short: '○', cls: 'eviq-no-value' },
   unavailable: { text: 'Status unavailable', short: 'N/A', cls: 'eviq-unavailable' },
 };
 
