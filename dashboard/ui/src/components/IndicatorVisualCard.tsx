@@ -90,6 +90,43 @@ function firstNonNull<T>(series: CardSeries[], pick: (p: CardPoint) => T | null 
   return null;
 }
 
+/** Groups per-series values that read identically (e.g. every DISCOM of one state sharing the
+ * same regulator-specified standard text) into one entry — so a divergent-standard card shows one
+ * lens per distinct standard actually in play, not one per series repeating the same text. */
+function groupByText(items: { label: string; value: string | null }[]): { text: string; labels: string[] }[] {
+  const order: string[] = [];
+  const byText = new Map<string, string[]>();
+  for (const { label, value } of items) {
+    if (value == null) continue;
+    if (!byText.has(value)) {
+      byText.set(value, []);
+      order.push(value);
+    }
+    byText.get(value)!.push(label);
+  }
+  return order.map((text) => ({ text, labels: byText.get(text)! }));
+}
+
+/** Compare page series labels read `DISCOM — State` (see `buildMultiDiscomAtoms`) — this collapses
+ * a list of them sharing one lens down to `DISCOM1, DISCOM2 — State` instead of repeating the same
+ * state name after every DISCOM, only splitting into several `— State` groups when the labels
+ * genuinely span more than one state. */
+function formatGroupedLabel(labels: string[]): string {
+  const order: string[] = [];
+  const byState = new Map<string, string[]>();
+  for (const l of labels) {
+    const sep = l.lastIndexOf(' — ');
+    const discom = sep === -1 ? l : l.slice(0, sep);
+    const state = sep === -1 ? '' : l.slice(sep + 3);
+    if (!byState.has(state)) {
+      byState.set(state, []);
+      order.push(state);
+    }
+    byState.get(state)!.push(discom);
+  }
+  return order.map((state) => (state ? `${byState.get(state)!.join(', ')} — ${state}` : byState.get(state)!.join(', '))).join('; ');
+}
+
 /** A plotted-but-not-comparable benchmark reads as generic "N/A" no matter which of three very
  * different situations produced it — distinguish them from the fields already extracted, without
  * inventing anything the source didn't say. */
@@ -153,6 +190,12 @@ export default function IndicatorVisualCard({ title, typeLabel, meaning, measure
 
   const reportedMeaning = measuredAsLabel ?? firstNonNull(series, (p) => p.reportedMeaning);
 
+  // one entry per distinct regulation text shared by every series (DISCOM) citing it — grouped
+  // once here rather than repeated per series, since the citation doesn't change DISCOM to DISCOM
+  // within a state. Per-year variation *within* one DISCOM's own series is a separate, unrelated
+  // case handled inline where each series renders (see `distinctRegulations` there).
+  const constantRegulations = groupByText(series.map((s) => ({ label: s.label, value: allSame(s.points.map((p) => p.regulation)) })));
+
   const datasets = series.map((s) => ({
     label: s.label,
     data: s.points.map((p) => p.value),
@@ -189,7 +232,7 @@ export default function IndicatorVisualCard({ title, typeLabel, meaning, measure
         )}
         {reportedMeaning && <ContextLens label="Measured as" value={reportedMeaning} />}
         {standardDiverges
-          ? perSeriesStandard.filter((s) => s.value != null).map((s) => <StandardLens key={s.label} text={s.value as string} label={`${s.label} — Standard`} />)
+          ? groupByText(perSeriesStandard).map((g) => <StandardLens key={g.text} text={g.text} label={`${formatGroupedLabel(g.labels)} — Standard`} />)
           : standardShared && <StandardLens text={standardShared} />}
       </div>
 
@@ -294,6 +337,9 @@ export default function IndicatorVisualCard({ title, typeLabel, meaning, measure
         const constantReason = notComparablePts.length ? allSame(notComparablePts.map((p) => p.reasonNotComparable)) : null;
         const distinctReasons = Array.from(new Set(notComparablePts.map((p) => p.reasonNotComparable).filter((r): r is string => !!r && r !== 'N/A')));
         const seriesRegulation = allSame(s.points.map((p) => p.regulation));
+        // per-YEAR regulation-citation variation within this one DISCOM's own series — unlike the
+        // constant case below (pulled out and deduped across DISCOMs), this is inherently specific
+        // to this one series and stays rendered right under its own evidence rail.
         const distinctRegulations = seriesRegulation ? [] : Array.from(new Set(s.points.map((p) => p.regulation).filter((r): r is string => !!r)));
 
         return (
@@ -329,7 +375,6 @@ export default function IndicatorVisualCard({ title, typeLabel, meaning, measure
               </div>
             )}
 
-            {seriesRegulation && <RegulationBadge text={seriesRegulation} label={series.length > 1 ? `${s.label} — source regulation` : 'Source regulation'} />}
             {distinctRegulations.length > 0 && (
               <div className="regulation-badge-group">
                 {distinctRegulations.map((r, i) => (
@@ -340,6 +385,14 @@ export default function IndicatorVisualCard({ title, typeLabel, meaning, measure
           </div>
         );
       })}
+
+      {constantRegulations.length > 0 && (
+        <div className="regulation-badge-group">
+          {constantRegulations.map((g) => (
+            <RegulationBadge key={g.text} text={g.text} label={series.length > 1 ? `${formatGroupedLabel(g.labels)} — source regulation` : 'Source regulation'} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

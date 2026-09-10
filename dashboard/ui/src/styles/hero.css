@@ -94,9 +94,10 @@
   }
 }
 
-/* ---------- pylon-lineart.png: the landing backdrop — a faint lattice/crossarm silhouette
-   behind the editorial text. Opacity is fixed (not scroll-driven) so it reads the same everywhere
-   on the page; only its parallax transform changes with scroll (see HeroSection's applyStyles). ---------- */
+/* ---------- hero-community.png: the landing backdrop — shown as the original photo (no
+   grayscale/darkening treatment) behind the editorial text. The opacity set here (0.5) is only the
+   landing/no-JS value; on desktop it's overridden inline and fades to fully transparent across the
+   scroll (see HeroSection's applyStyles), same as its parallax transform. ---------- */
 .hero-bg-fabric {
   position: absolute;
   inset: 0;
@@ -113,10 +114,9 @@
   height: 100%;
   display: block;
   object-fit: cover;
-  object-position: 72% 38%;
-  opacity: 0.05;
-  filter: blur(1.5px);
-  transform: scale(1.5);
+  object-position: 50% 42%;
+  opacity: 0.5;
+  transform: scale(1.08);
 }
 /* the left-hand pylon (near the editorial copy) reads as clutter while that copy is on top of it,
    but a hard crop looked like an edit — fade it out gradually instead, easing from full
@@ -132,35 +132,33 @@
   background: linear-gradient(to right, var(--paper) 0%, var(--paper) 28%, transparent 60%);
 }
 
+/* top-right counterpart to .tower-photo-fade's left-edge fade — same paper-color-to-transparent
+   treatment, just radiating from the top-right corner instead of sweeping in from the left edge,
+   so the ACPET logo sits on a legible backdrop that fades into the photo rather than a hard-edged
+   panel. Static (not scroll-driven) like .hero-coverage-badge itself, which it sits behind. */
+.hero-logo-fade {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: 0;
+  width: 420px;
+  max-width: 60%;
+  height: 220px;
+  background: radial-gradient(ellipse at top right, var(--paper) 0%, var(--paper) 28%, transparent 65%);
+  pointer-events: none;
+}
+
 /* top-right counterweight to the hamburger button (fixed top-left, see layout.css) — sits above
    the tower photo/ambient glow but stays static (not part of the scroll-driven reveal) since it's
    page-level context, not part of the "camera move" narrative. */
 .hero-coverage-badge {
   position: absolute;
   z-index: 2;
-  top: 20px;
-  right: var(--hero-gutter);
-  padding: 7px 16px;
-  border-radius: 999px;
-  background: rgba(216, 174, 63, 0.14);
-  border: 1px solid rgba(216, 174, 63, 0.35);
-  font-family: var(--font-condensed);
-  font-size: 12.5px;
-  letter-spacing: 0.02em;
-  color: #000;
+  top: 0;
+  right: 0;
 }
-.hero-coverage-badge strong {
-  color: #000;
-  font-size: 15px;
-  font-weight: 700;
-}
-:root[data-theme='dark'] .hero-coverage-badge {
-  background: rgba(216, 174, 63, 0.16);
-  border-color: rgba(216, 174, 63, 0.4);
-  color: #000;
-}
-:root[data-theme='dark'] .hero-coverage-badge strong {
-  color: #000;
+.hero-coverage-badge .hero-logo {
+  margin-bottom: 0;
 }
 
 /* ---------- editorial cover: headline block, anchored left. Recedes (fades, lifts left, scales
@@ -174,6 +172,11 @@
   transform: translateY(-50%);
   width: 460px;
   max-width: calc(44% - var(--hero-gutter));
+}
+.hero-logo {
+  width: 230px;
+  height: auto;
+  margin-bottom: 20px;
 }
 .hero-editorial h1 {
   color: var(--ink);
@@ -751,7 +754,7 @@
     pointer-events: auto !important;
   }
   .tower-photo-img {
-    opacity: 0.05 !important;
+    opacity: 0.5 !important;
   }
   /* editorial and map are stacked, not overlapping, on mobile — there's nothing to declutter for,
      and the scroll-driven JS that normally toggles this doesn't run below the breakpoint. */

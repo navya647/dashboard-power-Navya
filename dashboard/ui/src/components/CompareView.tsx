@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation';
 import { useData } from '@/lib/DataContext';
 import { compareColor, stateHasReportedData } from '@/lib/computations';
 import { fyLabel } from '@/lib/format';
-import { buildComparableCards, buildJurisdictionAtoms, buildUnifiedTableRows } from '@/lib/unifiedIndicators';
+import { buildMultiDiscomAtoms, buildMultiDiscomComparableCards, buildUnifiedTableRows, jurisdictionDiscomOptions, multiDiscomLegend } from '@/lib/unifiedIndicators';
+import DiscomMultiSelect from './DiscomMultiSelect';
 import IndicatorVisualCard from './IndicatorVisualCard';
 import StateShape from './StateShape';
 import UnifiedDataTable from './UnifiedDataTable';
@@ -33,15 +34,18 @@ function dataAvailabilityMessage(jurisdictions: string[], lacking: string[]): st
 /** The Compare results view — same page architecture as the State Performance page: one chart
  * gallery (always the full FY-axis trend, never re-scoped by a year control) and one Data Table
  * beneath it, with its own fiscal-year focus control that narrows only the table, exactly like
- * `StateDetail.tsx`. `buildComparableCards` matches indicators on the captured record across every
- * selected jurisdiction, never on whether a reported value exists — a jurisdiction with nothing
- * reported yet still gets its own line/status on every matching card rather than triggering a
- * different layout; see CLAUDE.md and the unified State page this mirrors. */
+ * `StateDetail.tsx`. Each selected state gets its own tickable DISCOM picker (`DiscomMultiSelect`)
+ * — no "whole state" option, so every line on the chart is always a specific, real DISCOM's own
+ * reported figures, never an invented cross-DISCOM average (see CLAUDE.md).
+ * `buildMultiDiscomComparableCards` matches indicators captured by at least one ticked DISCOM in
+ * EVERY selected state, never on whether a reported value exists — see CLAUDE.md and the unified
+ * State page this mirrors. */
 export default function CompareView({ states }: Props) {
   const { discoms, stateSpecific, geojson, loading, error } = useData();
   const router = useRouter();
   const [selectedYear, setSelectedYear] = useState<string | null>(null);
   const [showAllYears, setShowAllYears] = useState(true);
+  const [selectedDiscoms, setSelectedDiscoms] = useState<Record<string, string[]>>({});
 
   if (loading) return <p className="detail-placeholder">Loading…</p>;
   if (error || !discoms || !geojson) return <p className="detail-placeholder">Could not load dashboard data.</p>;
@@ -60,18 +64,28 @@ export default function CompareView({ states }: Props) {
   const YEARS_ASC = [...discoms.years].reverse();
   const activeYear = selectedYear ?? (discoms.years.includes('2023-24') ? '2023-24' : discoms.years[0]);
 
-  const atoms = states.flatMap((name) => buildJurisdictionAtoms(discoms, stateSpecific, name, compareColor(states, name) ?? '#999', YEARS_ASC));
-  const cards = buildComparableCards(atoms, states);
+  // ticked DISCOMs default to "every DISCOM this state has" until the viewer narrows a state's
+  // own picker — never a state-level median, just every real DISCOM line shown at once.
+  const discomOptsByState = new Map(states.map((name) => [name, jurisdictionDiscomOptions(discoms, stateSpecific, name)]));
+  const selection = states.map((name) => ({
+    state: name,
+    discomKeys: selectedDiscoms[name] ?? discomOptsByState.get(name)?.map((o) => o.key) ?? [],
+  }));
+
+  const atomsByState = buildMultiDiscomAtoms(discoms, stateSpecific, selection, YEARS_ASC);
+  const cards = buildMultiDiscomComparableCards(atomsByState);
 
   // the Data Table shows exactly the same comparable indicators as the chart gallery above it —
   // scoped to the atoms that actually made it onto a card, not every atom either jurisdiction has.
   const cardKeys = new Set(cards.map((c) => c.id));
-  const comparableAtoms = atoms.filter((a) => cardKeys.has(`${a.dataset}::${a.category}::${a.type}::${a.indicator}`));
+  const comparableAtoms = atomsByState.flatMap(({ atoms }) => atoms).filter((a) => cardKeys.has(`${a.dataset}::${a.category}::${a.type}::${a.indicator}`));
   const allTableRows = buildUnifiedTableRows(comparableAtoms);
   const tableRows = showAllYears ? allTableRows : allTableRows.filter((r) => r.fy === fyLabel(activeYear) || r.fy === 'All years');
 
   const lacking = states.filter((name) => !stateHasReportedData(discoms.discoms, name, stateSpecific));
   const availabilityMessage = dataAvailabilityMessage(states, lacking);
+  const emptyPicks = selection.filter((s) => s.discomKeys.length === 0).map((s) => s.state);
+  const legend = multiDiscomLegend(atomsByState);
 
   return (
     <div className="state-page">
@@ -83,7 +97,7 @@ export default function CompareView({ states }: Props) {
           Back to Home
         </button>
         <div className="breadcrumb">
-          India DISCOM Performance Dashboard <span>/</span> <b>Compare</b>
+          India Power Supply and Service Quality Dashboard <span>/</span> <b>Compare</b>
         </div>
       </div>
 
@@ -101,6 +115,39 @@ export default function CompareView({ states }: Props) {
           <p className="control-hint">{states.length} jurisdictions selected</p>
         </div>
       </div>
+
+      <div className="toolbar">
+        {states.map((name) => {
+          const discomOpts = discomOptsByState.get(name) ?? [];
+          return (
+            <div className="toolbar-field" key={name}>
+              <label>{name}</label>
+              <DiscomMultiSelect
+                options={discomOpts}
+                selected={selectedDiscoms[name] ?? discomOpts.map((o) => o.key)}
+                onChange={(next) => setSelectedDiscoms((prev) => ({ ...prev, [name]: next }))}
+              />
+            </div>
+          );
+        })}
+      </div>
+
+      {legend.length > 0 && (
+        <div className="discom-legend">
+          {legend.map((l) => (
+            <span className="discom-legend-item" key={l.label}>
+              <span className="discom-legend-dot" style={{ background: l.color }} />
+              {l.label}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {emptyPicks.length > 0 && (
+        <div className="no-data-box" style={{ marginTop: 12 }}>
+          Tick at least one DISCOM for {emptyPicks.join(', ')} to see comparable indicators.
+        </div>
+      )}
 
       {availabilityMessage && (
         <div className="no-data-box" style={{ marginTop: 12 }}>

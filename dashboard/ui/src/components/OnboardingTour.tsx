@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 const SLIDES = [
   {
-    title: 'Welcome to the India DISCOM Performance Dashboard',
+    title: 'Welcome to the India Power Supply and Service Quality Dashboard',
     body: 'A quick look at how to find your way around before you dive in — this only takes a few seconds.',
   },
   {

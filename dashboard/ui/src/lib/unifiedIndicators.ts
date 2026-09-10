@@ -1,4 +1,4 @@
-import { fmt, fyLabel, median } from './format';
+import { fmt, fyLabel } from './format';
 import { categoryForType, sortCategories } from './sopCategories';
 import { buildFrameworkSeries, buildSopSeries } from './sop';
 import { CATEGORICAL } from './colors';
@@ -406,95 +406,94 @@ export function buildUnifiedTableRows(atoms: UnifiedIndicatorAtom[]): UnifiedTab
   return rows;
 }
 
-/** Collapses every DISCOM atom sharing one jurisdiction's `${dataset}::${category}::${type}::${indicator}`
- * identity into a single atom representing that jurisdiction as a whole — the Compare page shows
- * one line per jurisdiction, not one per DISCOM within it (unlike the State page, which shows
- * DISCOMs as separate series on purpose). A year's value is the median of that year's non-null
- * DISCOM values, never a fabricated zero when every DISCOM is null that year and never plotted at
- * all when none of them have one; benchmark/standard/regulation context comes from whichever
- * contributing DISCOM reported a value that year (or, failing that, whichever has a record at
- * all) — cross-DISCOM divergence in these fields within one jurisdiction is not the kind of
- * divergence Compare itself needs to surface (that happens one layer up, across jurisdictions,
- * once each has already been collapsed to one atom here — see IndicatorVisualCard's per-series
- * benchmark/standard handling). */
-export function collapseAtomsToJurisdiction(atoms: UnifiedIndicatorAtom[], jurisdictionKey: string, jurisdictionLabel: string, color: string, yearsAsc: string[]): UnifiedIndicatorAtom[] {
-  const byKey = new Map<string, UnifiedIndicatorAtom[]>();
-  for (const a of atoms) {
-    const key = `${a.dataset}::${a.category}::${a.type}::${a.indicator}`;
-    if (!byKey.has(key)) byKey.set(key, []);
-    byKey.get(key)!.push(a);
+/** DISCOM options available for one jurisdiction's Compare picker — reliability DISCOMs first,
+ * then any SoP-only DISCOM, then (only for the 5 frameworks-only states) the state's own name
+ * standing in for its regulatory-framework pseudo-DISCOM. Same ordering `unifiedDiscomOrder`
+ * already gives the State Performance page's filter, reused here so the two pages never disagree.
+ * `key` stays the bare short name (matches `UnifiedIndicatorAtom.discomKey`, used for filtering);
+ * `label` is "Full name (SHORT)" wherever a full name is on record and differs from the short one
+ * — the framework-only fallback (key === the state's own name) has no full name to add. */
+export function jurisdictionDiscomOptions(discoms: DiscomsData, stateSpecific: StateSpecificData | null | undefined, jurisdiction: string): DiscomOption[] {
+  const allDs = discoms.discoms.filter((d) => d.state === jurisdiction);
+  const keys = unifiedDiscomOrder(allDs, stateSpecific, jurisdiction);
+  const fullNameByKey = new Map<string, string | null>();
+  for (const d of allDs) if (!fullNameByKey.has(d.short_name)) fullNameByKey.set(d.short_name, d.full_name);
+  for (const d of stateSpecific?.discoms.filter((d) => d.state === jurisdiction) ?? []) {
+    if (!fullNameByKey.has(d.short_name)) fullNameByKey.set(d.short_name, d.full_name);
   }
+  return keys.map((key) => {
+    const full = fullNameByKey.get(key);
+    return { key, label: full && full !== key ? `${full} (${key})` : key };
+  });
+}
 
-  const result: UnifiedIndicatorAtom[] = [];
-  for (const group of byKey.values()) {
-    const first = group[0];
-    const fyMode: UnifiedIndicatorAtom['fyMode'] = group.some((a) => a.fyMode === 'allYears') ? 'allYears' : 'perYear';
-    const points: UnifiedPoint[] = yearsAsc.map((year) => {
-      const yearPoints = group.flatMap((a) => a.points.filter((p) => p.year === year));
-      const numeric = yearPoints.filter((p) => p.value != null).map((p) => p.value as number);
-      const value = numeric.length ? median(numeric) : null;
-      const contributing = yearPoints.find((p) => p.value != null) ?? yearPoints.find((p) => p.exists) ?? yearPoints[0];
-      return {
-        year,
-        exists: yearPoints.some((p) => p.exists),
-        value,
-        benchmark: contributing?.benchmark ?? null,
-        benchmarkMeaning: contributing?.benchmarkMeaning ?? null,
-        reportedMeaning: contributing?.reportedMeaning ?? null,
-        standardSpecified: contributing?.standardSpecified ?? null,
-        comparisonPossible: contributing?.comparisonPossible ?? null,
-        standardMet: contributing?.standardMet ?? null,
-        reasonNotComparable: contributing?.reasonNotComparable ?? null,
-        regulation: contributing?.regulation ?? null,
-        reportedText: value == null ? null : first.unitSuffix(value),
-        benchmarkText: contributing?.benchmarkText ?? null,
-      };
-    });
-    result.push({
-      dataset: first.dataset,
-      discomKey: jurisdictionKey,
-      discomLabel: jurisdictionLabel,
-      discomFullLabel: null,
-      color,
-      isFramework: group.some((a) => a.isFramework),
-      category: first.category,
-      type: first.type,
-      indicator: first.indicator,
-      meaning: group.map((a) => a.meaning).find((m) => m) ?? null,
-      standardSpecified: group.map((a) => a.standardSpecified).find((m) => m) ?? null,
-      unitSuffix: first.unitSuffix,
-      yAxisLabel: first.yAxisLabel,
-      fyMode,
-      points,
-    });
+export interface JurisdictionDiscomSelection {
+  state: string;
+  discomKeys: string[];
+}
+
+/** Compare page atom builder: unlike the State Performance page's `buildUnifiedAtoms` (every
+ * DISCOM a state has, always shown as separate lines) this narrows each jurisdiction down to only
+ * the DISCOMs ticked in its own picker — one series per ticked DISCOM, never collapsed/averaged
+ * across DISCOMs (no state-level median — see CLAUDE.md, that'd be an invented derived metric),
+ * and never a fixed "whole state" line either. Colored uniquely across the *entire* selection (not
+ * just within one state) so two lines are never the same color, and labeled `DISCOM — State` so a
+ * line is unambiguous once multiple states are on the same chart. Returns one entry per state,
+ * each carrying just that state's (already colored/labeled) atoms — see
+ * `buildMultiDiscomComparableCards` for how these get matched into cards across states. */
+export function buildMultiDiscomAtoms(
+  discoms: DiscomsData,
+  stateSpecific: StateSpecificData | null | undefined,
+  selection: JurisdictionDiscomSelection[],
+  yearsAsc: string[]
+): { state: string; atoms: UnifiedIndicatorAtom[] }[] {
+  const result = selection.map(({ state, discomKeys }) => {
+    const allDs = discoms.discoms.filter((d) => d.state === state);
+    const atoms = buildUnifiedAtoms(discoms, allDs, stateSpecific, state, yearsAsc).filter((a) => discomKeys.includes(a.discomKey));
+    return { state, atoms };
+  });
+  // one color per (state, DISCOM) pair, not per atom — a DISCOM reports many indicators, each its
+  // own atom, and every one of them must land on the same color or the same line would appear a
+  // different color on every chart card.
+  const colorByKey = new Map<string, string>();
+  let i = 0;
+  for (const { state, atoms } of result) {
+    for (const atom of atoms) {
+      const ck = `${state}::${atom.discomKey}`;
+      if (!colorByKey.has(ck)) {
+        colorByKey.set(ck, CATEGORICAL[i % CATEGORICAL.length]);
+        i += 1;
+      }
+      atom.color = colorByKey.get(ck)!;
+      atom.discomLabel = `${atom.discomLabel} — ${state}`;
+    }
   }
   return result;
 }
 
-/** Every indicator this jurisdiction has ANY captured record for (a reliability canonical
- * indicator every DISCOM sheet always carries a row for, or an SoP indicator/framework entry) —
- * collapsed to one atom per indicator, colored for its slot in the Compare selection. Used to
- * build the cross-jurisdiction atom list the Compare page's cards and matching are derived from;
- * "captured" here is independent of whether a reported *value* exists (see CLAUDE.md — a
- * jurisdiction can have a real regulatory-framework listing or an all-null DISCOM sheet and still
- * have legitimate content to show). */
-export function buildJurisdictionAtoms(
-  discoms: DiscomsData,
-  stateSpecific: StateSpecificData | null | undefined,
-  jurisdiction: string,
-  color: string,
-  yearsAsc: string[]
-): UnifiedIndicatorAtom[] {
-  const allDs = discoms.discoms.filter((d) => d.state === jurisdiction);
-  const atoms = buildUnifiedAtoms(discoms, allDs, stateSpecific, jurisdiction, yearsAsc);
-  return collapseAtomsToJurisdiction(atoms, jurisdiction, jurisdiction, color, yearsAsc);
+/** One {label, color} entry per (state, DISCOM) actually contributing to `buildMultiDiscomAtoms`'s
+ * output — the Compare page's page-level legend, so every DISCOM's color is named once instead of
+ * only inside each chart card's own (repeated, and hidden when a card has just one series)
+ * legend. */
+export function multiDiscomLegend(atomsByState: { state: string; atoms: UnifiedIndicatorAtom[] }[]): { label: string; color: string }[] {
+  const seen = new Map<string, string>();
+  for (const { atoms } of atomsByState) {
+    for (const atom of atoms) {
+      if (!seen.has(atom.discomLabel)) seen.set(atom.discomLabel, atom.color);
+    }
+  }
+  return Array.from(seen, ([label, color]) => ({ label, color }));
 }
 
-/** From a set of already-collapsed per-jurisdiction atoms (see `buildJurisdictionAtoms`), the
- * cards for indicators captured by EVERY selected jurisdiction — the Compare page's "automatic
- * indicator matching" (see CLAUDE.md/spec): matched on the captured record's identity, never on
- * whether a reported value exists, so an indicator stays visible even when one or all selected
- * jurisdictions currently have nothing reported for it. */
-export function buildComparableCards(atoms: UnifiedIndicatorAtom[], jurisdictions: string[]): UnifiedCard[] {
-  return buildUnifiedCards(atoms).filter((c) => jurisdictions.every((j) => c.series.some((s) => s.label === j)));
+/** From `buildMultiDiscomAtoms`'s per-state atom lists, the cards for indicators captured by at
+ * least one ticked DISCOM in EVERY selected state — the multi-DISCOM equivalent of the old
+ * single-line-per-state `buildComparableCards` (see CLAUDE.md/spec: matched on the captured
+ * record's identity, never on whether a reported value exists). A state with zero DISCOMs ticked
+ * contributes no keys, so nothing can match — callers should prompt the viewer to tick at least
+ * one DISCOM per state rather than rendering an empty gallery unexplained. */
+export function buildMultiDiscomComparableCards(atomsByState: { state: string; atoms: UnifiedIndicatorAtom[] }[]): UnifiedCard[] {
+  const keysByState = atomsByState.map(({ atoms }) => new Set(atoms.map((a) => `${a.dataset}::${a.category}::${a.type}::${a.indicator}`)));
+  const commonKeys = keysByState.length ? keysByState.reduce((acc, s) => new Set([...acc].filter((k) => s.has(k)))) : new Set<string>();
+  const flat = atomsByState.flatMap(({ atoms }) => atoms);
+  return buildUnifiedCards(flat).filter((c) => commonKeys.has(c.id));
 }

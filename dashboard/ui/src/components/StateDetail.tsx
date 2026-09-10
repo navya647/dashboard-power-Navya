@@ -62,7 +62,7 @@ export default function StateDetail({ name }: { name: string }) {
             Back to Home
           </button>
           <div className="breadcrumb">
-            India DISCOM Performance Dashboard <span>/</span> <b>{name}</b>
+            India Power Supply and Service Quality Dashboard <span>/</span> <b>{name}</b>
           </div>
         </div>
 
@@ -113,7 +113,7 @@ export default function StateDetail({ name }: { name: string }) {
           Back to Home
         </button>
         <div className="breadcrumb">
-          India DISCOM Performance Dashboard <span>/</span> <b>{name}</b>
+          India Power Supply and Service Quality Dashboard <span>/</span> <b>{name}</b>
         </div>
       </div>
 

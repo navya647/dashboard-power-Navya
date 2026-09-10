@@ -142,11 +142,14 @@ export default function HeroSection({
     }
 
     function applyStyles(p: number) {
-      // pylon texture: opacity stays fixed (set in CSS) so it reads the same everywhere on the
-      // page. A slow, small parallax drift (opposite direction to the map's own rightward-to-
-      // centered travel) gives the backdrop a sense of depth rather than reading as a flat
-      // sticker behind the map.
-      pylonImg!.style.transform = reduceMotion ? 'scale(1.5)' : `scale(1.5) translateX(${lerp(0, -22, easeInOutCubic(p))}px)`;
+      // pylon texture: grows more transparent across the scroll range (from its CSS base opacity
+      // down to a faint minimum, never fully invisible — it's still the page's background) as the
+      // map takes over the view, on top of a slow, small parallax drift (opposite direction to the
+      // map's own rightward-to-centered travel) that gives the backdrop a sense of depth rather
+      // than reading as a flat sticker behind the map.
+      const bgT = easeInOutCubic(p);
+      pylonImg!.style.opacity = String(lerp(0.5, 0.15, bgT));
+      pylonImg!.style.transform = reduceMotion ? 'scale(1.08)' : `scale(1.08) translateX(${lerp(0, -22, bgT)}px)`;
 
       // phase 1: editorial recedes — fades, lifts left, scales down slightly — over 12–45%.
       const editorialT = easeInOutCubic(remap(p, 0.12, 0.45));
@@ -253,21 +256,20 @@ export default function HeroSection({
         <div className="hero-bg-fabric" aria-hidden="true">
           <div className="tower-photo-layer">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/pylon-lineart.png" alt="" className="tower-photo-img" ref={pylonImgRef} />
+            <img src="/hero-community.png" alt="" className="tower-photo-img" ref={pylonImgRef} />
           </div>
           <div className="tower-photo-fade" ref={towerFadeRef} />
         </div>
         <div className="hero-ambient-glow" aria-hidden="true" />
+        <div className="hero-logo-fade" aria-hidden="true" />
 
         <div className="hero-coverage-badge">
-          <strong>--%</strong> of India&rsquo;s population covered
+          {/* eslint-disable-next-line @next/next/no-img-element -- static export has no Image Optimization API */}
+          <img src="/acpet-logo.png" alt="ACPET" width={208} height={69} className="hero-logo" />
         </div>
 
         <div className="hero-editorial" ref={editorialRef}>
-          <h1>India DISCOM Performance Dashboard</h1>
-          <div className="hero-scope">
-            <span className="scope-pill scope-pill--a">India&rsquo;s First Power Quality Dashboard</span>
-          </div>
+          <h1>India Power Supply and Service Quality Dashboard</h1>
           <p className="lede">
             Understanding how electricity distribution companies (DISCOMs) across India perform against regulator-specified Standards of
             Performance, and enabling comparison across jurisdictions and utilities.
