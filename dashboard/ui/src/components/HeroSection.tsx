@@ -265,7 +265,9 @@ export default function HeroSection({
 
         <div className="hero-coverage-badge">
           {/* eslint-disable-next-line @next/next/no-img-element -- static export has no Image Optimization API */}
-          <img src="/acpet-logo.png" alt="ACPET" width={208} height={69} className="hero-logo" />
+          <img src="/acpet-logo.png" alt="ACPET" width={208} height={69} className="hero-logo hero-logo-light" />
+          {/* eslint-disable-next-line @next/next/no-img-element -- static export has no Image Optimization API */}
+          <img src="/acpet-logo-white.png" alt="ACPET" width={208} height={69} className="hero-logo hero-logo-dark" />
         </div>
 
         <div className="hero-editorial" ref={editorialRef}>

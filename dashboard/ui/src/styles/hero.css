@@ -178,6 +178,15 @@
   height: auto;
   margin-bottom: 20px;
 }
+.hero-logo-dark {
+  display: none;
+}
+:root[data-theme='dark'] .hero-logo-light {
+  display: none;
+}
+:root[data-theme='dark'] .hero-logo-dark {
+  display: block;
+}
 .hero-editorial h1 {
   color: var(--ink);
   font-family: var(--font-display);

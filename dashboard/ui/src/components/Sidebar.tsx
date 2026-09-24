@@ -75,7 +75,9 @@ export default function Sidebar() {
       <div className="sidebar-inner">
       <div className="brand">
         {/* eslint-disable-next-line @next/next/no-img-element -- static export has no Image Optimization API */}
-        <img src="/acpet-logo.png" alt="ACPET" width={208} height={69} className="brand-logo" />
+        <img src="/acpet-logo.png" alt="ACPET" width={208} height={69} className="brand-logo brand-logo-light" />
+        {/* eslint-disable-next-line @next/next/no-img-element -- static export has no Image Optimization API */}
+        <img src="/acpet-logo-white.png" alt="ACPET" width={208} height={69} className="brand-logo brand-logo-dark" />
       </div>
       <nav className="sidenav">
         {NAV.map((item) => {

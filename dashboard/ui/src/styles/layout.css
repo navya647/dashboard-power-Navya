@@ -36,6 +36,15 @@
   width: 100%;
   height: auto;
 }
+.brand-logo-dark {
+  display: none;
+}
+:root[data-theme='dark'] .brand-logo-light {
+  display: none;
+}
+:root[data-theme='dark'] .brand-logo-dark {
+  display: block;
+}
 nav.sidenav {
   display: flex;
   flex-direction: column;
