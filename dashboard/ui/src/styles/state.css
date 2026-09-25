@@ -210,6 +210,17 @@
   color: var(--ink);
   background: var(--panel);
 }
+/* `.toolbar`'s own fadeInUp animation (targeting opacity/transform) makes every `.toolbar` its own
+   stacking context, which normally doesn't matter — but on the Compare page two `.toolbar` rows
+   sit stacked (DISCOM pickers, then Indicator Category/Type/Indicator), and the first row's
+   DiscomMultiSelect dropdown (z-index: 20) is scoped *inside* that first stacking context, so it
+   can't rise above the second row's opaque background regardless of its own z-index. Raising the
+   first row's own stacking context above the second's (which stays at the implicit default)
+   fixes it without touching the shared `.toolbar` rule other pages rely on. */
+.toolbar--raised {
+  position: relative;
+  z-index: 2;
+}
 .toolbar-field--year {
   margin-left: auto;
 }

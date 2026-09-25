@@ -45,6 +45,42 @@ export interface SeriesBenchmark {
   label: string;
   color: string;
   value: number | null;
+  regulator: string | null;
+}
+
+/** State Electricity Regulatory Commission short names, keyed by the exact state name used
+ * throughout this codebase (discoms2.json's state_order) — the standard abbreviation each
+ * commission itself uses, cross-checked against the actual `regulation` citation text each state's
+ * source rows carry (e.g. Rajasthan's own citations already read "RERC ("). Not a derived/invented
+ * value: every entry names a real, public regulatory body, used only to label an existing
+ * benchmark line more specifically than a generic "Benchmark". */
+const STATE_REGULATOR_ABBR: Record<string, string> = {
+  Maharashtra: 'MERC',
+  Gujarat: 'GERC',
+  Rajasthan: 'RERC',
+  'Madhya Pradesh': 'MPERC',
+  Odisha: 'OERC',
+  Telangana: 'TSERC',
+  Karnataka: 'KERC',
+  'Tamil Nadu': 'TNERC',
+  Bihar: 'BERC',
+  'West Bengal': 'WBERC',
+  'Uttar Pradesh': 'UPERC',
+  'Andhra Pradesh': 'APERC',
+};
+
+/** Matches a state's name (or, for Odisha, its source data's older spelling "Orissa") against a
+ * point's own regulation citation text — never guesses a regulator for a row that doesn't
+ * literally name one. */
+function regulatorFromRegulationText(text: string | null): string | null {
+  if (!text) return null;
+  const lower = text.toLowerCase();
+  for (const [state, abbr] of Object.entries(STATE_REGULATOR_ABBR)) {
+    if (lower.includes(state.toLowerCase())) return abbr;
+  }
+  if (lower.includes('orissa')) return STATE_REGULATOR_ABBR.Odisha;
+  if (lower.includes('rerc')) return STATE_REGULATOR_ABBR.Rajasthan;
+  return null;
 }
 
 /** Most-frequent numeric benchmark among a single series' points that are actually marked
@@ -70,7 +106,8 @@ export function perSeriesComparableBenchmarks(series: CardSeries[]): SeriesBench
         bestN = n;
       }
     }
-    return { label: s.label, color: s.color, value: best };
+    const regulator = regulatorFromRegulationText(perSeriesValue(s, (p) => p.regulation));
+    return { label: s.label, color: s.color, value: best, regulator };
   });
 }
 
@@ -183,6 +220,9 @@ export default function IndicatorVisualCard({ title, typeLabel, meaning, measure
   const bench = distinctBenchValues.length === 1 ? distinctBenchValues[0] : null;
   const benchmarkMeaning = firstNonNull(series, (p) => p.benchmarkMeaning);
   const benchmarkValueText = benchmarkLensValue(series, bench, unitSuffix);
+  // when every series agrees on one benchmark value, they're only ever the same regulator too
+  // (states never share a commission) — so any series' own regulation citation names it.
+  const sharedRegulator = bench != null ? regulatorFromRegulationText(firstNonNull(series, (p) => p.regulation)) : null;
 
   const perSeriesStandard = series.map((s) => ({ label: s.label, value: perSeriesValue(s, (p) => p.standardSpecified) }));
   const standardShared = allSame(perSeriesStandard.map((x) => x.value));
@@ -271,7 +311,7 @@ export default function IndicatorVisualCard({ title, typeLabel, meaning, measure
                                 borderDash: [6, 4],
                                 label: {
                                   display: true,
-                                  content: `${b.label}: ${unitSuffix(b.value as number)}`,
+                                  content: `${b.regulator ? `${b.regulator} — ` : ''}${b.label}: ${unitSuffix(b.value as number)}`,
                                   position: 'start' as const,
                                   backgroundColor: b.color,
                                   color: '#fff',
@@ -293,7 +333,7 @@ export default function IndicatorVisualCard({ title, typeLabel, meaning, measure
                               borderDash: [6, 4],
                               label: {
                                 display: true,
-                                content: 'Benchmark: ' + unitSuffix(bench),
+                                content: (sharedRegulator ? `${sharedRegulator} benchmark` : 'Benchmark') + ': ' + unitSuffix(bench),
                                 position: 'start' as const,
                                 backgroundColor: '#b1441c',
                                 color: '#fff',

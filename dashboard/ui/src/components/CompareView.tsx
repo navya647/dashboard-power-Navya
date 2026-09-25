@@ -6,7 +6,17 @@ import { useRouter } from 'next/navigation';
 import { useData } from '@/lib/DataContext';
 import { compareColor, stateHasReportedData } from '@/lib/computations';
 import { fyLabel } from '@/lib/format';
-import { buildMultiDiscomAtoms, buildMultiDiscomComparableCards, buildUnifiedTableRows, jurisdictionDiscomOptions, multiDiscomLegend } from '@/lib/unifiedIndicators';
+import {
+  buildMultiDiscomAtoms,
+  buildMultiDiscomComparableCards,
+  buildUnifiedTableRows,
+  categoryOptions,
+  indicatorOptions,
+  jurisdictionDiscomOptions,
+  matchesFilters,
+  multiDiscomLegend,
+  typeOptions,
+} from '@/lib/unifiedIndicators';
 import DiscomMultiSelect from './DiscomMultiSelect';
 import IndicatorVisualCard from './IndicatorVisualCard';
 import StateShape from './StateShape';
@@ -46,6 +56,12 @@ export default function CompareView({ states }: Props) {
   const [selectedYear, setSelectedYear] = useState<string | null>(null);
   const [showAllYears, setShowAllYears] = useState(true);
   const [selectedDiscoms, setSelectedDiscoms] = useState<Record<string, string[]>>({});
+  // Same cascading Indicator Category / Type / Indicator narrowing as the State Performance
+  // page's toolbar (StateDetail.tsx) — DISCOM selection is handled per-jurisdiction by the
+  // pickers below instead, so there's no "Discom" filter here.
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedType, setSelectedType] = useState('all');
+  const [selectedIndicator, setSelectedIndicator] = useState('all');
 
   if (loading) return <p className="detail-placeholder">Loading…</p>;
   if (error || !discoms || !geojson) return <p className="detail-placeholder">Could not load dashboard data.</p>;
@@ -73,19 +89,33 @@ export default function CompareView({ states }: Props) {
   }));
 
   const atomsByState = buildMultiDiscomAtoms(discoms, stateSpecific, selection, YEARS_ASC);
-  const cards = buildMultiDiscomComparableCards(atomsByState);
+
+  // Category/Type/Indicator option lists cascade off the ticked-DISCOM atoms across every
+  // selected jurisdiction combined — same narrowing pattern as StateDetail.tsx's toolbar.
+  const allAtoms = atomsByState.flatMap(({ atoms }) => atoms);
+  const categoryOpts = categoryOptions(allAtoms);
+  const categoryScope = allAtoms.filter((a) => selectedCategory === 'all' || a.category === selectedCategory);
+  const typeOpts = typeOptions(categoryScope);
+  const typeScope = categoryScope.filter((a) => selectedType === 'all' || a.type === selectedType);
+  const indicatorOpts = indicatorOptions(typeScope);
+
+  const filteredAtomsByState = atomsByState.map(({ state, atoms }) => ({
+    state,
+    atoms: atoms.filter((a) => matchesFilters(a, { discom: 'all', category: selectedCategory, type: selectedType, indicator: selectedIndicator })),
+  }));
+  const cards = buildMultiDiscomComparableCards(filteredAtomsByState);
 
   // the Data Table shows exactly the same comparable indicators as the chart gallery above it —
   // scoped to the atoms that actually made it onto a card, not every atom either jurisdiction has.
   const cardKeys = new Set(cards.map((c) => c.id));
-  const comparableAtoms = atomsByState.flatMap(({ atoms }) => atoms).filter((a) => cardKeys.has(`${a.dataset}::${a.category}::${a.type}::${a.indicator}`));
+  const comparableAtoms = filteredAtomsByState.flatMap(({ atoms }) => atoms).filter((a) => cardKeys.has(`${a.dataset}::${a.category}::${a.type}::${a.indicator}`));
   const allTableRows = buildUnifiedTableRows(comparableAtoms);
   const tableRows = showAllYears ? allTableRows : allTableRows.filter((r) => r.fy === fyLabel(activeYear) || r.fy === 'All years');
 
   const lacking = states.filter((name) => !stateHasReportedData(discoms.discoms, name, stateSpecific));
   const availabilityMessage = dataAvailabilityMessage(states, lacking);
   const emptyPicks = selection.filter((s) => s.discomKeys.length === 0).map((s) => s.state);
-  const legend = multiDiscomLegend(atomsByState);
+  const legend = multiDiscomLegend(filteredAtomsByState);
 
   return (
     <div className="state-page">
@@ -116,7 +146,7 @@ export default function CompareView({ states }: Props) {
         </div>
       </div>
 
-      <div className="toolbar">
+      <div className="toolbar toolbar--raised">
         {states.map((name) => {
           const discomOpts = discomOptsByState.get(name) ?? [];
           return (
@@ -130,6 +160,57 @@ export default function CompareView({ states }: Props) {
             </div>
           );
         })}
+      </div>
+
+      <div className="toolbar">
+        <div className="toolbar-field">
+          <label>Indicator Category</label>
+          <select
+            value={selectedCategory}
+            onChange={(e) => {
+              setSelectedCategory(e.target.value);
+              setSelectedType('all');
+              setSelectedIndicator('all');
+            }}
+          >
+            <option value="all">All Categories</option>
+            {categoryOpts.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="toolbar-field">
+          <label>Indicator Type</label>
+          <select
+            value={selectedType}
+            onChange={(e) => {
+              setSelectedType(e.target.value);
+              setSelectedIndicator('all');
+            }}
+          >
+            <option value="all">All Types</option>
+            {typeOpts.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="toolbar-field">
+          <label>Indicator</label>
+          <select value={selectedIndicator} onChange={(e) => setSelectedIndicator(e.target.value)}>
+            <option value="all">All Indicators</option>
+            {indicatorOpts.map((i) => (
+              <option key={i} value={i}>
+                {i}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {legend.length > 0 && (

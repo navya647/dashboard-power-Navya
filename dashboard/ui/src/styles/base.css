@@ -133,6 +133,57 @@ h3 {
   }
 }
 
+/* Theme toggle icon flip: the sun/moon glyph gets its own coin-flip morph, independent of the
+   page-wide sweep above. Named as its own view-transition group so it animates on its own
+   keyframes instead of inheriting the root's clip-path — a click is a discrete, non-gestural
+   action, so the small overshoot here (theme-icon-in's 60% keyframe) is a deliberate one-off
+   flourish, not the momentum-only bounce apple-design reserves for dragged/flicked elements. */
+@media (prefers-reduced-motion: no-preference) {
+  .theme-toggle-icon {
+    view-transition-name: theme-icon;
+  }
+  ::view-transition-old(theme-icon),
+  ::view-transition-new(theme-icon) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+  ::view-transition-old(theme-icon) {
+    animation: theme-icon-out 320ms var(--ease) forwards;
+  }
+  ::view-transition-new(theme-icon) {
+    animation: theme-icon-in 420ms var(--ease) forwards;
+  }
+  /* Fallback for browsers without the View Transitions API (ThemeToggle.tsx key-remounts
+     .theme-toggle-icon on toggle so this replays every time). */
+  .theme-toggle-icon {
+    animation: theme-icon-in 420ms var(--ease);
+  }
+}
+@keyframes theme-icon-out {
+  from {
+    transform: rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: rotate(-110deg) scale(0.4);
+    opacity: 0;
+  }
+}
+@keyframes theme-icon-in {
+  from {
+    transform: rotate(110deg) scale(0.4);
+    opacity: 0;
+  }
+  60% {
+    transform: rotate(-8deg) scale(1.08);
+    opacity: 1;
+  }
+  to {
+    transform: rotate(0deg) scale(1);
+    opacity: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-in {
     animation: none;
