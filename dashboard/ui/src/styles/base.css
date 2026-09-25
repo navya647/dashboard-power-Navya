@@ -106,6 +106,33 @@ h3 {
 /* Reduced motion (apple-design §14): keep feedback, drop the large/spatial motion — cross-fade
    instead of slide, no cascade stagger, no elastic overshoot. Color/opacity changes that aid
    comprehension (hover states, the sidebar's own translateX) are left alone. */
+/* Theme toggle sweep (apple-design §7 spatial consistency, §12 materialize): the View Transitions
+   API snapshots the page before/after the data-theme flip; we replace its default cross-fade with
+   a hard left-to-right wipe so the incoming theme reads as sweeping across, not dissolving in.
+   ::view-transition-new(root) paints above ::view-transition-old(root) by default, so animating
+   only the new layer's clip-path from fully-hidden to fully-shown is enough — the old layer just
+   sits static underneath until it's covered. Skipped entirely (ThemeToggle.tsx) when the API is
+   unsupported or the user prefers reduced motion, falling back to the plain attribute flip, which
+   still gets the existing 200ms color cross-fade on body above. */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+  ::view-transition-new(root) {
+    animation: theme-sweep 520ms var(--ease);
+  }
+}
+@keyframes theme-sweep {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-in {
     animation: none;
@@ -133,6 +160,10 @@ h3 {
 @media (prefers-reduced-transparency: reduce) {
   .control-panel {
     background: color-mix(in srgb, var(--panel) 98%, transparent);
+    backdrop-filter: none;
+  }
+  .sidebar {
+    background: var(--sidebar-bg);
     backdrop-filter: none;
   }
   .tour-scrim {

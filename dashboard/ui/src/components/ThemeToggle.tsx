@@ -23,8 +23,7 @@ export default function ThemeToggle() {
     setTheme(currentTheme());
   }, []);
 
-  function toggle() {
-    const next: Theme = theme === 'dark' ? 'light' : 'dark';
+  function applyTheme(next: Theme) {
     setTheme(next);
     document.documentElement.setAttribute('data-theme', next);
     try {
@@ -32,6 +31,16 @@ export default function ThemeToggle() {
     } catch {
       // ignore — worst case the preference doesn't persist across visits
     }
+  }
+
+  function toggle() {
+    const next: Theme = theme === 'dark' ? 'light' : 'dark';
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion || !document.startViewTransition) {
+      applyTheme(next);
+      return;
+    }
+    document.startViewTransition(() => applyTheme(next));
   }
 
   const isDark = theme === 'dark';
