@@ -2,8 +2,10 @@
   min-height: 100vh;
 }
 
+/* Always visible — a permanent part of the layout, not a drawer with an open/closed state. No
+   transform/transition needed since there's nothing to slide in or out. */
 .sidebar {
-  width: 248px;
+  width: 95px;
   background: color-mix(in srgb, var(--sidebar-bg) 88%, transparent);
   border-right: 1px solid var(--line);
   position: fixed;
@@ -12,17 +14,11 @@
   height: 100vh;
   box-shadow: var(--shadow-lg);
   z-index: 5;
-  transform: translateX(-100%);
-  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
   backdrop-filter: blur(24px) saturate(1.3);
 }
 
-.sidebar.open {
-  transform: translateX(0);
-}
-
 .sidebar-inner {
-  width: 248px;
+  width: 95px;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -31,7 +27,7 @@
 .brand {
   display: flex;
   align-items: center;
-  padding: 68px 20px 22px;
+  padding: 68px 3px 22px;
   border-bottom: 1px solid var(--line);
 }
 .brand-logo {
@@ -50,63 +46,79 @@
 nav.sidenav {
   display: flex;
   flex-direction: column;
-  padding: 16px 12px;
+  padding: 12px 6px;
   gap: 4px;
 }
+/* Icon above label, centered — each item reads as its own small tile rather than a horizontal
+   row, closer to a compact app-rail nav than a list of links. No white-space:nowrap here: at this
+   width a longer label ("Accessibility", "Methodology") wraps onto a second line instead of
+   overflowing, which this stacked layout accommodates fine (unlike the old side-by-side one). */
 nav.sidenav a {
   all: unset;
   box-sizing: border-box;
+  position: relative;
   cursor: pointer;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
-  font-size: 14.5px;
-  color: var(--muted);
+  gap: 5px;
+  width: 100%;
+  padding: 10px 4px;
+  font-size: 10.5px;
+  line-height: 1.25;
+  text-align: center;
+  /* a touch darker/brighter than the shared --muted secondary-text color (kept as its own rule
+     here rather than changing --muted itself, which is used for secondary text everywhere else). */
+  color: color-mix(in srgb, var(--muted) 55%, var(--ink) 45%);
   border-radius: 10px;
   font-family: inherit;
   transition: background 180ms var(--ease), color 180ms var(--ease);
 }
+nav.sidenav a svg {
+  width: 17px;
+  height: 17px;
+}
 nav.sidenav a:hover {
-  background: rgba(21, 24, 31, 0.05);
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
   color: var(--ink);
 }
 nav.sidenav a:active {
-  background: rgba(21, 24, 31, 0.09);
+  background: color-mix(in srgb, var(--ink) 9%, transparent);
   color: var(--ink);
 }
+/* A left accent bar + a subtle wash (not a solid fill), instead of the old full-color pill —
+   reads as "this one's selected" without the icon/label needing to switch to white-on-blue. */
 nav.sidenav a.active {
-  background: var(--accent);
-  color: #fff;
-  font-weight: 600;
-  box-shadow: var(--shadow-md);
-}
-nav.sidenav svg {
-  display: flex;
-  width: 18px;
-  height: 18px;
-  flex: 0 0 18px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-left: 1.5px solid var(--accent);
+  border-radius: 0 10px 10px 0;
+  color: var(--ink);
+  font-weight: 700;
 }
 
 .sidebar-foot {
   margin-top: auto;
-  padding: 14px 20px 20px;
+  padding: 12px 6px 16px;
   border-top: 1px solid var(--line);
 }
+/* Stacked, matching the nav items above it — a horizontal pill (icon beside "Light"/"Dark") no
+   longer fits this width without wrapping awkwardly inside a pill shape. */
 .theme-toggle {
   all: unset;
   box-sizing: border-box;
   cursor: pointer;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 5px;
   width: 100%;
-  padding: 9px 14px;
-  font-size: 13.5px;
+  padding: 10px 4px;
+  font-size: 10.5px;
   font-weight: 500;
+  text-align: center;
   color: var(--muted);
   border: 1px solid var(--line);
-  border-radius: var(--radius-pill);
+  border-radius: 10px;
   transition: color 180ms var(--ease), border-color 180ms var(--ease), background-color 180ms var(--ease);
 }
 .theme-toggle:hover {
@@ -117,78 +129,23 @@ nav.sidenav svg {
   flex: none;
 }
 
+/* Sidebar has no closed state at all, at any width — content is always pushed over by exactly its
+   width. main.app-main has no explicit width, so per the normal CSS box model its width is already
+   computed to fill whatever space is left after margins — margin-left narrows it by exactly the
+   sidebar's width, no JS measurement needed. Deliberately not `transform: scale()`: this page's
+   home route hosts HeroSection's scroll-scrubbed map reveal, which measures its own real,
+   untransformed geometry (getBoundingClientRect, window.innerHeight) to drive its animation — a
+   transform on this ancestor would throw that off and visibly clip the map mid-scroll. A
+   margin-left reflow only changes width, never height/position, so that measurement is untouched;
+   the hero's own layout is already percentage/max-width based (the map stage is 82% width, the
+   editorial text box caps at 44%), so it naturally shrinks to fit instead of needing to be scaled
+   to fit. */
 main.app-main {
   padding: 72px 44px 56px;
+  margin-left: 95px;
   display: flex;
   flex-direction: column;
   gap: 30px;
-}
-
-/* when the sidebar pushes in, give the content room instead of letting the drawer sit on top of
-   it — a plain margin-left push, not a transform. main.app-main has no explicit width, so per the
-   normal CSS box model its width is already computed to fill whatever space is left after
-   margins — pushing it right with margin-left automatically narrows it by exactly the drawer's
-   width, no JS measurement needed. Deliberately not `transform: scale()`: this page's home route
-   hosts HeroSection's scroll-scrubbed map reveal, which measures its own real, untransformed
-   geometry (getBoundingClientRect, window.innerHeight) to drive its animation — a transform on
-   this ancestor would throw that off and visibly clip the map mid-scroll. A margin-left reflow
-   only changes width, never height/position, so that measurement is untouched; the hero's own
-   layout is already percentage/max-width based (the map stage is 82% width, the editorial text
-   box caps at 44%), so it naturally shrinks to fit instead of needing to be scaled to fit.
-   Reverts the moment the drawer closes. Desktop only — below the sidebar's own
-   no-narrower-breakpoint width, the drawer covers most of the screen anyway, so this stays an
-   overlay there instead of squeezing content into a sliver. */
-@media (min-width: 981px) {
-  main.app-main {
-    transition: margin-left 260ms cubic-bezier(0.22, 1, 0.36, 1);
-  }
-  body.sidebar-open main.app-main {
-    margin-left: 248px;
-  }
-}
-
-.menu-toggle {
-  all: unset;
-  display: flex;
-  flex-direction: column;
-  position: fixed;
-  top: 16px;
-  left: 16px;
-  z-index: 6;
-  width: 40px;
-  height: 40px;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  background: var(--charcoal);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-md);
-  cursor: pointer;
-  transition: transform 120ms var(--ease);
-}
-
-.menu-toggle:active {
-  transform: scale(0.92);
-}
-
-.menu-toggle .bar {
-  width: 20px;
-  height: 2px;
-  border-radius: 2px;
-  background: #fff;
-  transition: transform 220ms var(--ease), opacity 220ms var(--ease);
-}
-
-.menu-toggle.open .bar:nth-child(1) {
-  transform: translateY(7px) rotate(45deg);
-}
-
-.menu-toggle.open .bar:nth-child(2) {
-  opacity: 0;
-}
-
-.menu-toggle.open .bar:nth-child(3) {
-  transform: translateY(-7px) rotate(-45deg);
 }
 
 @media (max-width: 980px) {
@@ -373,7 +330,7 @@ main.app-main {
 }
 
 .tour-btn--ghost:disabled {
-  opacity: 0.4;
+  opacity: var(--disabled-opacity);
   cursor: default;
 }
 
