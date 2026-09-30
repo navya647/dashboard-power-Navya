@@ -45,6 +45,22 @@
   /* HUD */
   --street-ok: #6fd49a; --street-outage: #ff6b5e;
 }
+/* Light theme: the same street at early evening instead of night, so it sits with the light page:
+   brighter grass, road and paving, softer unlit windows, and a gentler off-state shade. Done by
+   overriding colours rather than a CSS brightness filter, which would force the whole animated
+   SVG to re-render every frame. The warm window glow still reads because the ground stays
+   mid-toned. */
+:root:not([data-theme='dark']) .street-layer {
+  --lawn: #6e9270; --lawn-dark: #648767; --soil: #7a5f4c;
+  --paving: #b4b6bc; --paving-line: #9ea0a7; --kerb: #d6d6d9;
+  --road: #4a4f5b; --road-patch: #535866; --road-line: #eee8cf; --road-yellow: #e2bf55;
+  --hedge-top: #6f9a77; --hedge-left: #5c8564; --hedge-front: #4d7355;
+  --palm-1: #3e7049; --palm-2: #5a9464; --palm-trunk: #8f7760; --palm-ring: #72604c;
+  --pole-light: #a39381; --pole-dark: #74675a; --wire: #2a303c;
+  --win-off: #56637a; --shade: #28304a;
+}
+:root:not([data-theme='dark']) .street-scene .off .shade { opacity: 0.22; }
+
 .street-scene {
   position: absolute;
   inset: 0;

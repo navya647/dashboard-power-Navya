@@ -408,6 +408,15 @@ What shipped (the plan below is kept for history; decisions that differ from it 
     `OnboardingTour`, `ThemeToggle`).
   - To publish: push `ui-street-hero` and open a PR into `main`, or merge locally and push. Only
     do this when the user says so.
+- **Dark mode is the default** (2026-09-30):
+  - `<html data-theme="dark">` in `layout.tsx`, and `ThemeToggle` now starts from `'dark'`.
+  - The storage key moved to `acpet-theme-v2`, which resets old saved choices once so everyone
+    starts in dark; the toggle persists normally after that.
+  - Keep `THEME_INIT_SCRIPT` and `ThemeToggle`'s `STORAGE_KEY` in sync.
+- **Light-theme street:** `street.css` overrides the palette under `:root:not([data-theme='dark'])`
+  for an early-evening look: brighter lawn, road, paving, hedges, palms and poles, softer unlit
+  windows, and the off-state shade at 0.22. This uses colours, not a brightness filter, for
+  performance.
 - **Not done yet:** `npm run build` (static export) was not run because the dev server was using
   the project. Run it before deploying.
 

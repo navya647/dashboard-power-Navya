@@ -102,7 +102,7 @@
    as an already-dark-on-light or light-on-dark palette and are documented as "reserved, never
    themed" above — re-deriving them per theme would risk breaking that validation. Applied via
    `data-theme` on <html>, set by the blocking init script in layout.tsx (no flash on load) and
-   toggled by ThemeToggle in the sidebar; persisted to localStorage under 'acpet-theme'. */
+   toggled by ThemeToggle in the sidebar; persisted to localStorage under 'acpet-theme-v2' (dark by default). */
 :root[data-theme='dark'] {
   /* Lifted off near-black toward a softer charcoal — less harsh to look at for long stretches,
      and it gives --panel more headroom above --paper so cards still read as raised without
