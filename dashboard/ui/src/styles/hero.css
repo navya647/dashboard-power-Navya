@@ -14,7 +14,12 @@
   /* 250vh (was 190vh): the landing view now opens on the animated street, so the street → map
      hand-off needs a longer, more gradual scrub to feel smooth */
   height: 250vh;
-  margin: -72px -44px 0;
+  /* Bottom margin cancels main.app-main's own 56px bottom padding, same as the top/side values
+     already cancel its top/side padding — this is the only content on the page (HeroSection is
+     #page-overview's sole child), so without this, once the sticky pin finally releases at the
+     very end of the track, the reveal is immediately followed by a plain blank strip of
+     that padding with nothing in it before the page truly ends. */
+  margin: -72px -44px -56px;
 }
 /* no padding here: every child is position:absolute (there's no in-flow content at all), and a
    padding box only ever constrains in-flow content or gets used as the containing block for
@@ -32,6 +37,13 @@
   background-color: var(--paper);
   box-sizing: border-box;
   --hero-gutter: 48px;
+  /* the settled 3-column layout: Compare panel (left) — map — legend (right). Panel and legend
+     each sit in a same-width column the same distance from their own edge, so the map's own box
+     (see .hero-map-stage) is bordered by an identical gap on both sides, whether or not the
+     legend's actual content fills its whole column. */
+  --hero-side-gutter: 32px;
+  --hero-side-box: 258px;
+  --hero-map-gap: 22px;
 }
 .hero-sticky::before {
   content: '';
@@ -96,16 +108,16 @@
   }
 }
 
-/* ---------- hero-community.png: the landing backdrop — shown as the original photo (no
-   grayscale/darkening treatment) behind the editorial text. The opacity set here (0.5) is only the
-   landing/no-JS value; on desktop it's overridden inline and fades to fully transparent across the
-   scroll (see HeroSection's applyStyles), same as its parallax transform. ---------- */
+/* ---------- hero-bg-fabric: the backdrop stack below the map/editorial layers: the community
+   photo (map view), the animated street (cover, StreetHero), and the editorial-text declutter
+   fade. ---------- */
 .hero-bg-fabric {
   position: absolute;
   inset: 0;
   z-index: 0;
   pointer-events: none;
 }
+/* the community photo: the map view's backdrop (HeroSection fades it in as the street leaves) */
 .tower-photo-layer {
   position: absolute;
   inset: 0;
@@ -120,14 +132,9 @@
   opacity: 0; /* hidden on the cover (the street is there); HeroSection fades it in behind the map */
   transform: scale(1.08);
 }
-/* the left-hand pylon (near the editorial copy) reads as clutter while that copy is on top of it,
-   but a hard crop looked like an edit — fade it out gradually instead, easing from full
-   paper-color cover on the left to fully transparent by the time the rest of the tower cluster
-   starts. This is a separate overlay (not a mask on .tower-photo-img itself) so it isn't fighting
-   that image's own scroll-driven parallax transform, which is rewritten by JS every frame — the
-   overlay only ever gets its opacity toggled (see HeroSection's applyStyles), in lockstep with the
-   editorial copy's own fade-out, so once the copy has receded there's nothing left to declutter
-   for and the whole tower (including the left pylon) shows through. */
+/* fades from paper-color cover on the left to transparent, decluttering the area behind the
+   editorial copy while it's on top — in lockstep with the editorial copy's own fade-out (see
+   HeroSection's applyStyles), so once the copy has receded this fades away too. */
 .tower-photo-fade {
   position: absolute;
   inset: 0;
@@ -239,9 +246,8 @@
   box-shadow: 0 6px 20px rgba(4, 8, 20, 0.25);
 }
 
-/* top-right counterweight to the hamburger button (fixed top-left, see layout.css) — sits above
-   the tower photo/ambient glow but stays static (not part of the scroll-driven reveal) since it's
-   page-level context, not part of the "camera move" narrative. */
+/* top-right badge — sits above the tower photo/ambient glow but stays static (not part of the
+   scroll-driven reveal) since it's page-level context, not part of the "camera move" narrative. */
 .hero-coverage-badge {
   position: absolute;
   z-index: 2;
@@ -259,9 +265,9 @@
   position: absolute;
   z-index: 2;
   left: var(--hero-gutter);
-  top: 45%;
+  top: 49%;
   transform: translateY(-50%);
-  width: 460px;
+  width: 560px;
   max-width: calc(44% - var(--hero-gutter));
 }
 .hero-logo {
@@ -282,8 +288,8 @@
   color: var(--ink);
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: 40px;
-  line-height: 1.1;
+  font-size: 34px;
+  line-height: 1.15;
   letter-spacing: -0.02em;
 }
 .hero-scope {
@@ -328,16 +334,21 @@
   color: #b8a6ff;
 }
 .hero-editorial p.lede {
-  margin: 18px 0 0;
-  /* darker than --muted: --muted (#6b7280) is only ~3.7:1 against --paper and reads as
-     too faint at this size; this hits ~6.7:1 against --paper. Dark mode below gets its own
-     lighter-than-muted override for the same reason, inverted. */
-  color: #4b5563;
-  font-size: 17px;
-  line-height: 1.55;
-  text-align: justify;
-  text-justify: inter-word;
-  max-width: 42ch;
+  margin: 24px 0 0;
+  /* --muted was darkened sitewide (tokens.css) to fix exactly this "too faint at this size"
+     problem, landing almost exactly on the darker one-off value this rule used to need — so it
+     now just uses --muted directly instead of its own hardcoded color. */
+  color: var(--muted);
+  font-size: 14.5px;
+  line-height: 1.75;
+  /* was `justify` — at this column width it stretched word-spacing unevenly line to line (worse
+     the longer the paragraph got), reading as ragged rather than tidy. Left-aligned avoids that
+     entirely and is the more common choice for a narrow column like this one anyway. */
+  text-align: left;
+  /* was 42ch — narrower than .hero-editorial's own box, which forced this (now longer) paragraph
+     past 4 lines. Filling the full available width (widened to 560px above) instead of
+     self-capping narrower, combined with a slightly smaller font, keeps it to about 4 lines. */
+  max-width: 100%;
 }
 :root[data-theme='dark'] .hero-editorial p.lede {
   color: #c3c9d4;
@@ -348,7 +359,7 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   font-weight: 600;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 /* ---------- the map stage: a fixed-size box, centered via auto margins so it's perfectly
@@ -360,11 +371,22 @@
    stable, untransformed click-position math in handleStateClick) never itself moves. ---------- */
 .hero-map-stage {
   position: absolute;
-  inset: 0;
-  margin: auto;
-  width: 82%;
-  height: 96%;
+  top: 0;
+  bottom: 0;
+  height: 99%;
+  margin-top: auto;
+  margin-bottom: auto;
+  /* Left/right are no longer a plain percentage centered via margin:auto — the Compare panel and
+     the legend now each occupy their own reserved column (same width, same gutter from their
+     respective edge — see .overlay-compare/.map-chrome), so the map's own box is whatever's left
+     between them, with the same gap on both sides. This reads as a true 3-column layout (panel —
+     map — legend) rather than the map being centered against the raw viewport while the panel
+     floats over its left edge. */
+  left: calc(var(--hero-side-gutter) + var(--hero-side-box) + var(--hero-map-gap));
+  right: calc(var(--hero-side-gutter) + var(--hero-side-box) + var(--hero-map-gap));
   z-index: 1;
+  /* small rightward nudge off the otherwise-even midpoint between the panel and legend columns. */
+  transform: translateX(40px);
 }
 .hero-map-inner {
   position: absolute;
@@ -444,7 +466,7 @@
   transform: translate(-50%, -128%);
   pointer-events: none;
   background: color-mix(in srgb, var(--panel) 98%, transparent);
-  border: 1px solid rgba(91, 110, 145, 0.12);
+  border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
   border-radius: 10px;
   padding: 10px 14px;
   box-shadow: var(--shadow-float);
@@ -454,13 +476,19 @@
   flex-direction: column;
   gap: 2px;
 }
+/* opens downward instead of upward — used when the hovered point sits too close to the map's own
+   top edge for the usual upward placement to fit (see HeroMap.tsx), which otherwise clipped the
+   state/UT name (the tooltip's own first line) against .hero-sticky's overflow:hidden. */
+.hero-map-tip--below {
+  transform: translate(-50%, 28%);
+}
 .hero-map-tip strong {
   color: var(--ink);
   font-size: 14px;
   font-weight: 600;
 }
 .hero-map-tip span {
-  color: var(--accent);
+  color: var(--accent-text);
   font-size: 12px;
   font-weight: 500;
 }
@@ -468,12 +496,17 @@
   color: #1d4f8c;
   font-weight: 700;
 }
+/* light-mode's dark navy is tuned for the light panel tint above — over the dark panel it's
+   near-invisible, same issue as the scope pills and lede text nearby, fixed the same way. */
+:root[data-theme='dark'] .hero-map-tip span.hero-map-tip-population {
+  color: #8fc0ff;
+}
 
-/* ---------- overlay chrome: compare tool (left-center) floats over the viewport; map-chrome
-   (legend) floats over the map stage itself. Every one starts faded/lowered and cascades in
-   together off the same chrome progress value (see chromeEls in HeroSection.tsx's applyStyles)
-   once the map has finished centering. No CSS transition: the rAF loop's own per-frame easing
-   already provides the smoothing. ---------- */
+/* ---------- overlay chrome: compare tool (left) and legend (right) each float in their own
+   reserved column beside the map — see .hero-map-stage/.overlay-compare/.map-chrome. Every one
+   starts faded/lowered and cascades in together off the same chrome progress value (see chromeEls
+   in HeroSection.tsx's applyStyles) once the map has finished centering. No CSS transition: the
+   rAF loop's own per-frame easing already provides the smoothing. ---------- */
 .overlay-compare,
 .map-chrome {
   position: absolute;
@@ -486,37 +519,31 @@
  * content happened to be (selecting enough jurisdictions to wrap the chip list to extra rows, or
  * simply a shorter browser window) and `.hero-sticky`'s own `overflow: hidden` clipped anything
  * past 100vh rather than letting the page scroll to reveal it — the buttons could end up
- * unreachable. Anchoring the bottom instead means the panel only ever grows *upward*, and its own
- * `max-height`/`overflow-y` (with the chip list's own tighter cap, see `.multiselect-chips`) keep
- * it from ever exceeding the viewport at all, so the button row is always in view regardless of
- * selection count or window height. Left side keeps it clear of the legend, anchored to the map's
- * own box at bottom-*right* (see `.map-chrome`). */
+ * unreachable. Anchoring the bottom instead means the panel only ever grows *upward*, and the chip
+ * list's own tighter scroll cap (see `.multiselect-chips`) keeps the overall card short enough to
+ * never approach the viewport height at all. No `overflow`/`max-height` on this element itself —
+ * either one clips `.control-panel`'s box-shadow flush to this box's edges (a real bug: any
+ * `overflow` value other than `visible` clips an element's own shadow, not just its content),
+ * which read as a stray hard-edged rectangle poking out past the card's rounded corners. */
 .overlay-compare {
-  bottom: 20px;
-  left: var(--hero-gutter);
-  width: 290px;
-  max-height: calc(100vh - 40px);
-  overflow-y: auto;
+  bottom: 32px;
+  left: var(--hero-side-gutter);
+  width: var(--hero-side-box);
   transition: left 260ms cubic-bezier(0.22, 1, 0.36, 1);
 }
-/* the sidebar's push-and-narrow (see layout.css) leaves this panel's usual gutter crowding the
-   now-closer map edge — pull it in a bit further while the drawer's open, in step with the same
-   260ms the content push itself uses. Desktop only, matching that push. */
-@media (min-width: 981px) {
-  body.sidebar-open .overlay-compare {
-    left: 20px;
-  }
-}
 
-/* ---------- map chrome: legend anchored at the map's own bottom-right corner — anchored to
- * .hero-map-stage rather than the viewport, so it hugs the map regardless of how much margin its
- * 72%/84% sizing leaves around it. Not bottom-left: the map's actual left edge sits well within
- * the Compare panel's footprint (that panel is anchored to the viewport, not the narrower map
- * box), so an element there would render underneath it. ---------- */
+/* ---------- map chrome: legend — a sibling of .overlay-compare (not nested inside
+ * .hero-map-stage), anchored the same distance from the viewport's right edge as the Compare panel
+ * is from its left, in a column of the same width — so the map's own box (see .hero-map-stage,
+ * whose left/right are computed from these same --hero-side-gutter/--hero-side-box/--hero-map-gap
+ * values) always has an identical gap to the panel on one side and the legend on the other,
+ * whether or not the legend's own content fills its whole reserved column. ---------- */
 .map-chrome {
-  bottom: 20px;
-  right: 20px;
+  bottom: 32px;
+  right: var(--hero-side-gutter);
+  width: var(--hero-side-box);
   display: flex;
+  justify-content: flex-end;
   align-items: flex-end;
   gap: 14px;
 }
@@ -527,7 +554,7 @@
   padding: 10px 14px;
   border-radius: 10px;
   background: color-mix(in srgb, var(--panel) 94%, transparent);
-  border: 1px solid rgba(91, 110, 145, 0.12);
+  border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
   box-shadow: var(--shadow-float);
 }
 .map-legend-row {
@@ -535,7 +562,7 @@
   align-items: center;
   gap: 8px;
   font-family: var(--font-condensed);
-  font-size: 11.5px;
+  font-size: 12.5px;
   letter-spacing: 0.02em;
   color: var(--ink);
   white-space: nowrap;
@@ -559,28 +586,36 @@
 .control-panel {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   background: color-mix(in srgb, var(--panel) 86%, transparent);
-  border: 1px solid rgba(91, 110, 145, 0.1);
+  border: 1px solid color-mix(in srgb, var(--ink) 10%, transparent);
   border-radius: 14px;
-  padding: 16px 18px;
+  padding: 13px 16px;
   box-shadow: var(--shadow-float);
   backdrop-filter: blur(18px) saturate(1.2);
+}
+/* --panel and --paper/the photo behind it are close in tone in dark mode, so this card read as
+   barely raised off the backdrop — a touch more opacity and a slightly stronger edge is enough to
+   separate it without changing its size, shape, or the rest of its (unchanged) light-mode look. */
+:root[data-theme='dark'] .control-panel {
+  background: color-mix(in srgb, var(--panel) 94%, transparent);
+  border-color: color-mix(in srgb, var(--ink) 18%, transparent);
 }
 .control-panel-head {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 .control-panel-eyebrow {
-  font-size: 10.5px;
+  font-size: 11px;
   letter-spacing: 0.13em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 .control-panel-head h3 {
   color: var(--ink);
-  font-size: 19px;
+  font-size: 18px;
+  line-height: 1.2;
   font-weight: 600;
 }
 .toggle-row {
@@ -588,7 +623,7 @@
   box-sizing: border-box;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   cursor: pointer;
   color: var(--ink);
   font-size: 13px;
@@ -596,11 +631,11 @@
 .toggle-switch {
   position: relative;
   flex: 0 0 auto;
-  width: 34px;
-  height: 19px;
+  width: 30px;
+  height: 17px;
   border-radius: 999px;
-  background: rgba(18, 23, 42, 0.12);
-  border: 1px solid rgba(18, 23, 42, 0.18);
+  background: color-mix(in srgb, var(--ink) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
   transition: background 160ms var(--ease), border-color 160ms var(--ease);
 }
 .toggle-switch[data-on='true'] {
@@ -614,15 +649,15 @@
   position: absolute;
   top: 1px;
   left: 1px;
-  width: 15px;
-  height: 15px;
+  width: 13px;
+  height: 13px;
   border-radius: 50%;
   background: #fff;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   transition: transform 160ms var(--ease);
 }
 .toggle-switch[data-on='true'] .toggle-thumb {
-  transform: translateX(15px);
+  transform: translateX(13px);
 }
 
 .control-field {
@@ -641,14 +676,14 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(18, 23, 42, 0.03);
-  border: 1px solid rgba(18, 23, 42, 0.14);
+  background: color-mix(in srgb, var(--ink) 3%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent);
   border-radius: 3px;
   padding: 10px 12px;
   transition: border-color 160ms var(--ease);
 }
 .control-select-wrap:hover {
-  border-color: rgba(18, 23, 42, 0.28);
+  border-color: color-mix(in srgb, var(--ink) 28%, transparent);
 }
 .control-select {
   all: unset;
@@ -695,7 +730,7 @@
   right: 0;
   z-index: 20;
   background: var(--panel);
-  border: 1px solid rgba(18, 23, 42, 0.12);
+  border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
   border-radius: 3px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
   max-height: 220px;
@@ -716,7 +751,7 @@
   cursor: pointer;
 }
 .multiselect-option:hover {
-  background: rgba(18, 23, 42, 0.06);
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
 }
 .multiselect-option .dot {
   width: 8px;
@@ -746,8 +781,8 @@
   gap: 6px;
   padding: 4px 6px 4px 10px;
   border-radius: 2px;
-  background: rgba(18, 23, 42, 0.04);
-  border: 1px solid rgba(18, 23, 42, 0.14);
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent);
   color: var(--ink);
   font-size: 12.5px;
 }
@@ -770,7 +805,7 @@
   line-height: 1;
 }
 .multiselect-chip button:hover {
-  background: rgba(18, 23, 42, 0.1);
+  background: color-mix(in srgb, var(--ink) 10%, transparent);
   color: var(--ink);
 }
 
@@ -779,7 +814,7 @@
   box-sizing: border-box;
   cursor: pointer;
   text-align: center;
-  padding: 11px 16px;
+  padding: 9px 14px;
   border-radius: 8px;
   background: var(--accent);
   border: 1px solid var(--accent);
@@ -788,7 +823,7 @@
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  font-size: 13px;
+  font-size: 14px;
   transition: background 160ms var(--ease), border-color 160ms var(--ease), transform 120ms var(--ease);
 }
 .control-compare-btn:hover:not(:disabled) {
@@ -801,39 +836,46 @@
   transform: scale(0.97);
 }
 .control-compare-btn:disabled {
-  opacity: 0.4;
+  opacity: var(--disabled-opacity);
   cursor: not-allowed;
 }
 .control-ghost-btn {
   all: unset;
   box-sizing: border-box;
   cursor: pointer;
-  padding: 11px 14px;
+  padding: 9px 12px;
   border-radius: 8px;
   border: 1px solid var(--accent);
-  color: var(--accent);
+  color: var(--accent-text);
   font-family: var(--font-condensed);
   font-weight: 600;
-  font-size: 13px;
+  font-size: 14px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   text-align: center;
   transition: background 160ms var(--ease), color 160ms var(--ease), transform 120ms var(--ease);
 }
-.control-ghost-btn:hover {
+.control-ghost-btn:hover:not(:disabled) {
   background: rgba(59, 95, 224, 0.08);
-  color: var(--accent);
+  color: var(--accent-text);
 }
 .control-ghost-btn:active:not(:disabled) {
   background: rgba(59, 95, 224, 0.16);
   transform: scale(0.97);
 }
+/* previously had no disabled treatment at all — an unclickable "Clear" (nothing selected yet)
+   looked identical to an active one in both themes; matches .control-compare-btn's own dimming. */
+.control-ghost-btn:disabled {
+  opacity: var(--disabled-opacity);
+  cursor: not-allowed;
+}
 
 .control-hint {
   font-size: 12.5px;
   color: var(--muted);
-  line-height: 1.5;
+  line-height: 1.4;
 }
+
 /* below this width the scroll rig disables itself entirely (see isMobile() in HeroSection.tsx) —
    JS never calls applyStyles, so it never writes an inline opacity/transform to fight with here.
    The `!important` overrides below are still needed for one case: a page that loads at desktop
@@ -882,9 +924,8 @@
     flex-direction: column;
     gap: 16px;
     /* the hero bleeds past main.app-main's own top padding (see .hero-stage's negative margin
-       above) to sit flush with the viewport edge, but that also removes the clearance the fixed
-       hamburger button (.menu-toggle, top:16/height:40) needs — without this the headline sat
-       right underneath it. */
+       above) to sit flush with the viewport edge — this restores clearance so the headline
+       doesn't start right at the very top edge of the viewport. */
     padding-top: 64px;
   }
   .hero-editorial,
@@ -926,6 +967,7 @@
     height: 60vh;
     min-height: 420px;
     order: 2;
+    transform: none;
   }
   .overlay-compare {
     position: static;

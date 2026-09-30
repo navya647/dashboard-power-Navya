@@ -21,8 +21,8 @@
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--accent);
-  background: rgba(91, 110, 145, 0.08);
+  color: var(--accent-text);
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
   padding: 4px 10px;
   border-radius: 3px;
 }

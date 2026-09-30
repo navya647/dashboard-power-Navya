@@ -6,13 +6,21 @@
   --paper: #eef1f7;
   --panel: #ffffff;
   --ink: #15181f;
-  --muted: #6b7280;
+  /* darkened from #6b7280 (~4.3:1 on --paper, just under WCAG AA) to ~12.7:1 on --paper / ~14.4:1 on
+     --panel — same brightening pass applied to dark mode's --muted earlier, mirrored here since
+     secondary text (hints, labels, meta copy) was reading as too faint in light mode too. */
+  --muted: #262a32;
   --line: rgba(21, 24, 31, 0.1);
 
   --charcoal: #15181f;
   --sidebar-bg: #f7f4ec;
   --accent: #3b5fe0;
   --accent-light: #7c93ea;
+  /* --accent used as TEXT (not a button/fill background) — identical to --accent in light mode,
+     but dark mode brightens it (see override below): --accent itself is unchanged there (so
+     accent-background buttons/borders keep the same brand blue), yet #3b5fe0 as plain text only
+     reaches ~2.7:1 against the dark panel, well under WCAG AA's 4.5:1 for normal text. */
+  --accent-text: var(--accent);
   --hero-mist: #eef1f7;
 
   /* status — reserved, never themed */
@@ -35,6 +43,9 @@
   --cat-4: #e87ba4;
   --cat-5: #008300;
   --cat-6: #4a3aa7;
+  /* soft/deep pair for the "mixed status" pill (panels.css .status-mixed) — was previously only a
+     hardcoded var() fallback with no real token behind it; defined properly here instead. */
+  --cat-6-soft: #e6e2f7;
   --cat-7: #e34948;
 
   /* map fills — a restrained editorial palette, not a GIS choropleth: a muted terracotta/clay for
@@ -50,6 +61,28 @@
   --map-transmission: #d8ae3f;
 
   --shadow-float: 0 18px 48px rgba(23, 37, 84, 0.1), 0 2px 8px rgba(23, 37, 84, 0.05);
+
+  /* Chart.js options for grid lines/axis title/tooltip background can't reference a CSS custom
+     property directly (they're plain JS strings baked into the chart's options object) — kept as
+     tokens here anyway, read via getComputedStyle in IndicatorVisualCard.tsx, so the dark-mode
+     variant lives in one shared place instead of being duplicated as a hardcoded literal in TSX. */
+  --chart-grid: rgba(18, 23, 42, 0.05);
+  /* reuses --muted rather than its own separate (and, before, lighter/fainter) hex, same
+     consolidation already done for dark mode. */
+  --chart-axis-title: var(--muted);
+  --chart-tooltip-bg: #1c2127;
+
+  /* Shared opacity for every `:disabled` button (.control-compare-btn, .control-ghost-btn,
+     .tour-btn--ghost) — one token so "how dim is disabled" stays consistent across the dashboard.
+     Dark mode raises it (see override below): the same 0.4 fraction of an already-dark backdrop
+     made disabled button text/labels read as too faint to tell they still say "Compare"/"Clear". */
+  --disabled-opacity: 0.4;
+
+  /* Loaded via a Google Fonts <link> in layout.tsx's <head>, not next/font/google — this Next.js
+     version's Turbopack build fails to resolve next/font/google's internal font module
+     ("@vercel/turbopack-next/internal/font/google/font"). */
+  --font-montserrat: 'Montserrat';
+  --font-playfair: 'Playfair Display';
 
   --font-sans: var(--font-montserrat), system-ui, sans-serif;
   --font-condensed: var(--font-montserrat), system-ui, sans-serif;
@@ -71,19 +104,36 @@
    `data-theme` on <html>, set by the blocking init script in layout.tsx (no flash on load) and
    toggled by ThemeToggle in the sidebar; persisted to localStorage under 'acpet-theme'. */
 :root[data-theme='dark'] {
-  --paper: #14161c;
-  --panel: #1c1f27;
+  /* Lifted off near-black toward a softer charcoal — less harsh to look at for long stretches,
+     and it gives --panel more headroom above --paper so cards still read as raised without
+     needing pure-white borders to separate them. */
+  --paper: #1b1e25;
+  --panel: #262a33;
   --ink: #e8e9ed;
-  --muted: #9aa1b0;
+  /* Brightened again (was #adb4c0, ~6.9:1 on --panel) — still visibly a step below --ink
+     (11.84:1 on --panel) so secondary/instructional text stays secondary, but noticeably closer
+     to full readability now: ~9.4:1 on --panel / ~10.9:1 on --paper. */
+  --muted: #cdd1d9;
   --line: rgba(232, 233, 237, 0.12);
+  /* brightened from --accent (#3b5fe0, ~2.7:1 here) to ~7:1 against both --paper and --panel —
+     verified with the standard WCAG relative-luminance formula, not eyeballed. */
+  --accent-text: #9db3f2;
+  /* was 0.55 — still read as too faint on "Compare"/"Clear" when disabled, raised again. */
+  --disabled-opacity: 0.7;
 
   /* --charcoal deliberately not overridden: it's the hamburger button's own fixed dark square
      (white bars on top), not a semantic alias for --ink, and must stay dark in both themes. */
-  --sidebar-bg: #191c22;
-  --hero-mist: #1c1f27;
+  --sidebar-bg: #21252d;
+  --hero-mist: #262a33;
 
-  --shadow-float: 0 18px 48px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 1px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 10px 28px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.25);
-  --shadow-lg: 0 22px 48px rgba(0, 0, 0, 0.5), 0 8px 18px rgba(0, 0, 0, 0.3);
+  --chart-grid: rgba(232, 233, 237, 0.09);
+  /* reuse the same brightened secondary-text color everywhere else in dark mode uses, rather than
+     its own separate hand-picked hex (light mode keeps its own distinct, untouched value above). */
+  --chart-axis-title: var(--muted);
+  --chart-tooltip-bg: #2f3440;
+
+  --shadow-float: 0 18px 48px rgba(0, 0, 0, 0.36), 0 2px 8px rgba(0, 0, 0, 0.22);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.24), 0 1px 1px rgba(0, 0, 0, 0.16);
+  --shadow-md: 0 10px 28px rgba(0, 0, 0, 0.32), 0 2px 6px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 22px 48px rgba(0, 0, 0, 0.4), 0 8px 18px rgba(0, 0, 0, 0.24);
 }

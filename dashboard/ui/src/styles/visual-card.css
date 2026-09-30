@@ -10,22 +10,35 @@
   margin: 4px 0 4px;
 }
 
+/* .chart-grid (panels.css, shared with every other card gallery on the site) uses
+   `repeat(auto-fit, minmax(440px, 1fr))` — when a filtered view leaves only one or two cards in a
+   row, that `1fr` stretches each card to fill whatever's left of a wide desktop viewport, which is
+   what made the chart/metadata/matrix all read as spread unnecessarily far apart. Capped here, at
+   the card itself, rather than in .chart-grid: that class is shared by every gallery on the site,
+   and this fix is scoped to only the indicator analysis card. */
 .visual-card {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
+  width: 100%;
+  max-width: 1300px;
+  margin-inline: auto;
 }
 .visual-card-identity {
   margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 .visual-card-title-row {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 .visual-card-title-row h4 {
   font-family: var(--font-sans);
+  font-size: 18px;
 }
 .visual-card-type {
   font-size: 10px;
@@ -33,168 +46,358 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
-  background: rgba(18, 23, 42, 0.05);
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
   padding: 2px 7px;
   border-radius: var(--radius-pill);
 }
 .visual-card-meaning {
-  font-size: 12px;
+  font-size: 12.5px;
   color: var(--muted);
-  line-height: 1.35;
-  margin-top: 1px;
+  line-height: 1.45;
+  max-width: 72ch;
 }
 
-/* ---- Layer C: compact inline context lenses — metadata, not form panels ---- */
-.context-lens-row {
-  display: flex;
-  flex-wrap: wrap;
-  column-gap: 18px;
-  row-gap: 4px;
+/* ---- Regulatory Standard / Reported Measure: a two-column layout, not a row of same-weight
+   metadata tiles — the standard column is the section's primary focal point (larger numeral,
+   stronger color), the measure column is deliberately quieter/secondary. A soft background tint
+   (not a border) tells the two apart from each other and from the surrounding card, so the section
+   reads as one cohesive strip rather than nested bordered boxes. Balanced 1fr/1fr on desktop, one
+   column on mobile (see the media query at the end of this file) — neither ever looks stretched
+   since both are already capped by .visual-card's own 1300px max-width. */
+.compliance-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 2px;
 }
-.context-lens {
+.compliance-col {
   display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 4px;
-  font-size: 12px;
-  max-width: 100%;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--ink) 3%, transparent);
 }
-.context-lens-label {
+.compliance-col-label {
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--muted);
 }
-.context-lens-sep {
-  color: var(--muted);
-}
-.context-lens-value {
-  font-weight: 600;
+/* the regulatory standard's own numeral is the section's single most emphasized value — bigger and
+   bolder than anything else in this card besides the indicator name itself. */
+.reg-standard-value {
+  font-family: var(--font-condensed);
+  font-size: 24px;
+  font-weight: 700;
   color: var(--ink);
-  line-height: 1.3;
+  line-height: 1.15;
 }
-.context-lens-sub {
-  flex-basis: 100%;
-  font-size: 11px;
+.reg-standard-value--sm {
+  font-size: 16px;
+}
+.reg-standard-sub {
+  font-size: 12px;
   color: var(--muted);
-  line-height: 1.3;
+  line-height: 1.4;
+}
+.reg-standard-text {
+  font-size: 14px;
+  color: var(--ink);
+  line-height: 1.5;
+}
+.reg-standard-text--sm {
+  font-size: 12.5px;
+}
+.reg-standard-text-group {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+.reg-standard-empty {
+  font-size: 13px;
+  font-style: italic;
+  color: var(--muted);
+}
+.reg-standard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.reg-standard-item {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.reg-standard-item-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.reported-measure-text {
+  font-size: 14px;
+  color: var(--ink);
+  line-height: 1.5;
 }
 .lens-more-btn {
   all: unset;
   cursor: pointer;
+  display: block;
+  margin-top: 2px;
   font-size: 10.5px;
   font-weight: 600;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 .lens-more-btn:hover {
   text-decoration: underline;
 }
 
-/* ---- the chart is the dominant object: quiet gridlines, no competing chrome above it ---- */
-.visual-card-chart {
-  height: 200px;
-  margin-top: 2px;
+/* ---- Comparability assessment: a single, restrained strip beneath the two columns above — its
+   own quiet color per verdict (never louder than the standard/measure it's assessing), a short
+   heading, then the explanation. Distinct from `standardMet` (an actual per-year compliance
+   result, shown in the year-wise matrix instead — comparability and compliance are never
+   conflated here). ---- */
+.compliance-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 12.5px;
+}
+.compliance-strip-head {
+  font-weight: 700;
+}
+.compliance-strip-text {
+  color: var(--muted);
+  line-height: 1.4;
+}
+.compliance-strip--comparable {
+  background: color-mix(in srgb, var(--good) 8%, transparent);
+}
+.compliance-strip--comparable .compliance-strip-head {
+  color: var(--good-deep);
+}
+.compliance-strip--not-comparable {
+  background: color-mix(in srgb, var(--warning) 8%, transparent);
+}
+.compliance-strip--not-comparable .compliance-strip-head {
+  color: var(--warning-deep);
+}
+.compliance-strip--unavailable,
+.compliance-strip--varies {
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
+}
+.compliance-strip--unavailable .compliance-strip-head,
+.compliance-strip--varies .compliance-strip-head {
+  color: var(--ink);
+}
+.compliance-strip--varies .compliance-strip-text b {
+  color: var(--ink);
+  font-weight: 600;
 }
 
-/* ---- Layers D+E merged: one compact evidence rail per DISCOM/series, evenly spaced across the
-   chart's full width, aligned with its x-axis ticks — replaces separate compliance chips and
-   tall repeated FY cards. ---- */
-.series-block {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 8px;
+/* ---- the chart is the dominant object: taller, quieter gridlines, generous breathing room. A
+   fixed height here (rather than an aspect-ratio) is deliberate — width is now bounded by
+   .visual-card's own max-width above, so a fixed height gives a predictable, still-substantial
+   ratio instead of ballooning taller on a narrower column. ---- */
+.visual-card-chart {
+  height: 300px;
+  margin: 4px 0 6px;
 }
-.evidence-rail {
+
+/* ---- Year-wise reported values: one shared matrix (real <table>) instead of one repeated,
+   full-width "rail" per DISCOM — a single header row of fiscal years aligns every DISCOM's values
+   under the same columns, and each DISCOM is one compact row instead of its own block. ---- */
+.indicator-matrix-head {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 4px;
 }
-.evidence-rail-label {
-  font-size: 11px;
+.indicator-matrix-title {
+  font-family: var(--font-condensed);
+  font-size: 12px;
   font-weight: 700;
-  flex: none;
-  max-width: 72px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
-.evidence-rail-cells {
-  flex: 1;
-  display: grid;
-  gap: 4px;
+.trend-legend-hint {
+  font-size: 11px;
+  color: var(--muted);
+  cursor: help;
+  border-bottom: 1px dotted var(--muted);
 }
-.evidence-cell {
-  all: unset;
-  box-sizing: border-box;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1px;
-  text-align: center;
-  padding: 4px 2px 5px;
-  border-radius: var(--radius-sm);
-  border: 1px solid transparent;
-  background: var(--paper);
-  transition: border-color 150ms var(--ease), background-color 150ms var(--ease), transform 150ms var(--ease);
+.indicator-matrix-wrap {
+  overflow-x: auto;
 }
-.evidence-cell:hover,
-.evidence-cell:focus-visible {
-  border-color: var(--accent-light);
+/* Deliberately not width:100% — stretching to fill the (now-capped, but still often wider than a
+   handful of year columns need) card would just recreate the "spread too far apart" problem one
+   level down. Sized to its own content instead, left-aligned like everything else in the card, so
+   a 4-year indicator reads as a compact matrix rather than 4 columns stretched across 1300px. */
+.indicator-matrix {
+  width: auto;
+  border-collapse: separate;
+  border-spacing: 0 2px;
 }
-.evidence-cell.active {
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 7%, var(--paper));
-  transform: translateY(-1px);
-}
-.evidence-cell-fy {
-  font-size: 9.5px;
+.indicator-matrix thead th {
+  font-family: var(--font-condensed);
+  font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 0.04em;
   color: var(--muted);
+  text-align: center;
+  padding: 0 2px 4px;
+  transition: color 150ms var(--ease);
 }
-.evidence-cell-v {
-  font-size: 12.5px;
+.indicator-matrix thead th.active {
+  color: var(--accent-text);
+}
+.matrix-row-head {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+  padding-right: 16px;
+  position: sticky;
+  left: 0;
+  background: var(--panel);
+}
+.matrix-row-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  flex: none;
+}
+.matrix-cell {
+  padding: 0 1px;
+  min-width: 48px;
+}
+.matrix-cell.active .matrix-cell-btn {
+  background: color-mix(in srgb, var(--accent) 8%, var(--paper));
+}
+.indicator-matrix thead th:not(.matrix-row-head) {
+  border-bottom: 2px solid transparent;
+}
+.indicator-matrix thead th.active {
+  border-bottom-color: var(--accent);
+}
+.matrix-cell-btn {
+  all: unset;
+  box-sizing: border-box;
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+  padding: 4px 3px 5px;
+  border-radius: var(--radius-sm);
+  background: var(--paper);
+  transition: background-color 150ms var(--ease);
+}
+.matrix-cell-btn:hover,
+.matrix-cell-btn:focus-visible {
+  background: color-mix(in srgb, var(--accent) 5%, var(--paper));
+}
+.matrix-cell-v {
+  font-size: 13px;
   font-weight: 700;
   color: var(--ink);
   line-height: 1.2;
 }
-.evidence-cell-status {
-  font-size: 9.5px;
+.matrix-cell-status {
+  font-size: 9px;
   font-weight: 700;
   padding: 1px 5px;
   border-radius: var(--radius-pill);
   white-space: nowrap;
 }
-.eviq-met .evidence-cell-status {
+.eviq-met .matrix-cell-status {
   background: var(--good-soft);
   color: var(--good-deep);
 }
-.eviq-not-met .evidence-cell-status {
+.eviq-not-met .matrix-cell-status {
   background: var(--critical-soft);
   color: var(--critical-deep);
 }
-.eviq-not-comparable .evidence-cell-status {
+.eviq-not-comparable .matrix-cell-status {
   background: var(--warning-soft);
   color: var(--warning-deep);
 }
-.eviq-no-benchmark .evidence-cell-status,
-.eviq-unavailable .evidence-cell-status {
-  background: rgba(18, 23, 42, 0.06);
+.eviq-no-benchmark .matrix-cell-status,
+.eviq-unavailable .matrix-cell-status {
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
   color: var(--muted);
 }
-.eviq-no-value .evidence-cell-status {
-  background: rgba(18, 23, 42, 0.04);
+.eviq-no-value .matrix-cell-status {
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
   color: var(--muted);
 }
-.eviq-no-value .evidence-cell-v {
+.eviq-no-value .matrix-cell-v {
   color: var(--muted);
   font-weight: 500;
 }
 
-/* ---- compact exception rail — a footnote-weight warning, not a box louder than the chart ---- */
+/* ---- year-on-year assessment — a small colored chip pinned to a cell's top-right corner, out of
+   the value/status stack's flow entirely so it reads as an annotation on the cell rather than
+   another row competing with the compliance pill underneath it. Color carries the
+   improved/declined/no-change/not-assessable classification; the arrow glyph itself always
+   reflects the raw numerical movement (curr vs. prev), so a lower_is_better indicator that fell
+   still shows a down arrow even though that's an improvement — see lib/trend.ts. */
+.matrix-cell-yoy {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  font-size: 8.5px;
+  font-weight: 700;
+  line-height: 1;
+  border-radius: 50%;
+  cursor: help;
+}
+.yoy-improved {
+  background: var(--good-soft);
+  color: var(--good-deep);
+}
+.yoy-declined {
+  background: var(--critical-soft);
+  color: var(--critical-deep);
+}
+.yoy-no-change {
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+  color: var(--muted);
+}
+.yoy-not-assessable,
+.yoy-first-year {
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
+  color: var(--muted);
+}
+
+/* ---- per-DISCOM exceptions kept ONLY when they genuinely diverge from each other (see
+   comparabilityMessage/comparabilitySignature) — a footnote-weight warning, still clearly
+   distinguishable per DISCOM via its own label, never a box louder than the chart. ---- */
+.series-exception {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 .exception-callout {
   border-left: 3px solid var(--warning);
   padding: 4px 0 4px 10px;
@@ -204,6 +407,11 @@
   font-weight: 700;
   color: var(--warning-deep);
   margin-bottom: 1px;
+}
+.exception-callout-label {
+  font-weight: 700;
+  color: var(--ink);
+  margin-right: 6px;
 }
 .exception-callout-text {
   color: var(--muted);
@@ -217,9 +425,14 @@
   font-weight: 600;
 }
 
-/* ---- regulatory citation as provenance, not another panel ---- */
-.provenance {
-  margin-top: 2px;
+/* ---- regulatory sources: visually secondary to the analysis above it — smaller, muted, set off
+   by a hairline divider rather than another panel. ---- */
+.visual-card-sources {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
 }
 .regulation-badge-group {
   margin-top: 2px;
@@ -231,15 +444,19 @@
   all: unset;
   cursor: pointer;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 6px;
   width: 100%;
-  font-size: 11px;
+  font-size: 10.5px;
   color: var(--muted);
   transition: color 150ms var(--ease);
 }
 .provenance-toggle:hover {
-  color: var(--accent);
+  color: var(--accent-text);
+}
+.provenance-icon {
+  flex: none;
+  color: var(--muted);
 }
 .provenance-label {
   font-weight: 700;
@@ -351,7 +568,7 @@
   cursor: pointer;
   font-size: 12px;
   font-weight: 700;
-  color: var(--accent);
+  color: var(--accent-text);
   border: 1px solid var(--accent-light);
   border-radius: var(--radius-pill);
   padding: 4px 12px;
@@ -365,7 +582,7 @@
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--accent-text);
   margin-bottom: 4px;
 }
 
@@ -373,13 +590,8 @@
   .chart-grid {
     grid-template-columns: 1fr;
   }
-  .evidence-rail {
-    flex-wrap: wrap;
-  }
-  .evidence-rail-cells {
-    overflow-x: auto;
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(56px, 1fr);
+  .compliance-columns {
+    grid-template-columns: 1fr;
   }
   .toolbar-field--year {
     margin-left: 0;

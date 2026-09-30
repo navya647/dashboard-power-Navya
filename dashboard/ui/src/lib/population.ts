@@ -34,8 +34,24 @@ export const STATE_POPULATION_2026: Record<string, number> = {
   Sikkim: 709_000,
 };
 
+/** Union territories — kept in a separate table from the 28 states above (not merged in) so that
+ * `populationCoveragePercent`'s existing denominator (states only) stays exactly as it was; this
+ * table exists purely so the map tooltip can show a population figure for every jurisdiction,
+ * "coming soon" UTs (e.g. Ladakh) included, not just the ones ACPET currently tracks. Same
+ * 2026-estimate basis as the states table. */
+const UT_POPULATION_2026: Record<string, number> = {
+  Delhi: 21_000_000,
+  'Jammu & Kashmir': 14_200_000,
+  Puducherry: 1_450_000,
+  Chandigarh: 1_200_000,
+  'Andaman & Nicobar': 420_000,
+  'Dadra and Nagar Haveli and Daman and Diu': 650_000,
+  Ladakh: 305_000,
+  Lakshadweep: 70_000,
+};
+
 export function formatPopulation(name: string): string | null {
-  const value = STATE_POPULATION_2026[name];
+  const value = STATE_POPULATION_2026[name] ?? UT_POPULATION_2026[name];
   if (!value) return null;
   const crores = value / 1e7;
   return `${crores.toLocaleString('en-IN', { maximumFractionDigits: 2, minimumFractionDigits: 2 })} Cr`;

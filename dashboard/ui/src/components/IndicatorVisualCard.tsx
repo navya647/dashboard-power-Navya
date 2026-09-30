@@ -1,11 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import { hexToRgba } from '@/lib/colors';
 import { fyLabel } from '@/lib/format';
 import { allSame } from '@/lib/evidenceStatus';
-import ContextLens from './ContextLens';
 import EvidenceRail from './EvidenceRail';
 import RegulationBadge from './RegulationBadge';
 
@@ -39,6 +38,13 @@ interface Props {
   activeYear: string;
   series: CardSeries[];
   animationDelay?: number;
+  /** Which half of the card to render — the page renders every indicator twice, once per
+   * page-level section ("Regulatory Compliance" then "Year-wise Trends"), rather than once as a
+   * single combined card; both halves share every value this component derives below, so the only
+   * difference between the two calls is which JSX comes out. 'compliance' = identity, the
+   * benchmark/measured-as/standard metadata, and every comparability/regulation advisory. 'trends'
+   * = the chart and the year-wise value matrix. */
+  section: 'compliance' | 'trends';
 }
 
 export interface SeriesBenchmark {
@@ -164,16 +170,87 @@ function formatGroupedLabel(labels: string[]): string {
   return order.map((state) => (state ? `${byState.get(state)!.join(', ')} — ${state}` : byState.get(state)!.join(', '))).join('; ');
 }
 
-/** A plotted-but-not-comparable benchmark reads as generic "N/A" no matter which of three very
- * different situations produced it — distinguish them from the fields already extracted, without
- * inventing anything the source didn't say. */
-function benchmarkLensValue(series: CardSeries[], bench: number | null, unitSuffix: (v: number) => string): string {
-  if (bench != null) return unitSuffix(bench);
-  const anyRawBenchmark = series.some((s) => s.points.some((p) => p.benchmark != null));
-  const anyNotComparable = series.some((s) => s.points.some((p) => p.comparisonPossible === false));
-  if (anyRawBenchmark && anyNotComparable) return 'Not directly comparable';
-  if (!anyRawBenchmark) return 'No benchmark specified';
-  return 'N/A';
+interface ComparabilityMessage {
+  head: string;
+  constantReason: string | null;
+  distinctReasons: { years: string; reason: string }[];
+}
+
+/** Exactly the same "which years, which reason(s)" computation the not-comparable callout always
+ * used — factored out so it can run once (for a shared advisory, when every series happens to
+ * agree) or once per series (when they don't), without duplicating the logic itself. Never changes
+ * what counts as not-comparable or what reason is shown — purely a presentation-layer reuse. */
+function comparabilityMessage(s: CardSeries): ComparabilityMessage | null {
+  const notComparablePts = s.points.filter((p) => p.comparisonPossible === false);
+  if (!notComparablePts.length) return null;
+  const constantReason = allSame(notComparablePts.map((p) => p.reasonNotComparable));
+  const distinctReasonTexts = Array.from(new Set(notComparablePts.map((p) => p.reasonNotComparable).filter((r): r is string => !!r && r !== 'N/A')));
+  return {
+    head:
+      notComparablePts.length === s.points.length
+        ? 'Not comparable across all years shown'
+        : `Not comparable in ${notComparablePts.length} of ${s.points.length} years`,
+    constantReason: constantReason && constantReason !== 'N/A' ? constantReason : null,
+    distinctReasons:
+      constantReason && constantReason !== 'N/A'
+        ? []
+        : distinctReasonTexts.map((r) => ({
+            years: notComparablePts
+              .filter((p) => p.reasonNotComparable === r)
+              .map((p) => fyLabel(p.year))
+              .join(', '),
+            reason: r,
+          })),
+  };
+}
+
+/** A signature that's identical for two series only when they're not-comparable in exactly the
+ * same years for exactly the same reason(s) — used to detect whether every DISCOM on this card
+ * shares one comparability situation (worth saying once) or genuinely differs (worth keeping
+ * distinct, per-DISCOM). Never itself changes the comparability classification. */
+function comparabilitySignature(s: CardSeries): string {
+  const notComparablePts = s.points.filter((p) => p.comparisonPossible === false);
+  if (!notComparablePts.length) return '';
+  const years = notComparablePts.length === s.points.length ? 'all' : notComparablePts.map((p) => p.year).sort().join(',');
+  const reasons = Array.from(new Set(notComparablePts.map((p) => p.reasonNotComparable ?? 'N/A'))).sort().join('|');
+  return `${years}::${reasons}`;
+}
+
+type ComparabilityVerdict = 'comparable' | 'not-comparable' | 'unavailable';
+
+/** The coarse, card-level comparability verdict the "Regulatory Standards & Compliance" strip
+ * shows — distinct from `comparabilityMessage`'s per-year detail (which years, which reason) and
+ * from `standardMet` (an actual compliance result, shown separately in the year-wise matrix, never
+ * here). Derived strictly from `comparisonPossible`: 'unavailable' when the source never recorded
+ * an assessment either way for this series (every point's `comparisonPossible` is null — nothing
+ * to report, not the same as a recorded "no"); 'not-comparable' when at least one year was
+ * explicitly marked not comparable; 'comparable' only when every recorded assessment says so. */
+function seriesComparabilityVerdict(s: CardSeries): ComparabilityVerdict {
+  const assessed = s.points.filter((p) => p.comparisonPossible != null);
+  if (!assessed.length) return 'unavailable';
+  if (assessed.some((p) => p.comparisonPossible === false)) return 'not-comparable';
+  return 'comparable';
+}
+
+/** Chart.js options are a plain JS object baked in at render time — unlike CSS, they can't pick up
+ * a `var(--chart-grid)` change live, so a hardcoded hex here would go stale the moment the theme
+ * toggles (ThemeToggle.tsx flips `data-theme` without a page reload). Reading the token via
+ * `getComputedStyle` at render time, combined with `useThemeTick` forcing a re-render whenever
+ * `data-theme` changes, keeps the chart's grid/axis-title/tooltip colors in sync with the shared
+ * dark-theme tokens in tokens.css instead of duplicating light/dark literals here. */
+function cssVar(name: string, fallback: string): string {
+  if (typeof window === 'undefined') return fallback;
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+}
+
+function useThemeTick(): number {
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    const observer = new MutationObserver(() => setTick((t) => t + 1));
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => observer.disconnect();
+  }, []);
+  return tick;
 }
 
 function truncated(text: string, max = 130): { short: string; needsMore: boolean } {
@@ -181,21 +258,26 @@ function truncated(text: string, max = 130): { short: string; needsMore: boolean
   return { short: text.slice(0, max).trimEnd() + '…', needsMore: true };
 }
 
-function StandardLens({ text, label = 'Standard' }: { text: string; label?: string }) {
+/** The Regulatory Standard column's own qualitative-text presentation — truncated with a
+ * view-more toggle for a long, multi-condition standard. No separate label/"·" separator (unlike
+ * the metadata lenses this replaced), since the column already carries a "Regulatory Standard"
+ * heading of its own; repeating a label here would say the same
+ * thing twice. `groupLabel`, when given (a DISCOM/jurisdiction name or group), reads as its own
+ * small heading above the text — used only when different DISCOMs on one card have genuinely
+ * different standards specified and each needs attributing to whom it applies. */
+function StandardText({ text, groupLabel, size = 'lg' }: { text: string; groupLabel?: string; size?: 'lg' | 'sm' }) {
   const [expanded, setExpanded] = useState(false);
-  const { short, needsMore } = truncated(text);
+  const { short, needsMore } = truncated(text, size === 'lg' ? 200 : 130);
   return (
-    <ContextLens
-      label={label}
-      value={<span>{expanded ? text : short}</span>}
-      sub={
-        needsMore && (
-          <button type="button" className="lens-more-btn" onClick={() => setExpanded((e) => !e)}>
-            {expanded ? 'Show less' : 'View full standard'}
-          </button>
-        )
-      }
-    />
+    <div className={`reg-standard-text reg-standard-text--${size}`}>
+      {groupLabel && <span className="reg-standard-text-group">{groupLabel}</span>}
+      <span>{expanded ? text : short}</span>
+      {needsMore && (
+        <button type="button" className="lens-more-btn" onClick={() => setExpanded((e) => !e)}>
+          {expanded ? 'Show less' : 'View full standard'}
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -204,10 +286,18 @@ function StandardLens({ text, label = 'Standard' }: { text: string; label?: stri
  * not-comparable exception and regulatory citation deduplicated across years that share the same
  * value. Hovering/focusing an evidence cell drives the chart's enlarged point and a vertical
  * guide line, connecting "this year" to "this point" without a separate control. */
-export default function IndicatorVisualCard({ title, typeLabel, meaning, measuredAsLabel, unitSuffix, yAxisLabel, yearsAsc, activeYear, series, animationDelay }: Props) {
+export default function IndicatorVisualCard({ title, typeLabel, meaning, measuredAsLabel, unitSuffix, yAxisLabel, yearsAsc, activeYear, series, animationDelay, section }: Props) {
   const [hoverYear, setHoverYear] = useState<string | null>(null);
+  useThemeTick();
+  const gridColor = cssVar('--chart-grid', 'rgba(18,23,42,0.05)');
+  const axisTitleColor = cssVar('--chart-axis-title', '#4d5461');
+  const tooltipBg = cssVar('--chart-tooltip-bg', '#1c2127');
 
   const hasNumeric = series.some((s) => s.points.some((p) => p.value != null));
+  // the same fallback EvidenceRail uses per row (hoverYear, else the page's Focus Year) — lifted
+  // here too so the matrix's shared year header can highlight the whole active column, not just
+  // whichever cell happens to be hovered within one row.
+  const displayYear = hoverYear ?? activeYear;
 
   // A card can span several series that are NOT the same DISCOM (the Compare page merges one
   // series per jurisdiction onto the same card) — never silently pool their benchmarks/standards
@@ -219,7 +309,12 @@ export default function IndicatorVisualCard({ title, typeLabel, meaning, measure
   const benchDiverges = series.length > 1 && distinctBenchValues.length > 1;
   const bench = distinctBenchValues.length === 1 ? distinctBenchValues[0] : null;
   const benchmarkMeaning = firstNonNull(series, (p) => p.benchmarkMeaning);
-  const benchmarkValueText = benchmarkLensValue(series, bench, unitSuffix);
+  // A raw benchmark number can exist in the source even when it was never counted as `bench`
+  // above (comparisonPossible false/null on every point that has one) — the Regulatory Standard
+  // column still shows that recorded number (benchmark *availability* is its own fact), while
+  // whether it's usable for comparison is the compliance strip's separate concern below, never
+  // conflated here.
+  const rawBenchmark = bench ?? (!benchDiverges ? firstNonNull(series, (p) => p.benchmark) : null);
   // when every series agrees on one benchmark value, they're only ever the same regulator too
   // (states never share a commission) — so any series' own regulation citation names it.
   const sharedRegulator = bench != null ? regulatorFromRegulationText(firstNonNull(series, (p) => p.regulation)) : null;
@@ -236,21 +331,202 @@ export default function IndicatorVisualCard({ title, typeLabel, meaning, measure
   // case handled inline where each series renders (see `distinctRegulations` there).
   const constantRegulations = groupByText(series.map((s) => ({ label: s.label, value: allSame(s.points.map((p) => p.regulation)) })));
 
+  // Whether every series that has ANY not-comparable years shares the exact same situation (same
+  // years, same reason) — if so, one shared advisory says it once instead of repeating an
+  // identical callout per DISCOM (see CLAUDE.md/spec: consolidate only when genuinely identical,
+  // never suppress a real divergence). `allSame` returns null both when there's no shared value
+  // and when every series has nothing to report — the emptiness check below tells those apart.
+  const comparabilitySignatures = series.map(comparabilitySignature);
+  const anyNotComparable = comparabilitySignatures.some((sig) => sig !== '');
+  const sharedComparabilitySignature = allSame(comparabilitySignatures);
+  const hasSharedAdvisory = anyNotComparable && sharedComparabilitySignature != null && sharedComparabilitySignature !== '';
+  const sharedAdvisory = hasSharedAdvisory ? comparabilityMessage(series[0]) : null;
+
+  // The card-level verdict the compliance strip shows — 'null' when series genuinely disagree
+  // (one DISCOM comparable, another not), in which case the strip says so plainly instead of
+  // picking a side, and the existing per-series exception callouts below it (unaffected by this)
+  // carry the real, DISCOM-specific detail.
+  const seriesVerdicts = series.map(seriesComparabilityVerdict);
+  const sharedVerdict = allSame(seriesVerdicts);
+
+  // point/line color sits on the card's own panel background — matching the ring to it (instead of
+  // a fixed cream) keeps the "cutout" look correct in both themes rather than a stray light halo.
+  const pointBorder = cssVar('--panel', '#faf8f3');
   const datasets = series.map((s) => ({
     label: s.label,
     data: s.points.map((p) => p.value),
     borderColor: s.color,
-    borderWidth: 2,
+    borderWidth: 2.5,
     fill: series.length === 1,
     spanGaps: false,
     tension: 0,
     backgroundColor: hexToRgba(s.color, 0.07),
-    pointRadius: s.points.map((p) => (hoverYear && p.year === hoverYear ? 6 : 3)),
-    pointHoverRadius: 7,
+    pointRadius: s.points.map((p) => (hoverYear && p.year === hoverYear ? 7 : 4)),
+    pointHoverRadius: 8,
     pointBackgroundColor: s.color,
-    pointBorderColor: '#faf8f3',
-    pointBorderWidth: 1.5,
+    pointBorderColor: pointBorder,
+    pointBorderWidth: 2,
   }));
+
+  if (section === 'compliance') {
+    return (
+      <div className="chart-card visual-card animate-in" style={animationDelay ? { animationDelay: `${animationDelay}ms` } : undefined}>
+        <div className="visual-card-identity">
+          <div className="visual-card-title-row">
+            <h4>{title}</h4>
+            {typeLabel && <span className="visual-card-type">{typeLabel}</span>}
+          </div>
+          {meaning && <div className="visual-card-meaning">{meaning}</div>}
+        </div>
+
+        <div className="compliance-columns">
+          <div className="compliance-col compliance-col--standard">
+            <span className="compliance-col-label">Regulatory Standard</span>
+            {benchDiverges ? (
+              <div className="reg-standard-list">
+                {perSeriesBench
+                  .filter((b) => b.value != null)
+                  .map((b) => (
+                    <div key={b.label} className="reg-standard-item">
+                      <span className="reg-standard-item-label">{b.label}</span>
+                      <span className="reg-standard-value reg-standard-value--sm">{unitSuffix(b.value as number)}</span>
+                    </div>
+                  ))}
+              </div>
+            ) : rawBenchmark != null ? (
+              <>
+                <span className="reg-standard-value">{unitSuffix(rawBenchmark)}</span>
+                {benchmarkMeaning && <span className="reg-standard-sub">{benchmarkMeaning}</span>}
+                {standardShared && standardShared !== benchmarkMeaning && <StandardText text={standardShared} size="sm" />}
+              </>
+            ) : standardDiverges ? (
+              <div className="reg-standard-list">
+                {groupByText(perSeriesStandard).map((g) => (
+                  <StandardText key={g.text} text={g.text} groupLabel={formatGroupedLabel(g.labels)} size="sm" />
+                ))}
+              </div>
+            ) : standardShared ? (
+              <StandardText text={standardShared} />
+            ) : (
+              <span className="reg-standard-empty">No regulatory standard specified for this indicator.</span>
+            )}
+          </div>
+
+          <div className="compliance-col compliance-col--measure">
+            <span className="compliance-col-label">Reported Measure</span>
+            {reportedMeaning ? (
+              <>
+                <span className="reported-measure-text">{reportedMeaning}</span>
+                {yAxisLabel && <span className="reg-standard-sub">Unit: {yAxisLabel}</span>}
+              </>
+            ) : (
+              <span className="reg-standard-empty">No reporting definition specified.</span>
+            )}
+          </div>
+        </div>
+
+        {sharedVerdict === 'comparable' && (
+          <div className="compliance-strip compliance-strip--comparable">
+            <div className="compliance-strip-head">Comparable</div>
+            <div className="compliance-strip-text">The reported figures for every year shown can be assessed directly against the regulatory standard above.</div>
+          </div>
+        )}
+
+        {sharedVerdict === 'not-comparable' && (
+          <div className="compliance-strip compliance-strip--not-comparable">
+            <div className="compliance-strip-head">
+              {sharedAdvisory && sharedAdvisory.head === 'Not comparable across all years shown' ? 'Direct comparison unavailable' : (sharedAdvisory?.head ?? 'Direct comparison unavailable')}
+            </div>
+            {sharedAdvisory ? (
+              sharedAdvisory.constantReason ? (
+                <div className="compliance-strip-text">{sharedAdvisory.constantReason}</div>
+              ) : (
+                sharedAdvisory.distinctReasons.map((r) => (
+                  <div key={r.reason} className="compliance-strip-text">
+                    <b>{r.years}: </b>
+                    {r.reason}
+                  </div>
+                ))
+              )
+            ) : (
+              // every series agrees on the coarse verdict but disagrees on which years/why — the
+              // per-series detail below (never suppressed when `hasSharedAdvisory` is false) says
+              // it precisely per DISCOM instead of one, possibly-wrong, shared reason.
+              <div className="compliance-strip-text">See per-DISCOM detail below.</div>
+            )}
+          </div>
+        )}
+
+        {sharedVerdict === 'unavailable' && (
+          <div className="compliance-strip compliance-strip--unavailable">
+            <div className="compliance-strip-head">Assessment unavailable</div>
+            <div className="compliance-strip-text">The source data does not record whether the reported figures can be compared against the regulatory standard.</div>
+          </div>
+        )}
+
+        {sharedVerdict == null && series.length > 1 && (
+          <div className="compliance-strip compliance-strip--varies">
+            <div className="compliance-strip-head">Comparability varies by DISCOM</div>
+            {groupByText(series.map((s, i) => ({ label: s.label, value: seriesVerdicts[i] as string }))).map((g) => (
+              <div key={g.text} className="compliance-strip-text">
+                <b>{formatGroupedLabel(g.labels)}: </b>
+                {g.text === 'comparable' ? 'Comparable' : g.text === 'not-comparable' ? 'Not directly comparable — see below' : 'Assessment unavailable'}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {series.map((s) => {
+          // only rendered per-series when the comparability situation genuinely diverges between
+          // DISCOMs — when it's identical everywhere, `sharedAdvisory` above already said it once.
+          // Independent of that: per-year regulation-citation variation within this one DISCOM's
+          // own series always renders regardless, since it's an unrelated concern (item 8, not the
+          // comparability-warning consolidation in item 5).
+          const msg = hasSharedAdvisory ? null : comparabilityMessage(s);
+          const seriesRegulation = allSame(s.points.map((p) => p.regulation));
+          const distinctRegulations = seriesRegulation ? [] : Array.from(new Set(s.points.map((p) => p.regulation).filter((r): r is string => !!r)));
+          if (!msg && distinctRegulations.length === 0) return null;
+
+          return (
+            <div key={s.label} className="series-exception">
+              {msg && (
+                <div className="exception-callout">
+                  <div className="exception-callout-head">
+                    {series.length > 1 && <span className="exception-callout-label">{s.label}</span>}⚠ {msg.head}
+                  </div>
+                  {msg.constantReason ? (
+                    <div className="exception-callout-text">{msg.constantReason}</div>
+                  ) : (
+                    msg.distinctReasons.map((r) => (
+                      <div key={r.reason} className="exception-callout-text">
+                        <b>{r.years}: </b>
+                        {r.reason}
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+              {distinctRegulations.length > 0 && (
+                <div className="regulation-badge-group">
+                  {distinctRegulations.map((r, i) => (
+                    <RegulationBadge key={i} text={r} label={`${s.label} — regulation variant ${i + 1}`} />
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        {constantRegulations.length > 0 && (
+          <div className="visual-card-sources">
+            {constantRegulations.map((g) => (
+              <RegulationBadge key={g.text} text={g.text} label={series.length > 1 ? `${formatGroupedLabel(g.labels)} — source regulation` : 'Source regulation'} />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="chart-card visual-card animate-in" style={animationDelay ? { animationDelay: `${animationDelay}ms` } : undefined}>
@@ -260,20 +536,6 @@ export default function IndicatorVisualCard({ title, typeLabel, meaning, measure
           {typeLabel && <span className="visual-card-type">{typeLabel}</span>}
         </div>
         {meaning && <div className="visual-card-meaning">{meaning}</div>}
-      </div>
-
-      <div className="context-lens-row">
-        {benchDiverges ? (
-          perSeriesBench
-            .filter((b) => b.value != null)
-            .map((b) => <ContextLens key={b.label} label={`${b.label} benchmark`} value={unitSuffix(b.value as number)} />)
-        ) : (
-          <ContextLens label="Benchmark" value={benchmarkValueText} sub={benchmarkMeaning} />
-        )}
-        {reportedMeaning && <ContextLens label="Measured as" value={reportedMeaning} />}
-        {standardDiverges
-          ? groupByText(perSeriesStandard).map((g) => <StandardLens key={g.text} text={g.text} label={`${formatGroupedLabel(g.labels)} — Standard`} />)
-          : standardShared && <StandardLens text={standardShared} />}
       </div>
 
       {!hasNumeric && <div className="no-data-box" style={{ marginTop: 10 }}>No reported performance data available.</div>}
@@ -286,9 +548,9 @@ export default function IndicatorVisualCard({ title, typeLabel, meaning, measure
               animation: { duration: 700, easing: 'easeOutQuart' },
               interaction: { mode: 'nearest', intersect: false, axis: 'x' },
               plugins: {
-                legend: { display: series.length > 1, position: 'bottom', labels: { boxWidth: 8, usePointStyle: true, padding: 10, font: { size: 10.5 } } },
+                legend: { display: series.length > 1, position: 'bottom', labels: { boxWidth: 9, usePointStyle: true, padding: 14, font: { size: 11.5, weight: 600 } } },
                 tooltip: {
-                  backgroundColor: '#1c2127',
+                  backgroundColor: tooltipBg,
                   padding: 9,
                   cornerRadius: 7,
                   displayColors: true,
@@ -362,9 +624,9 @@ export default function IndicatorVisualCard({ title, typeLabel, meaning, measure
               scales: {
                 y: {
                   beginAtZero: true,
-                  grid: { color: 'rgba(18,23,42,0.05)' },
-                  ticks: { font: { size: 10.5 } },
-                  title: yAxisLabel ? { display: true, text: yAxisLabel, font: { size: 10, weight: 600 }, color: '#8a93a3' } : undefined,
+                  grid: { color: gridColor },
+                  ticks: { font: { size: 10.5 }, maxTicksLimit: 5 },
+                  title: yAxisLabel ? { display: true, text: yAxisLabel, font: { size: 10, weight: 600 }, color: axisTitleColor } : undefined,
                 },
                 x: { grid: { display: false }, ticks: { font: { size: 10.5 } } },
               },
@@ -372,67 +634,33 @@ export default function IndicatorVisualCard({ title, typeLabel, meaning, measure
         />
       </div>
 
-      {series.map((s) => {
-        const notComparablePts = s.points.filter((p) => p.comparisonPossible === false);
-        const constantReason = notComparablePts.length ? allSame(notComparablePts.map((p) => p.reasonNotComparable)) : null;
-        const distinctReasons = Array.from(new Set(notComparablePts.map((p) => p.reasonNotComparable).filter((r): r is string => !!r && r !== 'N/A')));
-        const seriesRegulation = allSame(s.points.map((p) => p.regulation));
-        // per-YEAR regulation-citation variation within this one DISCOM's own series — unlike the
-        // constant case below (pulled out and deduped across DISCOMs), this is inherently specific
-        // to this one series and stays rendered right under its own evidence rail.
-        const distinctRegulations = seriesRegulation ? [] : Array.from(new Set(s.points.map((p) => p.regulation).filter((r): r is string => !!r)));
+      <div className="indicator-matrix-head">
+        <span className="indicator-matrix-title">Year-wise reported values</span>
+        <span className="trend-legend-hint" title="↑/↓ show the raw year-on-year change; the colour (green = improved, red = declined) accounts for whether higher or lower is better for this specific indicator. Hover any value for the exact comparison.">
+          Trend key ⓘ
+        </span>
+      </div>
 
-        return (
-          <div key={s.label} className="series-block">
-            <EvidenceRail
-              yearsAsc={yearsAsc}
-              points={s.points}
-              unitSuffix={unitSuffix}
-              seriesLabel={series.length > 1 ? s.label : undefined}
-              color={series.length > 1 ? s.color : undefined}
-              hoverYear={hoverYear}
-              focusYear={activeYear}
-              onHoverYear={setHoverYear}
-            />
+      <div className="indicator-matrix-wrap">
+        <table className="indicator-matrix">
+          <thead>
+            <tr>
+              <th scope="col" className="matrix-row-head" />
+              {yearsAsc.map((y) => (
+                <th key={y} scope="col" className={y === displayYear ? 'active' : undefined}>
+                  {fyLabel(y)}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {series.map((s) => (
+              <EvidenceRail key={s.label} points={s.points} unitSuffix={unitSuffix} seriesLabel={s.label} color={s.color} hoverYear={hoverYear} focusYear={activeYear} onHoverYear={setHoverYear} />
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-            {notComparablePts.length > 0 && (
-              <div className="exception-callout">
-                <div className="exception-callout-head">
-                  {notComparablePts.length === s.points.length
-                    ? '⚠ Not comparable across all years shown'
-                    : `⚠ Not comparable in ${notComparablePts.length} of ${s.points.length} years`}
-                </div>
-                {constantReason && constantReason !== 'N/A' ? (
-                  <div className="exception-callout-text">{constantReason}</div>
-                ) : (
-                  distinctReasons.map((r) => (
-                    <div key={r} className="exception-callout-text">
-                      <b>{notComparablePts.filter((p) => p.reasonNotComparable === r).map((p) => fyLabel(p.year)).join(', ')}: </b>
-                      {r}
-                    </div>
-                  ))
-                )}
-              </div>
-            )}
-
-            {distinctRegulations.length > 0 && (
-              <div className="regulation-badge-group">
-                {distinctRegulations.map((r, i) => (
-                  <RegulationBadge key={i} text={r} label={`${s.label} — regulation variant ${i + 1}`} />
-                ))}
-              </div>
-            )}
-          </div>
-        );
-      })}
-
-      {constantRegulations.length > 0 && (
-        <div className="regulation-badge-group">
-          {constantRegulations.map((g) => (
-            <RegulationBadge key={g.text} text={g.text} label={series.length > 1 ? `${formatGroupedLabel(g.labels)} — source regulation` : 'Source regulation'} />
-          ))}
-        </div>
-      )}
     </div>
   );
 }

@@ -389,6 +389,25 @@ What shipped (the plan below is kept for history; decisions that differ from it 
     `:root:not([data-theme='dark'])`), because its navy text is unreadable on the dark street.
     The dark theme keeps its white logo with no panel. (An interim version forced the white logo
     in both themes.)
+- **Merged with the team's work (2026-09-30), locally only, not pushed.**
+  - Our work is on branch `ui-street-hero` (commit `dda9629`), which then merged `origin/main`
+    (team commits `172b43e`, `050c482`: new sidebar, About page, state-page and chart redesign,
+    tokens, tooltip redesign, `?view=map` deep link, new lede text).
+  - Conflicts were resolved in three files:
+    - `layout.tsx`: their Google Fonts `<link>` loading plus our `suppressHydrationWarning`.
+    - `HeroSection.tsx`: our street, photo, explore and glass timing, plus their 47% landing
+      offset, `?view=map` and legend move. Their new description text is kept, as the user
+      asked.
+    - `hero.css`: our 250vh track plus their `-56px` bottom margin, and our photo rules (they had
+      deleted the photo).
+  - `HeroMap.tsx` auto-merged: their tooltip plus our glass layer.
+  - Verified: `tsc` clean, production build OK (44 pages). Screenshots checked the cover (new
+    sidebar, new text, street), `?view=map` (map over the photo) and `/state/maharashtra`, with no
+    page errors.
+  - Lint errors remaining are all in the team's or older files (`DataRules` unescaped `'`,
+    `OnboardingTour`, `ThemeToggle`).
+  - To publish: push `ui-street-hero` and open a PR into `main`, or merge locally and push. Only
+    do this when the user says so.
 - **Not done yet:** `npm run build` (static export) was not run because the dev server was using
   the project. Run it before deploying.
 

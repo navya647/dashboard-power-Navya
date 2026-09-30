@@ -21,7 +21,7 @@ body {
   }
 }
 a {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 a:hover {
   color: var(--accent-light);

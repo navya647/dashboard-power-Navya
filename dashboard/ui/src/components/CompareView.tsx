@@ -101,7 +101,14 @@ export default function CompareView({ states }: Props) {
 
   const filteredAtomsByState = atomsByState.map(({ state, atoms }) => ({
     state,
-    atoms: atoms.filter((a) => matchesFilters(a, { discom: 'all', category: selectedCategory, type: selectedType, indicator: selectedIndicator })),
+    atoms: atoms.filter((a) =>
+      matchesFilters(a, {
+        discoms: [],
+        categories: selectedCategory === 'all' ? [] : [selectedCategory],
+        types: selectedType === 'all' ? [] : [selectedType],
+        indicators: selectedIndicator === 'all' ? [] : [selectedIndicator],
+      })
+    ),
   }));
   const cards = buildMultiDiscomComparableCards(filteredAtomsByState);
 
@@ -236,30 +243,59 @@ export default function CompareView({ states }: Props) {
         </div>
       )}
 
-      <div className="section-header">
-        <span className="section-label">Comparable Indicators</span>
-        <span className="section-title">Regulatory standards, benchmarks and targets, reported performance, compliance, and year-wise trends</span>
-      </div>
-
       {cards.length === 0 ? (
-        <p className="detail-placeholder">No comparable indicator is currently captured across every selected jurisdiction.</p>
+        <>
+          <div className="section-header">
+            <span className="section-label">Comparable Indicators</span>
+            <span className="section-title">Regulatory standards, benchmarks and targets, reported performance, compliance, and year-wise trends</span>
+          </div>
+          <p className="detail-placeholder">No comparable indicator is currently captured across every selected jurisdiction.</p>
+        </>
       ) : (
-        <div className="chart-grid">
-          {cards.map((c, idx) => (
-            <IndicatorVisualCard
-              key={c.id}
-              title={c.indicator}
-              typeLabel={c.type}
-              meaning={c.meaning}
-              unitSuffix={c.unitSuffix}
-              yAxisLabel={c.yAxisLabel}
-              yearsAsc={YEARS_ASC}
-              activeYear={activeYear}
-              series={c.series}
-              animationDelay={idx * 60}
-            />
-          ))}
-        </div>
+        <>
+          <div className="section-header">
+            <span className="section-label">Comparable Indicators</span>
+            <span className="section-title">Regulatory Standards &amp; Compliance</span>
+          </div>
+          <div className="chart-grid">
+            {cards.map((c, idx) => (
+              <IndicatorVisualCard
+                key={c.id}
+                section="compliance"
+                title={c.indicator}
+                typeLabel={c.type}
+                meaning={c.meaning}
+                unitSuffix={c.unitSuffix}
+                yAxisLabel={c.yAxisLabel}
+                yearsAsc={YEARS_ASC}
+                activeYear={activeYear}
+                series={c.series}
+                animationDelay={idx * 60}
+              />
+            ))}
+          </div>
+
+          <div className="section-header">
+            <span className="section-title">Year-wise Trends</span>
+          </div>
+          <div className="chart-grid">
+            {cards.map((c, idx) => (
+              <IndicatorVisualCard
+                key={c.id}
+                section="trends"
+                title={c.indicator}
+                typeLabel={c.type}
+                meaning={c.meaning}
+                unitSuffix={c.unitSuffix}
+                yAxisLabel={c.yAxisLabel}
+                yearsAsc={YEARS_ASC}
+                activeYear={activeYear}
+                series={c.series}
+                animationDelay={idx * 60}
+              />
+            ))}
+          </div>
+        </>
       )}
 
       <div className="complete-data-band">

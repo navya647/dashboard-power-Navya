@@ -76,6 +76,9 @@ to have zero reported figures in any of them.
   once per tab and comes back after the tab is closed and reopened, not just once ever.
 - Routes use slug params (`/state/madhya-pradesh`, via `slugify()` in `lib/slug.ts`),
   not raw state names — `next dev` + `output: export` needs the exact param match.
+- Never push commits to git (e.g. `git push`) unless explicitly asked to do so in that
+  moment. Creating local commits when requested is fine; pushing them requires a
+  separate, explicit instruction each time.
 
 ## Shared UI patterns
 
