@@ -229,3 +229,246 @@ real user ever reports seeing a flash while scrolling, but not chased further he
     clustered on one side anymore, the composition needed far less panning to stay clear of the
     panel, which freed up room to zoom in and recenter. Re-verified both landing and fully-scrolled
     states plus hover on the new node layout; confirmed a clean `next build`.
+
+## Session 2026-09-29: glass landing map, hydration fix, animated street hero
+
+Work on the current 2D-map app (the WebGL experiment above is not what's live).
+
+- **Hydration warning fixed** (`src/app/layout.tsx`): `THEME_INIT_SCRIPT` sets `data-theme` on
+  `<html>` before React hydrates, so server and client attributes differed. Added
+  `suppressHydrationWarning` to `<html>` only (it doesn't cover children), with a comment
+  explaining why. This was the app's own code, not a browser extension.
+- **Glass landing map** (`HeroMap.tsx`, `HeroSection.tsx`, `lib/geo2d.ts`, `styles/hero.css`):
+  - On the landing view India is one borderless, translucent "glass" shape with a glowing silver
+    outline and a soft light streak tracing the mainland outline (80s per lap). No moving dot, which
+    the user asked to remove.
+  - As the user scrolls it cross-fades into the normal coloured state map + legend. The fade runs
+    at scroll progress 0.2 → 0.5 via the `--hero-glass` CSS variable set in `HeroSection.tsx`.
+  - `geo2d.ts` now also returns `outline` (mainland) and `outlineAll` (mainland + islands). These
+    are built from edges that belong to only one state; neighbouring states share exact vertices in
+    `india-states.geojson`, so shared edges are internal borders. That leaves one clean
+    5,548-point mainland loop.
+  - Glass fill opacity is set by the `stopOpacity` values (0.42 / 0.18 / 0.30) in `HeroMap.tsx`.
+    Streak speed is `dur="80s"`.
+  - Mobile (≤980px) and reduced motion: the glass layer is hidden and the streak is off,
+    respectively.
+  - An earlier silver-gradient version kept the state borders; the user rejected it, and it was
+    replaced by the glass version.
+- **Gotcha: BOMs broke page sizing.** Rewriting files with Windows PowerShell's
+  `Set-Content -Encoding utf8` adds a UTF-8 BOM. In a bundled CSS file the BOM attaches to the first
+  rule after the opening comment, and the browser drops that rule. In `hero.css` that rule is the
+  hero sizing rule, so the whole page layout broke. The BOMs were stripped from `hero.css` and
+  `HeroMap.tsx`, and no other file in `src` has one. Don't write source files with PowerShell
+  `Set-Content`/`Out-File`.
+- **Standalone animated hero prototype**: `D:\power dashboard\animated-hero\`, outside this repo.
+  It isn't wired into the Next.js app yet.
+  - An isometric dusk street of 8 townhouses with rolling power cuts, a pole-mounted transformer,
+    electricity pulses, and a full-street outage every 60s.
+  - Plain HTML/CSS/JS with GSAP 3.12.5 from cdnjs.
+  - `scene.js` generates the SVG; `main.js` holds `CONFIG` plus the house/master timelines.
+  - Run it by opening `index.html`. `powerHero.fullOutage()` in the console triggers an outage.
+  - The restore flicker is 3 flickers over 0.9s rather than the brief's 0.6s, to stay under 3
+    flashes a second.
+  - Its `README.md` documents the timings, the `setHouseSchedule` data hook, and the layer ids
+    for swapping in a professional illustration.
+  - 2026-09-30: cut down to **3 houses**, spaced twice as far apart (`SPACING` 340 and
+    `FIRST_X` 400 in `scene.js`), centred on the transformer. Rolling cuts are now **2.5s on /
+    2.5s off** per house with phases `[0, 1.7, 3.4]` so the three are out of step. The
+    whole-street outage now happens every 30s and lasts 5s. Camera framing was adjusted for both
+    desktop and mobile.
+  - 2026-09-30 (later), **current behaviour, signed off by the user**: `CONFIG.MODE = 'street'`,
+    a single whole-street cycle of **5s on / 5s off** (`STREET_ON: 5`, `STREET_OFF: 5` at the top
+    of `main.js`). Timing was checked in the browser: the street cuts at 6.8s, returns at 11.8s,
+    and cuts again at 16.8s.
+    - **On (5s):** all 3 homes are lit, with pulses flowing, the fan spinning and the TV
+      flickering. The 5s starts when power returns, so it includes the short restore stutter.
+    - **Burst:** the transformer gives a single bright flash and the birds fly off the wire. All
+      homes cut in the same instant, the pulses stop, and the **whole page** dims, card and HUD
+      included. That's a fixed `#page-dim` overlay (`PAGE_DIM` 0.28) plus `#scene-dim`. The pill
+      shows "Outage across the street" with a timer.
+    - **Off (5s):** then supply returns to every house together with the stutter
+      (`FLICKER`: 3 flickers over 0.9s, flash-safe). The dim lifts and the birds fly back.
+    - **Power-on effect** (added 2026-09-30): when supply returns, `energize()` in `main.js`
+      plays at the transformer, over about 1.5s in total.
+      - Small electric arcs draw in between the three bushings and down to the tank.
+      - A soft blue-white glow swells and fades.
+      - A ring ripples outward.
+      - The artwork is `#transformer-energize` in `scene.js` (with `energize-glow`,
+        `energize-ring` and `energize-arcs`, plus an `#energize-grad` gradient).
+      - It uses smooth fades only, with no blinking, so it's flash-safe. It pairs with the burst
+        (`spark()`) on power-off.
+    - **Layout redesign** (2026-09-30), from a GTA "Groove Street" reference the user sent: the
+      straight row of houses was replaced by a **US-style cul-de-sac**.
+      - An entry road with a double yellow line comes in from the lower-left and ends in a round
+        turnaround with sidewalks and a curb.
+      - Six single-storey bungalows with low hip roofs sit close together, with driveways, flower
+        beds and garages. Five are around the turnaround facing its centre (angles -122, -86, -50,
+        -14 and 22 degrees in `HOUSES`) and one is on the entry road.
+      - There are tall palms behind the houses, a chain-link fence along the road, and street lamps.
+      - The transformer pole is on the turnaround sidewalk; service drops fan out from it to each
+        house.
+      - To support this, `scene.js` got generic helpers: `house()` handles any orientation
+        (visible walls and roof planes are picked by normal against the view direction
+        (1, -1, -1)), `WALL()` projects wall-plane transforms, and `palm()` draws the palms.
+      - main.js now pairs lamps with houses by 2D distance (`data-cx` / `data-cy`).
+      - Framing: `VIEW_DESKTOP [120, -715, 1120, 630]` (zoomed in at the user's request; was
+        1300 wide). Mobile `VIEW_MOBILE_WIDTH` is 560.
+      - A parked car was tried and then removed at the user's request.
+      - The transformer's bushing lead wires (which looked like two "horns") were removed as
+        unneeded detail.
+      - The birds now perch on the service drop to house 4, on the right side of the turnaround.
+      - The far backdrop buildings were removed at the user's request. `#layer-far` is now just
+        plain lawn continuing past the lot, so at the current zoom the whole backdrop is grass and
+        no sky shows.
+    - The old per-house rolling cuts are still available with `MODE: 'rolling'`, which uses `ON`,
+      `OFF` and `PHASE` (2.5s / 2.5s, phases `[0, 1.7, 3.4]`).
+    - Also fixed a horizontal scrollbar: `.hero` used `width: 100vw`, which includes the vertical
+      scrollbar; it's now `100%`.
+
+## DONE 2026-09-30: animated street is now the landing page background
+
+What shipped (the plan below is kept for history; decisions that differ from it are noted here):
+- **Landing view:** the animated cul-de-sac replaces both the `hero-community.png` photo and the
+  landing-state India map. The left gradient (`.tower-photo-fade`), headline, lede and "Scroll to
+  expand the map" line are unchanged. The map no longer shows on the cover.
+- **Files:**
+  - `scripts/street-scene.js` is a copy of the prototype's scene builder and is the artwork
+    source.
+  - `scripts/build-street-svg.mjs` runs it against a fake DOM and writes
+    `src/lib/streetSvg.generated.ts` (static markup, ~73 KB, hydration-safe). **After editing
+    street-scene.js, run `node scripts/build-street-svg.mjs`.**
+  - `src/lib/streetAnimation.ts` is the power-cycle controller (5s on / 5s off, burst, birds,
+    energise, stutter). It uses the **Web Animations API plus a pausable clock, not GSAP**, so
+    there's no new dependency.
+  - `src/components/StreetHero.tsx` holds the SVG, status pill and pause button.
+  - `src/styles/street.css` has the palette and state rules, all scoped under `.street-layer`.
+- **Dim on burst:** it's scoped to the street's own `#scene-dim`, so the headline, gradient,
+  sidebar and menu never darken.
+- **Scroll timeline** (`HeroSection` `applyStyles`):
+  - The street fades out and the camera pulls back (scale 1 → 0.93, drift up) over 12–42%. Its
+    loop pauses once it's gone.
+  - The map fades in over 20–42%, glass outline first.
+  - Glass cross-fades into the state map over 40–60%.
+  - The legend and compare panel arrive over 60–97% (as before).
+  - `.hero-stage` is now 250vh (was 190vh) for a more gradual scrub.
+- **"Explore dashboard" cue** (`.hero-explore`): a glass pill with a softly bobbing down arrow,
+  centred at the bottom of the cover. It fades out over 4–30%. Clicking it glides to the fully
+  revealed map with a custom 1.7s easeInOutCubic scroll (`glideTo`).
+  - The end-snap `settle()` now uses the same glide (1.1s) instead of the browser's smooth scroll,
+    which covered the short track in about 0.3s and felt abrupt.
+  - Any wheel, touch or key input cancels a glide.
+- **Mobile (≤980px):** the street is a static-framed background at 0.45 opacity with the loop
+  still running. The pill sits in the flow under the headline (`order: 1`) and scrolls to the
+  map. The HUD is hidden.
+- **Verified:**
+  - `tsc` is clean and my new files lint clean. The 3 existing lint errors are in
+    `OnboardingTour`, `Sidebar` and `ThemeToggle`, untouched.
+  - Playwright screenshots at 1440 and 390 px: cover, mid-glide (glass outline over the state map)
+    and fully revealed. No page errors and no horizontal overflow.
+  - The pinned layer stays at `top: 0` throughout the scroll.
+- **Community photo moved to the map view** (user's call, after discussion): `hero-community.png` is
+  back as the backdrop *behind the map*.
+  - It sits under the street and fades in over 15–45% as the street hands off, settling at
+    `PHOTO_OPACITY` 0.3 in `HeroSection.tsx`.
+  - It keeps its slow sideways drift.
+  - It's hidden on the cover (CSS base opacity 0) and hidden on mobile, where the street is the
+    only backdrop.
+  - Reasoning: an animated street behind the interactive map would compete with the data (the
+    burst and dim every 10s), while the photo adds a "who this affects" layer at almost no cost.
+- **Light-theme fixes (from a user screenshot on a 3440px screen):**
+  - `.tower-photo-fade` is now sized to the headline column instead of 28% → 60% of the viewport.
+    The old fade read as a long white fog over the dark street on wide screens.
+  - A first short linear fade (about 260px) felt abrupt, so the final version is solid to
+    `gutter + 440px`, then an **eased ~580px falloff**. The `color-mix` stops go 88 → 66 → 40 →
+    18 → 5 → 0% paper, so it drops quickly near the text and feathers out like a vignette.
+  - While the street dominates (`streetT < 0.5`), HeroSection adds `.hero-on-street` to
+    `.hero-sticky`. That hides the paper-coloured `.hero-logo-fade` glow, which showed as a light
+    blob behind the Ashoka logo.
+  - Logo on the street: the light theme keeps the **coloured** logo (the user wanted it) on a
+    small frosted light panel (`.hero-on-street .hero-coverage-badge` under
+    `:root:not([data-theme='dark'])`), because its navy text is unreadable on the dark street.
+    The dark theme keeps its white logo with no panel. (An interim version forced the white logo
+    in both themes.)
+- **Not done yet:** `npm run build` (static export) was not run because the dev server was using
+  the project. Run it before deploying.
+
+## Original plan (2026-09-30), kept for reference
+
+Goal: the animated street from `D:\power dashboard\animated-hero\` becomes the first thing people
+see on `/`, with a few changes. Scrolling hands off smoothly to the existing glass map, and then
+to the interactive state map. Nothing below has been built yet; confirm with the user before
+starting.
+
+### Current landing page (for reference)
+- `src/app/page.tsx` renders `HeroSection`, but only after `useData()` finishes. Until then the
+  page shows a plain "Loading dashboard data…" line.
+- `HeroSection.tsx` is a tall sticky scroll stage driven by one smoothed scroll value `p`:
+  - The editorial copy and the `hero-community.png` photo fade out over 12–45%.
+  - The map moves to the centre by 60% (`MAP_SETTLE_END`).
+  - The glass skin fades into the state map over 20–50% (`--hero-glass`).
+  - The legend and compare panel fade in over 60–97%.
+  - When scrolling stops, the page snaps to one end.
+- Everything is disabled at 980px and below (mobile gets the static final layout).
+- The app uses **no GSAP**. It uses plain requestAnimationFrame and d3-geo, and it's a static
+  export (`output: 'export'`).
+
+### Plan
+1. **Port the street into React. Don't iframe it or load the vanilla scripts.**
+   - New `src/components/street/StreetScene.tsx` renders the SVG. Move the geometry builders from
+     `scene.js` into `src/lib/streetScene.ts` as pure functions that return the SVG markup string,
+     and inject it once via `dangerouslySetInnerHTML`. The markup is static and deterministic, so
+     it's hydration-safe.
+   - New `src/lib/streetAnimation.ts` holds a plain TS port of `main.js`, `street` mode only, with
+     the same `CONFIG`. Start it in a `useEffect` and return a cleanup that kills timelines,
+     observers and listeners.
+   - Colours go into `src/styles/street.css`. Reuse the app's `tokens.css` where the palette
+     overlaps, and add a light-theme variant, since the app has a theme toggle.
+2. **Choose the animation engine.** Either add `gsap` as an npm dependency (~70 KB; ScrollTrigger
+   probably isn't needed), or rewrite the timelines on the rAF/`remap()` helpers `HeroSection`
+   already uses. Recommendation: add `gsap` for the street loop only and leave HeroSection's
+   scroll maths as it is. Ask the user.
+3. **Changes to the street for the landing page:**
+   - Drop the standalone title card, org lockup and placeholder sections. HeroSection already has
+     the editorial headline and the ACPET logo, so reuse those over the street.
+   - Keep the status pill and pause button, restyled to match the app's glass panels.
+   - Scope `#page-dim` to the hero stage instead of the whole viewport, so the sidebar and menu
+     don't flash dark. Or keep it full-page if the user prefers; ask.
+   - The street replaces the `hero-community.png` photo layer in the editorial phase.
+4. **Scroll transition, street → map.** This is the part to get right. One continuous camera move,
+   driven by HeroSection's existing `p`:
+   - **0–15%:** the street loop plays with the headline over it.
+   - **15–40%:** the street loop pauses on a *powered* frame. The camera pulls up and back (scale
+     the street SVG down with a slight upward translate) while the street fades out. The glowing
+     overhead line + pulses fade last and cross-fade into the glass map's glowing outline, so the
+     "electricity" visually becomes the outline of India.
+   - **40–60%:** the glass map settles in the centre (existing behaviour, retimed).
+   - **60–97%:** the glass fades into the state map and the legend and compare panel arrive
+     (existing).
+   - Reversing the scroll plays it all backwards and resumes the street loop at `p < 15%`.
+   - Keep the existing end-snap `settle()`.
+   - Pause the street loop entirely once `p > 40%` or the hero is off-screen, so there's no hidden
+     animation cost.
+5. **Loading:** render the street and headline immediately, before `useData()` resolves, so the
+   first paint is the animated street instead of "Loading…". Only the map layer needs the data.
+6. **Mobile (≤980px):** show a shorter, static-framed street (the transformer plus 3 houses, as
+   in the standalone) above the map, with the loop running and no scroll-driven transition. This
+   matches how HeroSection already opts out on mobile.
+7. **Accessibility:**
+   - Reduced motion: a static lit street and a straight cross-fade to the map, with no loop and no
+     dim.
+   - Keep the 3-flashes-per-second limit.
+   - Give the pause button a visible focus ring.
+   - Mark the street SVG `aria-hidden` or give it a single `aria-label`.
+8. **Verify:**
+   - `npm run build` (static export) and `npm run lint`.
+   - Playwright screenshots at 1440 and 390 px, at `p` = 0, 0.25, 0.5 and 1.
+   - Check that state clicks still route to `/state/<slug>` and that compare mode still works.
+   - Check the page doesn't scroll sideways (`scrollWidth === innerWidth`).
+   - Save files with the Edit/Write tools, never PowerShell `Set-Content` (see the BOM gotcha
+     above).
+
+### Open questions for the user
+- Full-page dim, or hero-only dim, on the burst?
+- Is the GSAP dependency OK?
+- Keep the headline text exactly as it is now?
+- Should the "Scroll to expand the map" cue stay?

@@ -25,7 +25,9 @@ const THEME_INIT_SCRIPT = `(function(){try{var s=localStorage.getItem('acpet-the
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${montserrat.variable} ${playfair.variable}`}>
+    // suppressHydrationWarning: THEME_INIT_SCRIPT sets data-theme before React hydrates, so the
+    // attribute intentionally differs from the server HTML
+    <html lang="en" className={`${montserrat.variable} ${playfair.variable}`} suppressHydrationWarning>
       <body>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <DataProvider>

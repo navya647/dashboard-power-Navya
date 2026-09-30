@@ -11,7 +11,9 @@
      as a smooth scrub, without much left over once it's done settling — a taller track here was
      found to leave a stretch of scroll where the view had already fully arrived and nothing was
      left to animate, which read as dead/blank scroll space before the section released. */
-  height: 190vh;
+  /* 250vh (was 190vh): the landing view now opens on the animated street, so the street → map
+     hand-off needs a longer, more gradual scrub to feel smooth */
+  height: 250vh;
   margin: -72px -44px 0;
 }
 /* no padding here: every child is position:absolute (there's no in-flow content at all), and a
@@ -115,7 +117,7 @@
   display: block;
   object-fit: cover;
   object-position: 50% 42%;
-  opacity: 0.5;
+  opacity: 0; /* hidden on the cover (the street is there); HeroSection fades it in behind the map */
   transform: scale(1.08);
 }
 /* the left-hand pylon (near the editorial copy) reads as clutter while that copy is on top of it,
@@ -129,7 +131,73 @@
 .tower-photo-fade {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to right, var(--paper) 0%, var(--paper) 28%, transparent 60%);
+  /* sized to the headline block, not the viewport (a 28% → 60% fade read as a long fog on wide
+     screens), but with a long, eased falloff (~580px) so it still flows: solid behind the text,
+     then the paper colour drops off quickly at first and feathers out softly, like a vignette,
+     rather than fading at a constant rate. */
+  background: linear-gradient(
+    to right,
+    var(--paper) 0,
+    var(--paper) calc(var(--hero-gutter) + 440px),
+    color-mix(in srgb, var(--paper) 88%, transparent) calc(var(--hero-gutter) + 540px),
+    color-mix(in srgb, var(--paper) 66%, transparent) calc(var(--hero-gutter) + 650px),
+    color-mix(in srgb, var(--paper) 40%, transparent) calc(var(--hero-gutter) + 770px),
+    color-mix(in srgb, var(--paper) 18%, transparent) calc(var(--hero-gutter) + 890px),
+    color-mix(in srgb, var(--paper) 5%, transparent) calc(var(--hero-gutter) + 980px),
+    transparent calc(var(--hero-gutter) + 1020px)
+  );
+}
+
+/* "Explore dashboard" cue: a glass pill centred near the bottom of the landing view, with a softly
+   bobbing arrow. Clicking it glides to the end of the reveal (HeroSection's exploreDashboard). Its
+   opacity/offset are scroll-driven inline; it fades out a little ahead of the headline. */
+.hero-explore {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  bottom: 40px;
+  transform: translate(-50%, 0);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 11px 22px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(14, 20, 38, 0.42);
+  backdrop-filter: blur(12px) saturate(1.2);
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
+  box-shadow: 0 10px 30px rgba(4, 8, 20, 0.35);
+  color: #f6f1e8;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  will-change: opacity, transform;
+  transition: background 220ms var(--ease), border-color 220ms var(--ease), box-shadow 220ms var(--ease);
+}
+.hero-explore:hover {
+  background: rgba(24, 32, 56, 0.6);
+  border-color: rgba(255, 255, 255, 0.36);
+  box-shadow: 0 14px 36px rgba(4, 8, 20, 0.45);
+}
+.hero-explore:focus-visible {
+  outline: 2px solid #ffd66b;
+  outline-offset: 4px;
+}
+.hero-explore-arrow {
+  width: 16px;
+  height: 16px;
+  animation: hero-explore-bob 1.8s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+@keyframes hero-explore-bob {
+  0%, 100% { transform: translateY(-2px); opacity: 0.7; }
+  50% { transform: translateY(4px); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-explore-arrow { animation: none; }
 }
 
 /* top-right counterpart to .tower-photo-fade's left-edge fade — same paper-color-to-transparent
@@ -146,6 +214,29 @@
   height: 220px;
   background: radial-gradient(ellipse at top right, var(--paper) 0%, var(--paper) 28%, transparent 65%);
   pointer-events: none;
+  transition: opacity 400ms var(--ease);
+}
+/* While the animated street is the backdrop (.hero-on-street, toggled by HeroSection), the logo
+   sits on a dark scene in both themes: use the white logo and drop the paper-coloured glow behind
+   it, which otherwise shows as a light blob over the street. */
+.hero-on-street .hero-logo-fade {
+  opacity: 0;
+}
+/* light theme keeps its coloured logo on the street too, but its navy text needs a light surface:
+   a small frosted panel sized to the logo (instead of the old large paper glow). The dark theme's
+   white logo reads on the street as-is. */
+.hero-coverage-badge {
+  transition: background 400ms var(--ease), box-shadow 400ms var(--ease);
+}
+:root:not([data-theme='dark']) .hero-on-street .hero-coverage-badge {
+  top: 12px;
+  right: 12px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: rgba(238, 241, 247, 0.86);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 6px 20px rgba(4, 8, 20, 0.25);
 }
 
 /* top-right counterweight to the hamburger button (fixed top-left, see layout.css) — sits above
@@ -297,6 +388,37 @@
 }
 .hero-map-svg {
   display: block;
+}
+/* glass landing skin over the map — --hero-glass is scroll-driven from HeroSection (1 on the
+ * landing view, 0 once the map has settled). The real state map cross-fades in as it goes. The
+ * skin is never interactive, so hover/click always fall through to the state paths beneath. */
+.hero-map-states {
+  opacity: calc(1 - var(--hero-glass, 1));
+}
+.hero-map-glass {
+  opacity: var(--hero-glass, 1);
+  pointer-events: none;
+}
+.hero-glass-fill {
+  filter: drop-shadow(0 0 18px rgba(200, 215, 235, 0.25));
+}
+.hero-glass-edge {
+  stroke: rgba(235, 240, 248, 0.85);
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 3px rgba(225, 235, 250, 0.9)) drop-shadow(0 0 10px rgba(190, 210, 240, 0.5));
+}
+.hero-glass-trail {
+  stroke: #ffffff;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-dasharray: 60 940;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.9));
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-glass-motion {
+    display: none;
+  }
 }
 .hero-state-path {
   transition: fill 260ms var(--ease), stroke 220ms var(--ease), filter 200ms var(--ease);
@@ -721,6 +843,13 @@
    up fully visible/interactive and laid out as a normal static stack instead of the desktop
    cinematic composition, which doesn't suit a narrow viewport. */
 @media (max-width: 980px) {
+  /* mobile skips the scroll reveal and shows the final map, so no glass skin */
+  .hero-map-glass {
+    display: none;
+  }
+  .hero-map-states {
+    opacity: 1;
+  }
   .hero-stage {
     height: auto;
     /* horizontal offset matches main.app-main's mobile padding (20px, see layout.css) — left at
@@ -732,6 +861,18 @@
      so there's nothing for this CTA to be inviting the user to scroll toward. */
   .hero-cta {
     display: none;
+  }
+  /* no pinned stage on mobile: the cue sits in the flow under the headline and jumps to the map */
+  .hero-explore {
+    position: relative;
+    left: auto;
+    bottom: auto;
+    display: flex;
+    order: 1; /* same as .hero-editorial, and later in the DOM, so it sits right under the headline */
+    margin: 4px auto 8px;
+    opacity: 1 !important;
+    transform: none !important;
+    pointer-events: auto !important;
   }
   .hero-sticky {
     position: static;
@@ -762,8 +903,9 @@
   .overlay-compare {
     pointer-events: auto !important;
   }
+  /* mobile has no scroll hand-off: the animated street is the one backdrop behind the stack */
   .tower-photo-img {
-    opacity: 0.5 !important;
+    display: none;
   }
   /* editorial and map are stacked, not overlapping, on mobile — there's nothing to declutter for,
      and the scroll-driven JS that normally toggles this doesn't run below the breakpoint. */

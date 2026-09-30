@@ -1,0 +1,151 @@
+/* ---------- animated street: the landing page's background (StreetHero.tsx) ----------
+   Palette and state rules ported from the standalone prototype (animated-hero/style.css).
+   Everything is scoped under .street-layer so these variable and class names can't leak into
+   the rest of the app. streetAnimation.ts only toggles the `off` class; the rules below decide
+   what "off" looks like. There are no transitions, so cuts are abrupt. */
+.street-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  transform-origin: 62% 55%;
+  will-change: opacity, transform;
+
+  /* sky */
+  --sky-top: #0e1834; --sky-mid: #27386a; --sky-low: #6f567c; --sky-horizon: #e4966a;
+  --sun-glow: #f3a86f; --cloud: #e9b7a6; --star: #f6ecd8;
+  /* ground */
+  --lawn: #33493c; --lawn-dark: #2b4034; --soil: #4a3a30;
+  --paving: #7c7e86; --paving-line: #676970; --kerb: #a2a2a6;
+  --road: #23262e; --road-line: #d9d2b6; --road-yellow: #d8b24a; --road-patch: #2d3039;
+  /* walls and roofs */
+  --wall1-left: #e2cca9; --wall1-front: #c2a883; --wall1-top: #eddcbf;
+  --wall2-left: #dcb0a1; --wall2-front: #b98e84; --wall2-top: #e8c4b8;
+  --wall3-left: #b8c6d2; --wall3-front: #94a4b4; --wall3-top: #cdd8e1;
+  --wall4-left: #c4d0b1; --wall4-front: #9fad8a; --wall4-top: #d5dfc5;
+  --wall5-left: #e4cb8c; --wall5-front: #c1a66a; --wall5-top: #efdca8;
+  --roof1-top: #a9523c; --roof1-edge: #74321f; --roof1-line: #7c3a28;
+  --roof2-top: #56617a; --roof2-edge: #363d50; --roof2-line: #3f475c;
+  --roof3-top: #4c675a; --roof3-edge: #2f4439; --roof3-line: #37503f;
+  --roof4-top: #7a5842; --roof4-edge: #4e3727; --roof4-line: #5a412f;
+  --roof-flat: #6c6f78;
+  /* cul-de-sac details */
+  --palm-trunk: #7b6450; --palm-ring: #5e4a3a; --palm-1: #2e573a; --palm-2: #467a50;
+  --chain: #9aa0a6;
+  --frame: #ebe4d7; --sill: #d5ccbc; --door: #573b2c;
+  --garage-door: #d2cdc3; --garage-line: #aaa498;
+  --hedge-top: #50795a; --hedge-left: #3f6447; --hedge-front: #33533b;
+  --flower-1: #f0a3b5; --flower-2: #f6d77a; --flower-3: #f3f0e6;
+  /* lighting */
+  --win-on-1: #ffe3a1; --win-on-2: #ffb85c; --win-off: #2a3547;
+  --glow: #ffb65a; --spill: #ffc56e; --ceil: #fff6d8; --tv: #8ec8ff; --fan: #3d2f22; --shade: #080c1c;
+  /* grid */
+  --pole-light: #8b7b69; --pole-dark: #5b4f43; --wire: #131822; --pulse: #ffe8a6;
+  --tx-top: #9ba2a9; --tx-left: #80878f; --tx-front: #636a72; --tx-fin: #4b5158;
+  --bushing: #cbc3b0; --lamp-head: #d8d2c2; --lamp-light: #ffd98a; --bird: #10131b;
+  /* HUD */
+  --street-ok: #6fd49a; --street-outage: #ff6b5e;
+}
+.street-scene {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.street-scene .pane { fill: url(#pane-on); }
+.street-scene .off .pane { fill: var(--win-off); }
+.street-scene .glow-rect { fill: var(--glow); opacity: 0.75; }
+.street-scene .off .glow-rect,
+.street-scene .off .ceil,
+.street-scene .off .tv-wrap { opacity: 0; }
+.street-scene .shade { opacity: 0; pointer-events: none; }
+.street-scene .off .shade { opacity: 0.32; }
+.street-scene .spill.off,
+.street-scene .lamp-pool.off,
+.street-scene .lamp.off .lamp-glow { opacity: 0; }
+.street-scene .lamp.off .lamp-bulb { fill: #5d6270; }
+.street-scene .wire { fill: none; stroke: var(--wire); stroke-width: 1.3; stroke-linecap: round; }
+.street-scene .pulse {
+  fill: none;
+  stroke: var(--pulse);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 6 58;
+  filter: url(#glow);
+}
+.street-scene .pulse.off,
+.street-scene .drop.off .pulse { opacity: 0; }
+.street-scene .lamp-arm { fill: none; stroke: var(--pole-dark); stroke-width: 2; }
+.street-scene .bird { fill: var(--bird); }
+.street-scene .bird .wing { opacity: 0; transform-box: fill-box; transform-origin: 50% 100%; }
+.street-scene .bird.flying .wing { opacity: 1; }
+.street-scene .fan,
+.street-scene .flash,
+.street-scene .energize-glow,
+.street-scene .energize-ring { transform-box: fill-box; transform-origin: center; }
+.street-scene #scene-dim { fill: #050814; opacity: 0; pointer-events: none; }
+.street-scene #transformer-spark,
+.street-scene #transformer-energize { opacity: 0; pointer-events: none; }
+
+/* status pill + pause button, bottom-right of the landing view */
+.street-hud {
+  position: absolute;
+  right: var(--hero-gutter, 32px);
+  bottom: 28px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #f6f1e8;
+  pointer-events: auto; /* .hero-bg-fabric is pointer-events: none */
+}
+.street-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 14px 7px 12px;
+  border-radius: 999px;
+  background: rgba(14, 20, 38, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  font-size: 12.5px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.street-pill-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--street-ok);
+  box-shadow: 0 0 10px var(--street-ok);
+}
+.street-pill[data-state='outage'] .street-pill-dot { background: var(--street-outage); box-shadow: 0 0 10px var(--street-outage); }
+.street-toggle {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(14, 20, 38, 0.5);
+  color: inherit;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.street-toggle svg { width: 12px; height: 12px; fill: currentColor; }
+.street-toggle:hover { background: rgba(255, 255, 255, 0.12); }
+.street-toggle:focus-visible { outline: 2px solid #ffd66b; outline-offset: 3px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .street-toggle { display: none; }
+}
+@media (max-width: 980px) {
+  .street-hud { display: none; }
+  /* mobile stacks the headline over the street (no scroll reveal), so dim it like the old photo */
+  .street-layer { opacity: 0.45 !important; transform: none !important; }
+}

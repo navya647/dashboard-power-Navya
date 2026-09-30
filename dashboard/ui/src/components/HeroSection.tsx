@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from 'react';
 import HeroMap from './HeroMap';
+import StreetHero from './StreetHero';
+import type { StreetController } from '@/lib/streetAnimation';
 import ComparePanel from './ComparePanel';
 import { compareColor } from '@/lib/computations';
 import type { Discom, IndiaGeoJSON, StateSpecificData } from '@/lib/types';
@@ -52,6 +54,33 @@ function easeOutBack(t: number) {
   return 1 + c3 * p * p * p + c1 * p * p;
 }
 
+/** A slow, eased scroll to `top`: the browser's own smooth scroll covers the hero's short track in
+ * ~0.3s, which feels abrupt. This runs its own easeInOutCubic over `duration` ms, so the scroll-
+ * driven street → map hand-off plays out at a silky pace. Any wheel/touch/key input from the user
+ * cancels it, so it never fights them. */
+let cancelGlide: (() => void) | null = null;
+function glideTo(top: number, duration: number) {
+  cancelGlide?.();
+  const start = window.scrollY, dist = top - start;
+  if (Math.abs(dist) < 1) return;
+  const t0 = performance.now();
+  let raf = 0;
+  const stop = () => {
+    cancelAnimationFrame(raf);
+    ['wheel', 'touchstart', 'keydown'].forEach((ev) => window.removeEventListener(ev, stop));
+    cancelGlide = null;
+  };
+  const step = (now: number) => {
+    const t = Math.min(1, (now - t0) / duration);
+    window.scrollTo(0, start + dist * easeInOutCubic(t));
+    if (t < 1) raf = requestAnimationFrame(step);
+    else stop();
+  };
+  ['wheel', 'touchstart', 'keydown'].forEach((ev) => window.addEventListener(ev, stop, { passive: true }));
+  cancelGlide = stop;
+  raf = requestAnimationFrame(step);
+}
+
 /** Below this width the scroll-driven pin/transform is skipped entirely — a sticky, viewport-
  * height section is fragile on mobile (address-bar show/hide changes the actual viewport height
  * mid-scroll), so mobile just gets the fully-arrived static layout (map centered, chrome visible)
@@ -67,6 +96,9 @@ function isMobile() {
  * (just as importantly) the map's own transform hasn't settled at the identity value the click-
  * position math below assumes. */
 const MAP_SETTLE_END = 0.6;
+
+/** How strongly the community photo shows behind the map once the view has settled. */
+const PHOTO_OPACITY = 0.3;
 
 /** A scroll-driven cinematic reveal, following the brief's five-phase timeline:
  *   0–20%  pure editorial cover — headline dominant, map already large but offset right
@@ -98,13 +130,34 @@ export default function HeroSection({
   const mapInnerRef = useRef<HTMLDivElement>(null);
   const networkLayerRef = useRef<HTMLDivElement>(null);
   const editorialRef = useRef<HTMLDivElement>(null);
-  const pylonImgRef = useRef<HTMLImageElement>(null);
+  // the animated street that replaced the landing photo, and its animation controller
+  const streetLayerRef = useRef<HTMLDivElement | null>(null);
+  const streetCtlRef = useRef<StreetController | null>(null);
+  const exploreRef = useRef<HTMLButtonElement>(null);
+  const photoImgRef = useRef<HTMLImageElement>(null);
   const towerFadeRef = useRef<HTMLDivElement>(null);
   // every one of these cascades in off the same chrome progress value — kept as individual named
   // refs (rather than an indexed array) so each attaches to its JSX element as a plain identifier.
   const controlCompareRef = useRef<HTMLDivElement>(null);
   const mapChromeRef = useRef<HTMLDivElement>(null);
   const revealedRef = useRef(false);
+
+  // "Explore dashboard": glide to the end of the reveal (the fully arrived, interactive map). The
+  // scroll-driven timeline then plays the street → map hand-off smoothly on the way down. On
+  // mobile there's no pinned stage, so it just scrolls the map into view.
+  function exploreDashboard() {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const behavior: ScrollBehavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    if (isMobile()) {
+      stage.querySelector('.hero-map-stage')?.scrollIntoView({ behavior, block: 'start' });
+      return;
+    }
+    const rect = stage.getBoundingClientRect();
+    const top = window.scrollY + rect.top + Math.max(0, rect.height - window.innerHeight);
+    if (behavior === 'auto') window.scrollTo({ top });
+    else glideTo(top, 1700);
+  }
 
   // outside compare mode, a click jumps straight to that state's full report — no intermediate
   // preview card. In compare mode it instead adds/removes the state from the comparison set.
@@ -122,9 +175,11 @@ export default function HeroSection({
     const mapInner = mapInnerRef.current;
     const networkLayer = networkLayerRef.current;
     const editorial = editorialRef.current;
-    const pylonImg = pylonImgRef.current;
+    const streetLayer = streetLayerRef.current;
+    const sticky = stage?.querySelector<HTMLDivElement>('.hero-sticky') ?? null;
+    const explore = exploreRef.current;
     const towerFade = towerFadeRef.current;
-    if (!stage || !mapInner || !networkLayer || !editorial || !pylonImg || !towerFade) return;
+    if (!stage || !mapInner || !networkLayer || !editorial || !streetLayer || !towerFade) return;
     const chromeEls = [controlCompareRef.current, mapChromeRef.current].filter((el): el is HTMLDivElement => el != null);
     // apple-design §14: a viewer who asked for reduced motion still gets the scroll-linked reveal
     // (it only ever moves in direct response to their own scroll input, which reduced-motion
@@ -147,9 +202,26 @@ export default function HeroSection({
       // map takes over the view, on top of a slow, small parallax drift (opposite direction to the
       // map's own rightward-to-centered travel) that gives the backdrop a sense of depth rather
       // than reading as a flat sticker behind the map.
-      const bgT = easeInOutCubic(p);
-      pylonImg!.style.opacity = String(lerp(0.5, 0.15, bgT));
-      pylonImg!.style.transform = reduceMotion ? 'scale(1.08)' : `scale(1.08) translateX(${lerp(0, -22, bgT)}px)`;
+      // animated street (the landing background): fully visible on the cover, then the "camera"
+      // pulls up and back (scales down, drifts up) while it fades out over 12–42%, handing off to
+      // the map. Its power-cycle loop pauses once it's gone so nothing animates unseen.
+      const streetT = easeInOutCubic(remap(p, 0.12, 0.42));
+      streetLayer!.style.opacity = String(1 - streetT);
+      streetLayer!.style.transform = reduceMotion ? 'none' : `translateY(${lerp(0, -28, streetT)}px) scale(${lerp(1, 0.93, streetT)})`;
+      streetLayer!.style.pointerEvents = streetT > 0.6 ? 'none' : 'auto';
+      streetCtlRef.current?.setActive(streetT < 0.98);
+      // logo treatment follows whichever backdrop dominates (see .hero-on-street in hero.css)
+      sticky?.classList.toggle('hero-on-street', streetT < 0.5);
+
+      // community photo: the map view's backdrop. It fades in under the street over 15–45% and
+      // settles at a subtle PHOTO_OPACITY so the state colours stay readable, with a slow sideways
+      // drift for depth (as the original landing photo had).
+      const photo = photoImgRef.current;
+      if (photo) {
+        const photoT = easeInOutCubic(remap(p, 0.15, 0.45));
+        photo.style.opacity = String(lerp(0, PHOTO_OPACITY, photoT));
+        photo.style.transform = reduceMotion ? 'scale(1.08)' : `scale(1.08) translateX(${lerp(18, -22, easeInOutCubic(p))}px)`;
+      }
 
       // phase 1: editorial recedes — fades, lifts left, scales down slightly — over 12–45%.
       const editorialT = easeInOutCubic(remap(p, 0.12, 0.45));
@@ -161,6 +233,13 @@ export default function HeroSection({
       // the fade lifts in lockstep and the full tower art (including the left pylon) shows through.
       towerFade!.style.opacity = String(1 - editorialT);
       editorial!.style.pointerEvents = editorialT > 0.85 ? 'none' : 'auto';
+      if (explore) {
+        // the "Explore dashboard" cue leaves a little ahead of the headline
+        const exploreT = easeInOutCubic(remap(p, 0.04, 0.3));
+        explore.style.opacity = String(1 - exploreT);
+        explore.style.transform = `translate(-50%, ${lerp(0, 16, exploreT)}px)`;
+        explore.style.pointerEvents = exploreT > 0.5 ? 'none' : 'auto';
+      }
 
       // phase 2: the map translates from offset-right to dead center and reaches full scale
       // over 18–60% — percentage-based translateX so the offset scales with the map's own box,
@@ -170,6 +249,14 @@ export default function HeroSection({
       const mapMoveT = easeInOutCubic(remap(p, 0.18, MAP_SETTLE_END));
       const mapScaleT = reduceMotion ? mapMoveT : easeOutBack(remap(p, 0.18, MAP_SETTLE_END));
       mapInner!.style.transform = `translateX(${lerp(19, 0, mapMoveT)}%) scale(${lerp(0.82, 1, mapScaleT)})`;
+      // the map isn't on the landing view any more (the street is); it fades in as the street
+      // fades out, glass outline first
+      mapInner!.style.opacity = String(easeInOutCubic(remap(p, 0.2, 0.42)));
+
+      // glass outline arrives first (as the street hands off), then cross-fades into the real
+      // state map while it settles in the centre, before the legend arrives.
+      const glassT = easeInOutCubic(remap(p, 0.4, 0.6));
+      mapInner!.style.setProperty('--hero-glass', String(1 - glassT));
 
       // network becomes more visible across roughly the same span the camera is moving in.
       const networkT = easeInOutCubic(remap(p, 0.18, 0.55));
@@ -216,7 +303,8 @@ export default function HeroSection({
       // moved.
       const targetP = p < 0.12 ? 0 : 1;
       const targetTop = window.scrollY + rect.top + targetP * scrollRange;
-      window.scrollTo({ top: targetTop, behavior: reduceMotion ? 'instant' : 'smooth' });
+      if (reduceMotion) window.scrollTo({ top: targetTop, behavior: 'instant' });
+      else if (!cancelGlide) glideTo(targetTop, 1100); // don't restart an explore glide in progress
     }
 
     function onScroll() {
@@ -253,12 +341,16 @@ export default function HeroSection({
   return (
     <section className="hero-stage" ref={stageRef}>
       <div className="hero-sticky">
-        <div className="hero-bg-fabric" aria-hidden="true">
-          <div className="tower-photo-layer">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/hero-community.png" alt="" className="tower-photo-img" ref={pylonImgRef} />
+        {/* not aria-hidden as a whole: the street's pause button lives in here (its SVG is hidden) */}
+        <div className="hero-bg-fabric">
+          {/* the community photo is the map view's backdrop: it sits under the street and fades in
+              as the street hands off (see applyStyles) */}
+          <div className="tower-photo-layer" aria-hidden="true">
+            {/* eslint-disable-next-line @next/next/no-img-element -- static export has no Image Optimization API */}
+            <img src="/hero-community.png" alt="" className="tower-photo-img" ref={photoImgRef} />
           </div>
-          <div className="tower-photo-fade" ref={towerFadeRef} />
+          <StreetHero controllerRef={streetCtlRef} layerRef={streetLayerRef} />
+          <div className="tower-photo-fade" ref={towerFadeRef} aria-hidden="true" />
         </div>
         <div className="hero-ambient-glow" aria-hidden="true" />
         <div className="hero-logo-fade" aria-hidden="true" />
@@ -278,6 +370,13 @@ export default function HeroSection({
           </p>
           <div className="hero-cta">Scroll to expand the map ↓</div>
         </div>
+
+        <button type="button" className="hero-explore" ref={exploreRef} onClick={exploreDashboard}>
+          <span>Explore dashboard</span>
+          <svg className="hero-explore-arrow" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M8 2.5v10M3.5 8.5 8 13l4.5-4.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
 
         <div className="hero-map-stage">
           <div className="hero-map-inner" ref={mapInnerRef}>
