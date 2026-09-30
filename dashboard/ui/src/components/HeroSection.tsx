@@ -98,7 +98,6 @@ export default function HeroSection({
   const mapInnerRef = useRef<HTMLDivElement>(null);
   const networkLayerRef = useRef<HTMLDivElement>(null);
   const editorialRef = useRef<HTMLDivElement>(null);
-  const pylonImgRef = useRef<HTMLImageElement>(null);
   const towerFadeRef = useRef<HTMLDivElement>(null);
   // every one of these cascades in off the same chrome progress value — kept as individual named
   // refs (rather than an indexed array) so each attaches to its JSX element as a plain identifier.
@@ -122,9 +121,8 @@ export default function HeroSection({
     const mapInner = mapInnerRef.current;
     const networkLayer = networkLayerRef.current;
     const editorial = editorialRef.current;
-    const pylonImg = pylonImgRef.current;
     const towerFade = towerFadeRef.current;
-    if (!stage || !mapInner || !networkLayer || !editorial || !pylonImg || !towerFade) return;
+    if (!stage || !mapInner || !networkLayer || !editorial || !towerFade) return;
     const chromeEls = [controlCompareRef.current, mapChromeRef.current].filter((el): el is HTMLDivElement => el != null);
     // apple-design §14: a viewer who asked for reduced motion still gets the scroll-linked reveal
     // (it only ever moves in direct response to their own scroll input, which reduced-motion
@@ -142,15 +140,6 @@ export default function HeroSection({
     }
 
     function applyStyles(p: number) {
-      // pylon texture: grows more transparent across the scroll range (from its CSS base opacity
-      // down to a faint minimum, never fully invisible — it's still the page's background) as the
-      // map takes over the view, on top of a slow, small parallax drift (opposite direction to the
-      // map's own rightward-to-centered travel) that gives the backdrop a sense of depth rather
-      // than reading as a flat sticker behind the map.
-      const bgT = easeInOutCubic(p);
-      pylonImg!.style.opacity = String(lerp(0.5, 0.15, bgT));
-      pylonImg!.style.transform = reduceMotion ? 'scale(1.08)' : `scale(1.08) translateX(${lerp(0, -22, bgT)}px)`;
-
       // phase 1: editorial recedes — fades, lifts left, scales down slightly — over 12–45%.
       const editorialT = easeInOutCubic(remap(p, 0.12, 0.45));
       editorial!.style.opacity = String(1 - editorialT);
@@ -169,7 +158,10 @@ export default function HeroSection({
       // mechanical arrival.
       const mapMoveT = easeInOutCubic(remap(p, 0.18, MAP_SETTLE_END));
       const mapScaleT = reduceMotion ? mapMoveT : easeOutBack(remap(p, 0.18, MAP_SETTLE_END));
-      mapInner!.style.transform = `translateX(${lerp(19, 0, mapMoveT)}%) scale(${lerp(0.82, 1, mapScaleT)})`;
+      // 19% previously left the map's landing position crowding the editorial text with almost no
+      // gap between them — 27% pushes it further right at rest without changing the settled
+      // (scrolled-in, translateX(0)) centered composition at all.
+      mapInner!.style.transform = `translateX(${lerp(47, 0, mapMoveT)}%) scale(${lerp(0.82, 1, mapScaleT)})`;
 
       // network becomes more visible across roughly the same span the camera is moving in.
       const networkT = easeInOutCubic(remap(p, 0.18, 0.55));
@@ -240,6 +232,17 @@ export default function HeroSection({
     if (isMobile()) {
       revealedRef.current = true;
     } else {
+      // Arriving via a "back to the map" link (the Coming Soon page's CTA, see StateDetail.tsx)
+      // should land straight on the fully-revealed, interactive map — not the landing headline —
+      // since that's the actual destination the link promised, not just the top of the page. Jumps
+      // straight to p=1 using the same math `settle()` above uses to snap to an end state, rather
+      // than requiring the visitor to scroll through the whole camera-move animation themselves.
+      if (new URLSearchParams(window.location.search).get('view') === 'map') {
+        const { rect, scrollRange } = measure();
+        window.scrollTo({ top: window.scrollY + rect.top + scrollRange, behavior: 'instant' });
+        smoothP = 1;
+        window.history.replaceState(null, '', window.location.pathname);
+      }
       applyStyles(smoothP); // paint the initial state immediately, with no lag
     }
     return () => {
@@ -254,10 +257,6 @@ export default function HeroSection({
     <section className="hero-stage" ref={stageRef}>
       <div className="hero-sticky">
         <div className="hero-bg-fabric" aria-hidden="true">
-          <div className="tower-photo-layer">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/hero-community.png" alt="" className="tower-photo-img" ref={pylonImgRef} />
-          </div>
           <div className="tower-photo-fade" ref={towerFadeRef} />
         </div>
         <div className="hero-ambient-glow" aria-hidden="true" />
@@ -273,8 +272,9 @@ export default function HeroSection({
         <div className="hero-editorial" ref={editorialRef}>
           <h1>India Power Supply and Service Quality Dashboard</h1>
           <p className="lede">
-            Understanding how electricity distribution companies (DISCOMs) across India perform against regulator-specified Standards of
-            Performance, and enabling comparison across jurisdictions and utilities.
+            Bringing together Standards of Performance and reported data on electricity supply quality, reliability and consumer services across
+            India&apos;s states, union territories and DISCOMs. A systematic, transparent resource to enable comparison, support improvements in
+            service delivery, and inform quality-linked tariff design.
           </p>
           <div className="hero-cta">Scroll to expand the map ↓</div>
         </div>
@@ -291,21 +291,21 @@ export default function HeroSection({
             />
             <div className="hero-network-layer" ref={networkLayerRef} />
           </div>
+        </div>
 
-          <div className="map-chrome" ref={mapChromeRef}>
-            <div className="map-legend" aria-hidden="true">
-              <div className="map-legend-row">
-                <span className="map-legend-dot map-legend-dot--tracked" />
-                Tracked
-              </div>
-              <div className="map-legend-row">
-                <span className="map-legend-dot map-legend-dot--no-data" />
-                Tracked—Data Not Reported
-              </div>
-              <div className="map-legend-row">
-                <span className="map-legend-dot map-legend-dot--none" />
-                Coming soon
-              </div>
+        <div className="map-chrome" ref={mapChromeRef}>
+          <div className="map-legend" aria-hidden="true">
+            <div className="map-legend-row">
+              <span className="map-legend-dot map-legend-dot--tracked" />
+              Tracked
+            </div>
+            <div className="map-legend-row">
+              <span className="map-legend-dot map-legend-dot--no-data" />
+              Tracked—Data Not Reported
+            </div>
+            <div className="map-legend-row">
+              <span className="map-legend-dot map-legend-dot--none" />
+              Coming soon
             </div>
           </div>
         </div>

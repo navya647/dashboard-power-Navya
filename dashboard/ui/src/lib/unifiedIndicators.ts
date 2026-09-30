@@ -43,11 +43,16 @@ export interface UnifiedIndicatorAtom {
   points: UnifiedPoint[];
 }
 
+/** Each field is the set of selected values for that filter — an empty array means "no constraint"
+ * (matches every atom), not "match nothing"; StateDetail.tsx is what additionally treats an empty
+ * `indicators` as "show no cards yet" (a display-gating decision, not something this shared match
+ * predicate itself should encode, since a page like CompareView.tsx's own category/type/indicator
+ * filters wants empty-means-unconstrained instead). */
 export interface UnifiedFilters {
-  discom: string;
-  category: string;
-  type: string;
-  indicator: string;
+  discoms: string[];
+  categories: string[];
+  types: string[];
+  indicators: string[];
 }
 
 const RELIABILITY_CATEGORY_ORDER = ['Reliability', 'Power Quality', 'Service', 'Consumer'];
@@ -252,10 +257,10 @@ export function buildUnifiedAtoms(discoms: DiscomsData | null | undefined, allDs
 }
 
 export function matchesFilters(atom: UnifiedIndicatorAtom, f: UnifiedFilters): boolean {
-  if (f.discom !== 'all' && atom.discomKey !== f.discom) return false;
-  if (f.category !== 'all' && atom.category !== f.category) return false;
-  if (f.type !== 'all' && atom.type !== f.type) return false;
-  if (f.indicator !== 'all' && atom.indicator !== f.indicator) return false;
+  if (f.discoms.length && !f.discoms.includes(atom.discomKey)) return false;
+  if (f.categories.length && !f.categories.includes(atom.category)) return false;
+  if (f.types.length && !f.types.includes(atom.type)) return false;
+  if (f.indicators.length && !f.indicators.includes(atom.indicator)) return false;
   return true;
 }
 
@@ -280,6 +285,43 @@ export function typeOptions(atoms: UnifiedIndicatorAtom[]): string[] {
 
 export function indicatorOptions(atoms: UnifiedIndicatorAtom[]): string[] {
   return Array.from(new Set(atoms.map((a) => a.indicator))).sort();
+}
+
+export interface DefaultIndicatorSelection {
+  category: string;
+  type: string;
+  indicator: string;
+}
+
+/** Picks one indicator to show by default when a state/UT page first loads (or the viewer
+ * navigates to a different one), so the analysis section isn't empty before any filter is
+ * touched. Prefers SAIDI whenever it has any actual reported figure for this state; otherwise
+ * falls back to whichever indicator has the most reported figures across every DISCOM/year here,
+ * so the initial view is never empty just because SAIDI itself wasn't reported. Ties fall to
+ * whichever indicator's atoms were built first (a deterministic, state-independent order — see
+ * `buildUnifiedAtoms`), not to indicator name, so the same tie always resolves the same way.
+ * Returns null when nothing in this state has a single reported figure at all (the 5
+ * frameworks-only states, or a state whose atoms exist but are all unreported) — callers should
+ * fall back to their existing empty state rather than forcing a selection onto an indicator that
+ * merely exists in the regulatory-standards data with nothing reported against it. */
+export function pickDefaultIndicator(atoms: UnifiedIndicatorAtom[]): DefaultIndicatorSelection | null {
+  const byIndicator = new Map<string, { category: string; type: string; reportedCount: number }>();
+  for (const a of atoms) {
+    const reportedCount = a.points.filter((p) => p.exists && p.value != null).length;
+    const existing = byIndicator.get(a.indicator);
+    if (existing) existing.reportedCount += reportedCount;
+    else byIndicator.set(a.indicator, { category: a.category, type: a.type, reportedCount });
+  }
+
+  const saidi = byIndicator.get('SAIDI');
+  if (saidi && saidi.reportedCount > 0) return { category: saidi.category, type: saidi.type, indicator: 'SAIDI' };
+
+  let best: (DefaultIndicatorSelection & { reportedCount: number }) | null = null;
+  for (const [indicator, info] of byIndicator) {
+    if (info.reportedCount <= 0) continue;
+    if (!best || info.reportedCount > best.reportedCount) best = { indicator, category: info.category, type: info.type, reportedCount: info.reportedCount };
+  }
+  return best ? { category: best.category, type: best.type, indicator: best.indicator } : null;
 }
 
 function stripTableFields(p: UnifiedPoint): CardPoint {

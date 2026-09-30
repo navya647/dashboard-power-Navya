@@ -1,16 +1,8 @@
 import type { Metadata } from 'next';
-import { Montserrat, Playfair_Display } from 'next/font/google';
 import { DataProvider } from '@/lib/DataContext';
 import Sidebar from '@/components/Sidebar';
 import OnboardingTour from '@/components/OnboardingTour';
 import './globals.css';
-
-const montserrat = Montserrat({ variable: '--font-montserrat', subsets: ['latin'], weight: ['300', '400', '500', '600'] });
-const playfair = Playfair_Display({
-  variable: '--font-playfair',
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-});
 
 export const metadata: Metadata = {
   title: 'India Power Supply and Service Quality Dashboard',
@@ -25,7 +17,15 @@ const THEME_INIT_SCRIPT = `(function(){try{var s=localStorage.getItem('acpet-the
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${montserrat.variable} ${playfair.variable}`}>
+    <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600;700&display=swap"
+        />
+      </head>
       <body>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <DataProvider>

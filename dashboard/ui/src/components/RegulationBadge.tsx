@@ -20,7 +20,10 @@ function citationParts(text: string): string[] {
 
 /** A "governed by" provenance line — quiet by default (a source footnote, not another panel
  * competing with the chart), expanding in place to the full citation text. Renders nothing when
- * there's no citation, rather than an empty footer. */
+ * there's no citation, rather than an empty footer. The collapsed header's own preview text (the
+ * first citation) is dropped once expanded, rather than left showing above the same citation
+ * repeated as the expanded body's first line — expanded, the header carries only the icon, label
+ * and chevron. */
 export default function RegulationBadge({ text, label = 'Source regulation' }: Props) {
   const [open, setOpen] = useState(false);
   if (!text) return null;
@@ -30,11 +33,17 @@ export default function RegulationBadge({ text, label = 'Source regulation' }: P
   return (
     <div className="provenance">
       <button type="button" className="provenance-toggle" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
+        <svg className="provenance-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <path d="M14 2v6h6" />
+        </svg>
         <span className="provenance-label">{label}</span>
-        <span className="provenance-preview">
-          {first}
-          {rest.length > 0 && !open ? ` +${rest.length} more` : ''}
-        </span>
+        {!open && (
+          <span className="provenance-preview">
+            {first}
+            {rest.length > 0 ? ` +${rest.length} more` : ''}
+          </span>
+        )}
         <svg className={`provenance-chevron${open ? ' open' : ''}`} width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
           <path d="m6 9 6 6 6-6" />
         </svg>

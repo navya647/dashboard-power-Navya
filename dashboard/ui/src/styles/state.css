@@ -3,10 +3,23 @@
   font-size: 14px;
   padding: 8px 0 4px;
 }
+/* purely informational — explains why the analysis section already has content on first load
+   without the viewer touching a filter — so it's styled a step quieter than .detail-placeholder
+   (smaller, italic, no icon/border/background) rather than as an advisory or warning. */
+.default-view-note {
+  color: var(--muted);
+  font-size: 12.5px;
+  font-style: italic;
+  margin: -10px 0 0;
+}
 .state-page {
   display: flex;
   flex-direction: column;
   gap: 26px;
+  /* main.app-main's shared 72px top padding (tuned for the home page's hero, which cancels it via
+     its own negative margin) reads as a lot of unused space above the breadcrumb on this page,
+     which has no such cancellation — pull the whole page up without touching that shared token. */
+  margin-top: -32px;
 }
 .state-topbar {
   display: flex;
@@ -31,13 +44,13 @@
   transition: color 200ms var(--ease), border-color 200ms var(--ease), box-shadow 200ms var(--ease), transform 200ms var(--ease);
 }
 .back-btn:hover {
-  color: var(--accent);
+  color: var(--accent-text);
   border-color: var(--accent-light);
   box-shadow: var(--shadow-md);
   transform: translateX(-2px);
 }
 .back-btn:active {
-  color: var(--accent);
+  color: var(--accent-text);
   border-color: var(--accent);
   transform: translateX(-2px) scale(0.96);
 }
@@ -60,7 +73,7 @@
   justify-content: center;
   text-align: center;
   gap: 14px;
-  padding: 90px 32px;
+  padding: 56px 32px;
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -74,29 +87,64 @@
   pointer-events: none;
   background: radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--accent) 10%, transparent) 0%, transparent 60%);
 }
-.coming-soon-icon {
+.coming-soon-icon-wrap {
   position: relative;
-  color: var(--accent);
-  opacity: 0.85;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.coming-soon-icon {
+  color: var(--accent-text);
+}
+.coming-soon-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent-text);
+  font-size: 12px;
+  font-weight: 600;
 }
 .coming-soon-panel h1 {
   position: relative;
   font-family: var(--font-display);
-  font-size: 40px;
+  font-size: 32px;
   font-weight: 700;
   letter-spacing: -0.01em;
   color: var(--ink);
   margin: 0;
 }
-.coming-soon-panel p {
+.coming-soon-cta {
+  all: unset;
   position: relative;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  padding: 12px 22px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
   font-family: var(--font-condensed);
-  font-size: 16px;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--accent);
-  margin: 0;
+  font-size: 14px;
+  transition: background 160ms var(--ease), transform 120ms var(--ease);
+}
+.coming-soon-cta:hover {
+  background: #2f4bb1;
+}
+.coming-soon-cta:active {
+  background: #24398a;
+  transform: scale(0.97);
 }
 
 .state-hero {
@@ -104,8 +152,8 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 18px 26px;
+  gap: 16px;
+  padding: 24px 32px;
   background: var(--panel);
   border: 1px solid var(--line);
   border-left: 6px solid var(--accent);
@@ -125,15 +173,31 @@
 .state-hero-main {
   position: relative;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+}
+/* capped to the box's left half so the DISCOM name list (often several long names joined with
+   " · ") wraps within its own column instead of stretching the row wide enough to force the
+   silhouette (.state-hero-shape) onto its own line below — the silhouette stays flex:none, so
+   `justify-content: space-between` on the row above pins it to the box's right edge. */
+.state-hero-text {
+  min-width: 0;
+  max-width: 55%;
 }
 .state-hero-shape {
   position: relative;
   flex: none;
   opacity: 0.92;
+}
+@media (max-width: 720px) {
+  .state-hero-main {
+    flex-wrap: wrap;
+  }
+  .state-hero-text {
+    max-width: 100%;
+  }
 }
 .state-hero-stats-inline {
   position: relative;
@@ -157,11 +221,15 @@
    (both datasets) and the Complete Data tables — rather than each owning its own picker. Focus
    Year lives in this same row (not a separately floating/sticky control) so it reads as one more
    toolbar input, not an accidental overlay. ---------- */
+/* A CSS grid (not flex-wrap) so every field gets the same column width — with flex-wrap, fields
+   just sit at their own content width, so wrapping to a second row (e.g. 3 fields fit the first
+   row, the 4th falls alone onto the second) left that lone field at a different width/position
+   than the ones above it, reading as lopsided rather than a clean grid. */
 .toolbar {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   align-items: center;
-  gap: 8px 20px;
+  gap: 10px 24px;
   padding: 10px 18px;
   background: var(--panel);
   border: 1px solid var(--line);
@@ -169,10 +237,18 @@
   box-shadow: var(--shadow-sm);
   animation: fadeInUp 520ms var(--ease) both;
 }
+/* Stacked (label above, select below) rather than side-by-side — a longer label ("Indicator
+   Category", "Indicator Type") wrapping onto two lines next to a one-line label ("Discom") was
+   what actually made the row look uneven: each field's label and select sat at different
+   heights/baselines depending on how many lines the label happened to take. Stacked, every field's
+   label is free to take the full column width on one line regardless of length, and every select
+   lines up on the same row underneath. */
 .toolbar-field {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  min-width: 0;
 }
 .toolbar-field label {
   font-size: 10px;
@@ -180,10 +256,13 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);
+  white-space: nowrap;
 }
 .toolbar-field select {
   appearance: none;
   -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 100%;
   font-family: var(--font-condensed);
   font-size: 13px;
   font-weight: 600;
@@ -232,11 +311,14 @@
    button, styled to sit in the same toolbar row as a plain <select> above. ---------- */
 .discom-multiselect {
   position: relative;
+  width: 100%;
 }
 .discom-multiselect-trigger {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 6px;
+  width: 100%;
   font-family: var(--font-condensed);
   font-size: 13px;
   font-weight: 600;
@@ -308,8 +390,8 @@
   gap: 6px;
   padding: 4px 10px 4px 8px;
   border-radius: 2px;
-  background: rgba(18, 23, 42, 0.04);
-  border: 1px solid rgba(18, 23, 42, 0.14);
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent);
   color: var(--ink);
   font-size: 12.5px;
 }
@@ -328,10 +410,20 @@
   position: relative;
 }
 .state-hero .sub {
-  margin-top: 3px;
+  margin-top: 8px;
   font-size: 13px;
   color: var(--muted);
   position: relative;
+}
+/* one DISCOM per line — the previous single "·"-joined line read as cramped once a state had
+   three-plus DISCOMs with long formal names, wrapping mid-name with no visual separation. */
+.state-hero ul.sub {
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 .state-hero-stats {
   display: flex;
@@ -462,6 +554,14 @@
   padding: 4px 11px;
   border-radius: var(--radius-pill);
   flex: none;
+  /* the DISCOM's raw categorical hue, set inline as --badge-color (see Collapsible.tsx) — used
+     directly as text color in light mode, but some of these hues (deep green, deep purple) are too
+     dark to read against the low-alpha tint of themselves once that tint sits on the dark panel
+     instead of a white one, so dark mode lightens the same hue rather than using it as-is. */
+  color: var(--badge-color);
+}
+:root[data-theme='dark'] .discom-detail-badge {
+  color: color-mix(in srgb, var(--badge-color) 100%, white 35%);
 }
 .discom-detail-plain-label {
   font-weight: 600;
@@ -546,7 +646,7 @@ table.detail-table th {
 }
 table.detail-table td {
   padding: 8px;
-  border-bottom: 1px solid rgba(18, 23, 42, 0.08);
+  border-bottom: 1px solid color-mix(in srgb, var(--ink) 8%, transparent);
   vertical-align: top;
 }
 table.detail-table .meaning {

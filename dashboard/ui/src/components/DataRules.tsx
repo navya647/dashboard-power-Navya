@@ -38,7 +38,7 @@ export default function DataRules() {
         </p>
       </div>
 
-      <div className="data-rules-subhead">Trend Assessment</div>
+      <div className="data-rules-subhead">Year-on-Year Assessment</div>
       <div className="indicator-chip-row" style={{ marginBottom: 10 }}>
         {TREND_STATES.map((s) => (
           <span className="indicator-chip" key={s}>
@@ -47,13 +47,18 @@ export default function DataRules() {
         ))}
       </div>
       <ul className="data-rules-list">
-        <li>Compares the earliest and latest usable observations in the displayed period.</li>
+        <li>
+          Each displayed fiscal year is compared only against the immediately preceding fiscal year in the displayed period — never an
+          earlier year found by skipping past a missing one.
+        </li>
+        <li>The earliest displayed year has no preceding year to compare against, and shows a dash instead of a classification.</li>
         <li>
           Indicator direction must be explicitly defined as <code>higher_is_better</code>, <code>lower_is_better</code>, or{' '}
           <code>direction_unknown</code> — the dashboard never assumes higher means better.
         </li>
-        <li>Fewer than two usable observations, an unknown direction, or a materially changed metric → Not assessable.</li>
-        <li>Equal earliest and latest values → No change.</li>
+        <li>Either year's value missing or unusable, an unknown direction, or a materially changed metric between the two years → Not assessable.</li>
+        <li>Equal consecutive values → No change, with no tolerance applied.</li>
+        <li>The arrow shown always reflects the actual direction the value moved, not the improved/declined classification.</li>
         <li>Trend is assessed separately from regulatory compliance.</li>
         <li>Source units are never converted for trend comparison.</li>
       </ul>

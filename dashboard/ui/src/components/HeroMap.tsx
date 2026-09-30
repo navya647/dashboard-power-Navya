@@ -86,14 +86,13 @@ export default function HeroMap({ discoms, stateSpecific, geojson, compareColorO
   const hoveredStatus = hovered ? stateMapStatus(discoms, hovered, stateSpecific) : null;
   // In compare-selection mode, a jurisdiction with no captured evidence in either dataset
   // ('idle') can't be added to a comparison at all — there is nothing to compare — so its tooltip
-  // says so explicitly rather than the ordinary "Coming soon" (which is about single-state lookup,
-  // where an idle state is still clickable through to its own "coming soon" report).
+  // says so explicitly instead of the usual "→" hint appended to the name (see the tooltip's
+  // <strong>): that hint is just inline text, not its own clickable line — the tooltip itself
+  // stays pointer-events:none, with only the underlying state/UT shape actually clickable — a
+  // separate "Explore Performance →" line here previously looked like its own link/button when
+  // nothing in the tooltip ever was.
   const hoveredDisabledForCompare = !!compareMode && hoveredStatus === 'idle';
-  const hoveredTip = hoveredDisabledForCompare
-    ? 'Not yet included in current dashboard coverage'
-    : hoveredStatus === 'tracked' || hoveredStatus === 'no-data'
-      ? 'Explore Performance →'
-      : 'Coming soon →';
+  const hoveredTip = hoveredDisabledForCompare ? 'Not yet included in current dashboard coverage' : null;
   const hoveredPopulation = hovered ? formatPopulation(hovered) : null;
 
   function handleClick(name: string, disabledForCompare: boolean) {
@@ -167,10 +166,21 @@ export default function HeroMap({ discoms, stateSpecific, geojson, compareColorO
         </svg>
       )}
       {hoveredPath && (
-        <div className="hero-map-tip" style={{ left: hoveredPath.centroid[0], top: hoveredPath.centroid[1] }}>
-          <strong>{hovered}</strong>
+        <div
+          // Normally floats above the hovered point (see .hero-map-tip's upward transform) — for a
+          // jurisdiction whose centroid sits close to the map's own top edge (Ladakh, Jammu &
+          // Kashmir, ...) that pushes the tooltip's top (the state/UT name) above y=0, where
+          // .hero-sticky's overflow:hidden clips it. Flip to open downward instead whenever
+          // there isn't enough room above for the tooltip's own roughly-90px height.
+          className={`hero-map-tip${hoveredPath.centroid[1] < 100 ? ' hero-map-tip--below' : ''}`}
+          style={{ left: hoveredPath.centroid[0], top: hoveredPath.centroid[1] }}
+        >
+          <strong>
+            {hovered}
+            {!hoveredDisabledForCompare && ' →'}
+          </strong>
           {hoveredPopulation && <span className="hero-map-tip-population">Population: {hoveredPopulation}</span>}
-          <span>{hoveredTip}</span>
+          {hoveredTip && <span>{hoveredTip}</span>}
         </div>
       )}
     </div>

@@ -11,13 +11,18 @@ interface Props {
   options: Option[];
   selected: string[];
   onChange: (next: string[]) => void;
+  /** Plural noun for the trigger's summary text ("2 of 5 Indicators") — defaults to the DISCOM
+   * picker this component started as. */
+  noun?: string;
 }
 
-/** A tickable dropdown (checkbox list behind a trigger button) for picking any subset of one
- * state's DISCOMs on the Compare page — replaces the old single-choice `<select>` (which only ever
- * picked one DISCOM, or a fixed "all DISCOMs" median). Outside-click-to-close mirrors Sidebar's own
- * pointerdown handling, the only other dismissible panel in this codebase. */
-export default function DiscomMultiSelect({ options, selected, onChange }: Props) {
+/** A tickable dropdown (checkbox list behind a trigger button) for picking any subset of a list of
+ * options — originally just the Compare page's per-state DISCOM picker (replacing the old
+ * single-choice `<select>`, which only ever picked one DISCOM or a fixed "all DISCOMs" median), now
+ * reused for the State Performance page's DISCOM / Indicator Category / Indicator Type / Indicator
+ * filters too, since all four needed the same "pick any subset" behavior. Outside-click-to-close
+ * mirrors Sidebar's own pointerdown handling, the only other dismissible panel in this codebase. */
+export default function DiscomMultiSelect({ options, selected, onChange, noun = 'DISCOMs' }: Props) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -34,7 +39,7 @@ export default function DiscomMultiSelect({ options, selected, onChange }: Props
     onChange(selected.includes(key) ? selected.filter((k) => k !== key) : [...selected, key]);
   }
 
-  const summary = selected.length === 0 ? 'None selected' : selected.length === options.length ? `All ${options.length} DISCOMs` : `${selected.length} of ${options.length} DISCOMs`;
+  const summary = selected.length === 0 ? 'None selected' : selected.length === options.length ? `All ${options.length} ${noun}` : `${selected.length} of ${options.length} ${noun}`;
 
   return (
     <div className="discom-multiselect" ref={rootRef}>

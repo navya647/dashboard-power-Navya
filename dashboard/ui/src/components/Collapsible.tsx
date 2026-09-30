@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { hexToRgba } from '@/lib/colors';
 
 interface Props {
@@ -91,7 +91,7 @@ export default function Collapsible({ label, meta, color, children, defaultOpen 
     <div ref={containerRef} className={`discom-detail animate-in${open ? ' open' : ''}`} style={animationDelay ? { animationDelay: `${animationDelay}ms` } : undefined}>
       <button type="button" className="discom-detail-summary" aria-expanded={open} onClick={() => setOpen(!open)}>
         {color ? (
-          <span className="discom-detail-badge" style={{ background: hexToRgba(color, 0.14), color }}>
+          <span className="discom-detail-badge" style={{ background: hexToRgba(color, 0.14), '--badge-color': color } as CSSProperties}>
             {label}
           </span>
         ) : (

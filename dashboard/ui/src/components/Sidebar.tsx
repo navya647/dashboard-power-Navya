@@ -2,16 +2,26 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
 import ThemeToggle from './ThemeToggle';
 
+// Placeholder icons — stand-ins for real ones, swap the path data out once real iconography for
+// each section is settled rather than treating these as final.
 const NAV = [
+  {
+    href: '/about',
+    label: 'About',
+    icon: (
+      <>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 8h.01M11 11.5h1v5" />
+      </>
+    ),
+  },
+  // Home still routes to '/' — the landing page — only its position in the nav list moved.
   {
     href: '/',
     label: 'Home',
-    icon: (
-      <path d="M4 11 12 4l8 7M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9M10 20v-6h4v6" />
-    ),
+    icon: <path d="M4 11 12 4l8 7M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9M10 20v-6h4v6" />,
   },
   {
     href: '/accessibility',
@@ -25,78 +35,38 @@ const NAV = [
   },
 ];
 
+/** Always-visible, non-collapsible: a permanent part of the layout, not a drawer — there is
+ * deliberately no toggle/close control (see layout.css, which reserves the sidebar's width in
+ * main.app-main's margin unconditionally rather than behind any open/closed state). */
 export default function Sidebar() {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
-  const asideRef = useRef<HTMLElement>(null);
-  const toggleRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
-
-  // lets the main content wrapper react to the sidebar's state (layout.css) even though they're
-  // siblings under app-shell, without threading this through context/props.
-  useEffect(() => {
-    document.body.classList.toggle('sidebar-open', open);
-    return () => document.body.classList.remove('sidebar-open');
-  }, [open]);
-
-  // closes on a tap/click anywhere outside the open panel — the hamburger button itself is
-  // excluded so its own click isn't immediately undone by this same handler.
-  useEffect(() => {
-    if (!open) return;
-    const handlePointerDown = (e: PointerEvent) => {
-      const target = e.target as Node;
-      if (asideRef.current?.contains(target) || toggleRef.current?.contains(target)) return;
-      setOpen(false);
-    };
-    document.addEventListener('pointerdown', handlePointerDown);
-    return () => document.removeEventListener('pointerdown', handlePointerDown);
-  }, [open]);
-
-  const toggle = () => setOpen((v) => !v);
 
   return (
-    <>
-      <button
-        ref={toggleRef}
-        type="button"
-        className={`menu-toggle${open ? ' open' : ''}`}
-        aria-label={open ? 'Close menu' : 'Open menu'}
-        aria-expanded={open}
-        onClick={toggle}
-      >
-        <span className="bar" />
-        <span className="bar" />
-        <span className="bar" />
-      </button>
-      <aside ref={asideRef} className={`sidebar${open ? ' open' : ''}`}>
+    <aside className="sidebar">
       <div className="sidebar-inner">
-      <div className="brand">
-        {/* eslint-disable-next-line @next/next/no-img-element -- static export has no Image Optimization API */}
-        <img src="/acpet-logo.png" alt="ACPET" width={208} height={69} className="brand-logo brand-logo-light" />
-        {/* eslint-disable-next-line @next/next/no-img-element -- static export has no Image Optimization API */}
-        <img src="/acpet-logo-white.png" alt="ACPET" width={208} height={69} className="brand-logo brand-logo-dark" />
+        <div className="brand">
+          {/* eslint-disable-next-line @next/next/no-img-element -- static export has no Image Optimization API */}
+          <img src="/acpet-logo.png" alt="ACPET" width={208} height={69} className="brand-logo brand-logo-light" />
+          {/* eslint-disable-next-line @next/next/no-img-element -- static export has no Image Optimization API */}
+          <img src="/acpet-logo-white.png" alt="ACPET" width={208} height={69} className="brand-logo brand-logo-dark" />
+        </div>
+        <nav className="sidenav">
+          {NAV.map((item) => {
+            const active = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
+            return (
+              <Link key={item.href} href={item.href} className={active ? 'active' : ''}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+                  {item.icon}
+                </svg>
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+        <div className="sidebar-foot">
+          <ThemeToggle />
+        </div>
       </div>
-      <nav className="sidenav">
-        {NAV.map((item) => {
-          const active = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
-          return (
-            <Link key={item.href} href={item.href} className={active ? 'active' : ''}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
-                {item.icon}
-              </svg>
-              <span>{item.label}</span>
-            </Link>
-          );
-        })}
-      </nav>
-      <div className="sidebar-foot">
-        <ThemeToggle />
-      </div>
-      </div>
-      </aside>
-    </>
+    </aside>
   );
 }
