@@ -417,8 +417,61 @@ What shipped (the plan below is kept for history; decisions that differ from it 
   for an early-evening look: brighter lawn, road, paving, hedges, palms and poles, softer unlit
   windows, and the off-state shade at 0.22. This uses colours, not a brightness filter, for
   performance.
-- **Not done yet:** `npm run build` (static export) was not run because the dev server was using
-  the project. Run it before deploying.
+- **Production build:** `npm run build` has since been run successfully on the merged code (44
+  static pages into `out/`).
+
+## CURRENT STATUS (end of 2026-09-30 session): read this first
+
+**Git**
+- Local `main` = `5c8a81a`, **3 commits ahead of `origin/main`, NOT pushed yet**:
+  - `dda9629`: animated street landing page, glass map hand-off, `netlify.toml`.
+  - `c247deb`: merge of the team's `origin/main` (`172b43e`, `050c482`).
+  - `5c8a81a`: dark mode by default, plus the light-theme street palette.
+- The branch `ui-street-hero` points at the same commit.
+- `git push origin main` failed with **HTTP 403**: the GitHub account signed in on this PC has no
+  write access to `navya647/dashboard-power-Navya`. Possible fixes:
+  - The repo owner adds that account under Settings → Collaborators with Write access.
+  - Or switch accounts: `git credential-manager github list`, then
+    `git credential-manager github logout <user>`, then push again.
+  - Or fork the repo and open a PR, or send Navya a patch.
+- The push needs an interactive GitHub sign-in, which Claude can't do from its tool shell. The
+  user has to run `git push origin main` in their own terminal.
+- Always `git fetch` first and check `git rev-list --count HEAD..origin/main` is 0 before
+  pushing. If the team pushed again, merge first.
+
+**Netlify** (site `iridescent-lebkuchen-2f8753.netlify.app`)
+- It's a static export, so Netlify must serve `dashboard/ui/out`, never the source folders.
+- History of the problem:
+  - First 404: nothing valid was published, and no Netlify config existed.
+  - Then an unstyled page: only `index.html` had been uploaded, and all `/_next/*` assets
+    returned 404.
+- Deploy options:
+  1. **CLI (recommended, no Git):** in `dashboard/ui`, run `npm run build`, then
+     `npx netlify-cli login` (once), `npx netlify-cli link` (once, pick
+     iridescent-lebkuchen-2f8753), then `npx netlify-cli deploy --prod --dir=out`. It should
+     report about 257 files uploaded, not 1. The `.netlify` folder is already in `.gitignore`.
+  2. **Drag and drop:** after `npm run build`, drag the `out` **folder itself** onto the site's
+     Deploys tab. Not `index.html`, not the `ui` folder.
+  3. **Git-connected:** once the push works, `netlify.toml` (repo root: base `dashboard/ui`,
+     command `npm run build`, publish `out`, Node 20) makes Netlify build on every push.
+- Rebuild `out` before every manual deploy: the current `out` may predate the dark-default and
+  light-street commit.
+
+**Dev server**
+- `npm run dev` in `dashboard/ui` on :3000.
+- For phone testing over Wi-Fi, add the PC's LAN IP to `allowedDevOrigins` in `next.config.ts`
+  (currently `192.168.1.17` and `192.168.0.65`), then restart the dev server. Otherwise the page
+  sticks on "Loading dashboard data…".
+
+**Open items / ideas not yet done**
+- On mobile there's some empty lawn between the street and the headline card; the camera could
+  move down.
+- Lint still fails on 3 errors in files we didn't write: `DataRules` (unescaped `'`),
+  `OnboardingTour`, `ThemeToggle` (setState in effect). There's also a `layout.tsx` warning about
+  the Google Fonts `<link>`.
+- The standalone prototype in `D:\power dashboard\animated-hero\` is no longer the source of
+  truth. The landing page's artwork now comes from `dashboard/ui/scripts/street-scene.js`; after
+  editing it, run `node scripts/build-street-svg.mjs`.
 
 ## Original plan (2026-09-30), kept for reference
 
