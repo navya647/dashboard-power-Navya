@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-const STORAGE_KEY = 'acpet-theme';
+const STORAGE_KEY = 'acpet-theme-v2'; // keep in sync with THEME_INIT_SCRIPT in app/layout.tsx
 type Theme = 'light' | 'dark';
 
 /** The blocking init script (layout.tsx) already sets data-theme on <html> before first paint, so
@@ -12,12 +12,12 @@ type Theme = 'light' | 'dark';
  * toggle. A lazy initializer here would read the DOM during hydration and risk a text mismatch
  * against the statically-built markup, so this stays an effect deliberately. */
 function currentTheme(): Theme {
-  if (typeof document === 'undefined') return 'light';
+  if (typeof document === 'undefined') return 'dark';
   return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
 }
 
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>('light');
+  const [theme, setTheme] = useState<Theme>('dark');
   // Bumped only on the no-View-Transitions fallback path, to key-remount the icon so its
   // mount animation (theme-icon-in, shared with the view-transition version below) replays.
   const [iconTick, setIconTick] = useState(0);

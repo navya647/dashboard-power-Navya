@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { buildIndiaPaths } from '@/lib/geo2d';
 import { stateFillColor, stateMapStatus } from '@/lib/computations';
 import { lerpHex, MAP_BORDER, MAP_WASH } from '@/lib/colors';
@@ -38,6 +38,7 @@ export default function HeroMap({ discoms, stateSpecific, geojson, compareColorO
   // tooltip. On such devices the first tap on a state just shows the tooltip (acts as "hover");
   // a second tap on the *same*, already-previewed state is what actually navigates.
   const [canHover, setCanHover] = useState(true);
+  const uid = useId().replace(/:/g, '');
 
   useEffect(() => {
     const mq = window.matchMedia('(hover: hover)');
@@ -129,7 +130,7 @@ export default function HeroMap({ discoms, stateSpecific, geojson, compareColorO
             if (e.target === e.currentTarget) setHovered(null);
           }}
         >
-          <g>
+          <g className="hero-map-states">
             {projection.paths.map((p) => {
               const status = stateMapStatus(discoms, p.name, stateSpecific);
               const disabledForCompare = !!compareMode && status === 'idle';
@@ -162,6 +163,25 @@ export default function HeroMap({ discoms, stateSpecific, geojson, compareColorO
                 />
               );
             })}
+          </g>
+          {/* landing-view "glass" skin: India as one borderless translucent shape with a glowing
+              outline and a light dot circling the mainland coast/border. HeroSection fades it out
+              (and the real state map in) via the --hero-glass CSS variable as the user scrolls. */}
+          <defs>
+            <linearGradient id={`${uid}-glass`} x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.52" />
+              <stop offset="20%" stopColor="#ffffff" stopOpacity="0.28" />
+              <stop offset="100%" stopColor="#ffffff" stopOpacity="0.50" />
+            </linearGradient>
+          </defs>
+          <g className="hero-map-glass" aria-hidden="true">
+            <path d={projection.outlineAll} fill={`url(#${uid}-glass)`} className="hero-glass-fill" />
+            <path d={projection.outlineAll} fill="none" className="hero-glass-edge" />
+            <g className="hero-glass-motion">
+              <path d={projection.outline} fill="none" pathLength={1000} className="hero-glass-trail">
+                <animate attributeName="stroke-dashoffset" from="60" to="-940" dur="80s" repeatCount="indefinite" />
+              </path>
+            </g>
           </g>
         </svg>
       )}

@@ -1,0 +1,11 @@
+# Netlify build settings. The Next.js app lives in dashboard/ui and is a static export
+# (next.config.ts: output: 'export'), so Netlify builds it there and serves the generated
+# dashboard/ui/out folder. Without this file Netlify builds from the repo root, finds nothing
+# to publish, and every URL returns "Page not found".
+[build]
+  base = "dashboard/ui"
+  command = "npm run build"
+  publish = "out"
+
+[build.environment]
+  NODE_VERSION = "20"
