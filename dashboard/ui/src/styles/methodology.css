@@ -1,4 +1,5 @@
-/* ---- Methodology page: editorial research-process story, not a scorecard wall ---- */
+/* ---- shared page shell: also used by the About and Accessibility pages (.methodology-page,
+   .method-hero-title) — keep these even though the Methodology page itself now uses .mth ---- */
 
 .methodology-page {
   display: flex;
@@ -7,40 +8,6 @@
 .methodology-page > div {
   scroll-margin-top: 56px;
 }
-
-/* ---- sticky slim anchor rail ---- */
-.method-nav {
-  position: sticky;
-  top: 0;
-  z-index: 6;
-  display: flex;
-  gap: 4px;
-  overflow-x: auto;
-  background: var(--paper);
-  padding: 8px 0 10px;
-  margin-bottom: 14px;
-  border-bottom: 1px solid var(--line);
-}
-.method-nav-link {
-  flex: none;
-  font-family: var(--font-condensed);
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--muted);
-  text-decoration: none;
-  padding: 6px 12px;
-  border-radius: var(--radius-pill);
-  transition: color 150ms var(--ease), background-color 150ms var(--ease);
-}
-.method-nav-link:hover,
-.method-nav-link:focus-visible {
-  color: var(--accent-text);
-  background: color-mix(in srgb, var(--accent) 8%, transparent);
-}
-
-/* ---- hero ---- */
 .method-hero-title {
   font-family: var(--font-display);
   font-size: 30px;
@@ -50,366 +17,1077 @@
   color: var(--ink);
   margin: 2px 0 0;
 }
-.method-context {
-  font-size: 13.5px;
-  line-height: 1.6;
-  color: var(--ink);
-  max-width: 680px;
-  margin: 0 0 8px;
+
+/* ---- Methodology page: the shared page header (.about-page kicker + .method-hero-title, as on
+   About and Accessibility); then one real figure walked from regulation to verdict (stepper rail
+   beside an evidence card that builds up layer by layer); then four commitments set large; then
+   the limits as a quiet footnote. ---- */
+
+.mth {
+  max-width: 1240px;
+}
+.mth-meta {
+  margin: 6px 0 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-supporting, var(--muted));
 }
 
-/* ---- current coverage strip ---- */
-.scope-ribbon {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--ink);
-  margin: 6px 0 2px;
+/* ---- walkthrough ---- */
+.mj {
+  display: grid;
+  grid-template-columns: minmax(300px, 0.85fr) minmax(0, 1.15fr);
+  gap: 56px;
+  align-items: start;
+  margin-top: 40px;
 }
-.scope-ribbon b {
-  font-family: var(--font-condensed);
-  font-size: 19px;
-}
-.scope-sep {
-  color: var(--line);
-  margin: 0 2px;
-}
-.scope-state-list {
-  list-style: none;
-  margin: 12px 0 4px;
-  padding: 0;
-  columns: 3;
-  column-gap: 24px;
-}
-.scope-state-list li {
+/* the steps scroll with the card, each level with its own layer (MethodologyView aligns them) */
+.mj-rail-top {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  padding: 4px 0;
-  break-inside: avoid;
+  justify-content: space-between;
+  gap: 12px;
 }
-.scope-state-num {
-  font-family: var(--font-condensed);
-  font-size: 10.5px;
-  font-weight: 700;
-  color: var(--muted);
-  width: 18px;
-}
-
-/* ---- what we track: dashboard navigation categories ---- */
-.indicator-chip-row {
-  display: flex;
-  flex-wrap: wrap;
+.mj-play {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
   gap: 6px;
-}
-.indicator-chip {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--ink);
+  padding: 4px 11px 4px 9px;
   border: 1px solid var(--line);
   border-radius: var(--radius-pill);
-  padding: 3px 11px;
-}
-
-/* ---- six-step methodology journey (the central visual) ---- */
-.journey {
-  list-style: none;
-  margin: 8px 0 4px;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px 0;
-}
-.journey-step {
-  position: relative;
-  flex: 1 1 260px;
-  min-width: 200px;
-  padding: 0 24px 0 0;
-}
-.journey-marker {
-  font-family: var(--font-condensed);
-  font-size: 30px;
-  font-weight: 700;
-  color: var(--accent-light);
-  line-height: 1;
-}
-.journey-title {
-  font-size: 14.5px;
-  font-weight: 700;
-  color: var(--ink);
-  margin-top: 4px;
-}
-.journey-body {
-  font-size: 12.5px;
-  color: var(--muted);
-  line-height: 1.45;
-  margin: 4px 0 0;
-  max-width: 260px;
-}
-.journey-connector {
-  display: none;
-}
-@media (min-width: 900px) {
-  .journey {
-    flex-wrap: nowrap;
-  }
-  .journey-step:not(:nth-child(3n)) .journey-connector {
-    display: block;
-    position: absolute;
-    top: 15px;
-    right: 0;
-    width: 20px;
-    height: 1.5px;
-    background: var(--line);
-  }
-}
-
-/* ---- data rules: comparability, trend assessment, missing data ---- */
-.data-rules-subhead {
-  font-family: var(--font-condensed);
   font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background-color 150ms var(--ease), border-color 150ms var(--ease);
+}
+.mj-play:hover {
+  border-color: var(--accent-text);
+  background: color-mix(in srgb, var(--accent-text) 8%, transparent);
+}
+.mj-play:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+}
+.mj-play svg {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.mj-play svg .is-fill {
+  fill: currentColor;
+  stroke-linejoin: round;
+}
+.mj-eyebrow {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--accent-text);
-  margin: 18px 0 4px;
 }
-.data-rules-subhead:first-child {
-  margin-top: 4px;
+.mj-title {
+  margin: 8px 0 22px;
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--ink);
 }
-.data-rules-list {
-  margin: 0 0 4px;
-  padding-left: 18px;
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.6;
+.mj-steps {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
-.data-rules-list code {
-  font-size: 11px;
-  background: color-mix(in srgb, var(--ink) 6%, transparent);
-  padding: 1px 5px;
-  border-radius: 3px;
+/* the spine the step numbers sit on */
+.mj-steps::before {
+  content: '';
+  position: absolute;
+  top: 22px;
+  bottom: 22px;
+  left: 17px;
+  width: 1px;
+  background: var(--line);
 }
-
-/* ---- comparability decision tree ---- */
-.comparability-tree {
+.mj-step {
+  all: unset;
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  padding: 12px 14px 12px 0;
+  border-radius: 12px;
+  cursor: pointer;
+  overflow: hidden;
+}
+.mj-step:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+}
+.mj-step-num {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 35px;
+  height: 35px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--paper);
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-supporting, var(--muted));
+  transition: background-color 250ms var(--ease), color 250ms var(--ease), border-color 250ms var(--ease), transform 250ms var(--ease);
+}
+.mj-step.is-done .mj-step-num {
+  border-color: var(--accent-text);
+  color: var(--accent-text);
+}
+.mj-step.is-active .mj-step-num {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+  transform: scale(1.06);
+}
+.mj-step-text {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 6px;
-  padding: 10px 0 4px;
+  gap: 3px;
+  padding-top: 6px;
 }
-.comparability-inputs {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 13px;
+.mj-step-text b {
+  font-size: 15px;
   font-weight: 600;
   color: var(--ink);
 }
-.comparability-plus {
-  color: var(--muted);
+.mj-step-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-supporting, var(--muted));
+  opacity: 0;
+  transition: grid-template-rows 350ms var(--ease), opacity 300ms var(--ease);
 }
-.comparability-arrow {
-  width: 1.5px;
-  height: 18px;
-  background: var(--line);
+.mj-step-body > span {
+  min-height: 0;
+  overflow: hidden;
 }
-.comparability-question {
-  font-family: var(--font-condensed);
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--ink);
-  padding: 6px 16px;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
+.mj-step.is-active .mj-step-body {
+  grid-template-rows: 1fr;
+  opacity: 1;
 }
-.comparability-branches {
-  display: flex;
-  gap: 48px;
-  margin-top: 8px;
+.mj-step:not(.is-active):hover .mj-step-text b {
+  color: var(--accent-text);
 }
-.comparability-branch {
+/* auto-advance countdown under the active step */
+.mj-step-timer {
+  position: absolute;
+  left: 51px;
+  right: 14px;
+  bottom: 4px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent-text);
+  transform-origin: left;
+  opacity: 0.55;
+  animation: mj-timer linear forwards;
+}
+@keyframes mj-timer {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* the evidence card */
+.mj-card {
+  position: relative;
+  padding: 26px 30px 24px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--panel) 82%, transparent);
+  box-shadow: var(--shadow-lg);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+.mj-card-head {
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 4px;
-  max-width: 220px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
 }
-.comparability-branch-label {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+.mj-card-where {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+  color: var(--text-supporting, var(--muted));
+}
+.mj-card-name {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.mj-layer {
+  position: relative;
+  padding: 14px 0 14px 18px;
+  border-bottom: 1px dashed var(--line);
+  opacity: 0.16;
+  filter: blur(1.5px);
+  transform: translateY(6px);
+  transition: opacity 450ms var(--ease), filter 450ms var(--ease), transform 450ms var(--ease);
+}
+.mj-layer:last-child {
+  border-bottom: 0;
+}
+.mj-layer::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 0;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--accent);
+  transform: scaleY(0);
+  transition: transform 400ms var(--ease);
+}
+.mj-layer.is-done {
+  opacity: 0.6;
+  filter: none;
+  transform: none;
+}
+.mj-layer.is-active {
+  opacity: 1;
+  filter: none;
+  transform: none;
+}
+.mj-layer.is-active::before {
+  transform: scaleY(1);
+}
+.mj-k {
+  display: block;
+  margin-bottom: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+}
+.mj-v {
+  margin: 0 0 10px;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+.mj-v:last-child {
+  margin-bottom: 0;
+}
+.mj-v b {
+  font-weight: 700;
+}
+.mj-reported {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 0;
+}
+.mj-reported b {
+  font-family: var(--font-display);
+  font-size: 46px;
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: lining-nums;
+  color: var(--ink);
+}
+.mj-reported span {
+  font-size: 13.5px;
+  color: var(--text-supporting, var(--muted));
+}
+.mj-aside {
+  margin: 10px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-supporting, var(--muted));
+}
+.mj-chip {
+  display: inline-block;
+  margin-right: 10px;
   padding: 2px 10px;
   border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
 }
-.comparability-branch--yes .comparability-branch-label {
+.mj-chip--ok {
+  background: color-mix(in srgb, var(--accent-text) 16%, transparent);
+  color: var(--accent-text);
+}
+.mj-chip--met {
   background: var(--good-soft);
   color: var(--good-deep);
 }
-.comparability-branch--no .comparability-branch-label {
+.mj-chip--missed {
   background: var(--critical-soft);
   color: var(--critical-deep);
 }
-.comparability-branch-outcome {
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.4;
-}
-.comparability-principle {
-  font-size: 12.5px;
-  color: var(--ink);
-  font-style: italic;
-  max-width: 480px;
-  margin-top: 14px;
-}
 
-/* ---- sources & data quality flow ---- */
-.sources-list-inline {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--muted);
-}
-.sources-note {
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 4px;
-}
-.compilation-flow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin: 8px 0 10px;
-}
-.compilation-node-wrap {
+/* verdict: reported share against the benchmark marker */
+.mj-verdict {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 18px;
+  margin: 18px 0 4px;
 }
-.compilation-node {
-  font-family: var(--font-condensed);
-  font-size: 12.5px;
+.mj-gauge {
+  position: relative;
+  flex: 1;
+  height: 10px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--ink) 9%, transparent);
+}
+.mj-gauge-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 10px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--critical) 55%, transparent), var(--critical));
+  transform-origin: left;
+}
+.mj-layer.is-active .mj-gauge-fill {
+  animation: mj-grow 900ms var(--ease) both;
+}
+@keyframes mj-grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+.mj-gauge-mark {
+  position: absolute;
+  top: -6px;
+  bottom: -6px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--ink);
+}
+.mj-gauge-mark i {
+  position: absolute;
+  bottom: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  font-style: normal;
   font-weight: 700;
   color: var(--ink);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-pill);
-  padding: 6px 16px;
 }
-.compilation-arrow {
-  color: var(--muted);
-}
-.compilation-arrow::before {
-  content: '→';
-}
-
-/* ---- missing-data rule ---- */
-.missing-data-rule {
-  background: var(--paper);
-  border-radius: var(--radius-sm);
-  padding: 12px 16px;
-}
-.missing-data-rule-note {
-  font-size: 12px;
-  color: var(--ink);
-  line-height: 1.5;
-}
-
-/* ---- limitations ---- */
-.limitations-grid {
+.mj-years {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px 32px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
 }
-.limitation-cell {
-  border-top: 2px solid var(--line);
-  padding-top: 10px;
-}
-.limitation-title {
-  font-family: var(--font-condensed);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--ink);
-}
-.limitation-statement {
-  font-size: 13px;
-  color: var(--ink);
-  line-height: 1.45;
-  margin: 4px 0 0;
-}
-
-/* ---- map status ---- */
-.coverage-semantics {
+.mj-years li {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin: 4px 0 8px;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
 }
-.coverage-semantics-item {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  font-size: 13px;
-  color: var(--muted);
+.mj-years li.is-focus {
+  box-shadow: inset 0 0 0 1.5px var(--accent-text);
 }
-.coverage-semantics-item .map-legend-dot {
-  flex: none;
-  transform: translateY(1px);
+.mj-year {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--text-supporting, var(--muted));
 }
-
-/* ---- methodological principles ---- */
-.principles-list {
-  list-style: none;
-  margin: 4px 0;
-  padding: 0;
-  max-width: 640px;
-}
-.principles-item {
-  display: flex;
-  gap: 16px;
-  padding: 10px 0;
-  border-top: 1px solid var(--line);
-}
-.principles-item:last-child {
-  border-bottom: 1px solid var(--line);
-}
-.principles-num {
-  flex: none;
-  font-family: var(--font-condensed);
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--accent-light);
-}
-.principles-title {
-  font-size: 13px;
-  font-weight: 700;
+.mj-years b {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  font-variant-numeric: lining-nums;
   color: var(--ink);
 }
-.principles-body {
-  font-size: 12px;
-  color: var(--muted);
-  margin: 2px 0 0;
+.mj-yoy {
+  align-self: flex-start;
+  padding: 1px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.mj-yoy--first {
+  padding-left: 0;
+  color: var(--text-supporting, var(--muted));
 }
 
-@media (max-width: 720px) {
-  .comparability-branches {
-    flex-direction: column;
-    gap: 16px;
-    align-items: center;
+/* ---- commitments ---- */
+.mth-commit {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 72px;
+  border-top: 1px solid var(--line);
+}
+.mth-commit > div {
+  padding: 26px 28px 0;
+  border-left: 1px solid var(--line);
+}
+.mth-commit > div:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+.mth-commit-head {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--ink);
+}
+.mth-commit-body {
+  margin: 10px 0 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-supporting, var(--muted));
+}
+
+/* ---- limits: the same three-column grid as the commitments above (so the columns line up),
+   set quieter — a small label over each statement, on a faint band ---- */
+.mth-limits {
+  margin-top: 56px;
+}
+.mth-limits-title {
+  margin: 0 0 14px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+}
+.mth-limits-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  padding: 18px 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.mth-limits-grid > li {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 2px 28px;
+  border-left: 1px solid var(--line);
+}
+.mth-limits-grid > li:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+.mth-limit-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+/* a small hollow marker: a caveat, not a status */
+.mth-limit-head::before {
+  content: '';
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border: 1.5px solid var(--accent-text);
+  border-radius: 50%;
+}
+.mth-limit-body {
+  padding-left: 15px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-supporting, var(--muted));
+}
+
+/* ---- light mode: the frosted, ghosted look that suits the dark theme washes out on the pale
+   backdrop — so here the card is opaque with a firmer edge, every settled layer is at full
+   strength, upcoming layers are only dimmed (no blur), and supporting text is full-strength ink. ---- */
+:root:not([data-theme='dark']) .mth {
+  --mj-soft: #2b2b2b;
+}
+:root:not([data-theme='dark']) .mth-meta,
+:root:not([data-theme='dark']) .mj-step-body,
+:root:not([data-theme='dark']) .mj-card-where,
+:root:not([data-theme='dark']) .mj-reported span,
+:root:not([data-theme='dark']) .mj-aside,
+:root:not([data-theme='dark']) .mj-year,
+:root:not([data-theme='dark']) .mj-yoy--first,
+:root:not([data-theme='dark']) .mth-commit-body,
+:root:not([data-theme='dark']) .mth-limit-body {
+  color: var(--mj-soft);
+}
+:root:not([data-theme='dark']) .mj-card {
+  border-color: rgba(0, 0, 0, 0.16);
+  background: #ffffff;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: 0 24px 56px rgba(40, 30, 20, 0.14), 0 2px 8px rgba(40, 30, 20, 0.08);
+}
+:root:not([data-theme='dark']) .mj-layer {
+  opacity: 0.32;
+  filter: none;
+  border-bottom-color: rgba(0, 0, 0, 0.14);
+}
+:root:not([data-theme='dark']) .mj-layer.is-done,
+:root:not([data-theme='dark']) .mj-layer.is-active {
+  opacity: 1;
+}
+:root:not([data-theme='dark']) .mj-step-num {
+  border-color: rgba(0, 0, 0, 0.22);
+  background: #ffffff;
+  color: var(--ink);
+}
+:root:not([data-theme='dark']) .mj-step.is-done .mj-step-num {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+:root:not([data-theme='dark']) .mj-step.is-active .mj-step-num {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
+}
+:root:not([data-theme='dark']) .mj-steps::before {
+  background: rgba(0, 0, 0, 0.18);
+}
+:root:not([data-theme='dark']) .mj-years li {
+  background: #f1f0ec;
+}
+:root:not([data-theme='dark']) .mj-gauge {
+  background: #e6e4df;
+}
+:root:not([data-theme='dark']) .mj-chip {
+  background: #ebeae6;
+}
+:root:not([data-theme='dark']) .mj-step-timer {
+  opacity: 0.8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mj-step-num,
+  .mj-step-body,
+  .mj-layer,
+  .mj-layer::before {
+    transition: none;
   }
-  .limitations-grid {
-    grid-template-columns: 1fr;
-  }
-  .scope-state-list {
-    columns: 2;
+  .mj-layer.is-active .mj-gauge-fill {
+    animation: none;
   }
 }
-@media (max-width: 480px) {
-  .scope-state-list {
-    columns: 1;
+@media (max-width: 1100px) {
+  .mj {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+
+}
+@media (max-width: 600px) {
+  .mj-card {
+    padding: 20px 18px;
+  }
+  .mth-commit {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .mth-commit > div {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .mth-limits-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+  .mth-limits-grid > li {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+
+/* ---- About page: indicator glossary. Everything is scoped to .about-page / .glossary-*, so the
+   shared kicker, heading and filter-bar styles elsewhere are untouched. ---- */
+
+/* title: the eyebrow quieter and tucked against the heading, and the page a little higher (the
+   logo is absolutely placed, so it doesn't move) */
+.about-page {
+  margin-top: -16px;
+}
+.about-page > .kicker {
+  margin-bottom: 4px;
+}
+.about-page > .kicker > span.bar > span.bar {
+  width: 26px;
+  opacity: 0.7;
+}
+.about-page > .kicker > span.label > span.label {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+}
+/* over the photo backdrop (.page-backdrop, layout.css) the usual dark-mode eyebrow blue loses
+   contrast; the same blue lifted toward white keeps it */
+:root[data-theme='dark'] .about-page > .kicker > span.label {
+  color: color-mix(in srgb, var(--accent-text) 65%, var(--ink));
+}
+
+.glossary-body {
+  margin-top: 18px;
+}
+
+/* ---- glossary, on one screen: bucket tabs, then that bucket's categories (left) beside the
+   selected category's definitions in two columns, paged (right). One opaque frame; inside it only
+   rules and type separate things — no nested cards. Colours are local aliases of the theme
+   tokens. ---- */
+.gl {
+  --gl-accent: var(--accent-hover);
+  --gl-meta: color-mix(in srgb, var(--accent-text) 38%, var(--text-supporting, var(--muted)));
+  --gl-line: color-mix(in srgb, var(--line) 85%, transparent);
+  --gl-sel-bg: color-mix(in srgb, var(--accent) 10%, var(--panel));
+  display: flex;
+  flex-direction: column;
+  min-height: 340px;
+  max-width: 1320px;
+  border: 1px solid var(--gl-line);
+  border-radius: 14px;
+  background: var(--panel);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+:root[data-theme='dark'] .gl {
+  --gl-accent: var(--accent-text);
+  --gl-sel-bg: color-mix(in srgb, var(--accent) 28%, var(--panel));
+  color-scheme: dark;
+}
+
+/* bucket tabs: an underlined tab row across the top of the frame */
+/* the top bar: bucket tabs, and the find control at its far end */
+.gl-bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 16px 0 20px;
+  border-bottom: 1px solid var(--gl-line);
+}
+.gl-tabs {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+/* find: a quiet "Find" button that opens into a compact field in place */
+.gl-find {
+  flex: none;
+}
+.gl-find-open {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--gl-line);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gl-meta);
+  cursor: pointer;
+  transition: color 120ms var(--ease), border-color 120ms var(--ease), background-color 120ms var(--ease);
+}
+.gl-find-open:hover {
+  color: var(--ink);
+  border-color: color-mix(in srgb, var(--gl-accent) 45%, var(--line));
+}
+.gl-find-open:focus-visible {
+  outline: 2px solid var(--gl-accent);
+  outline-offset: 2px;
+}
+.gl-find-open svg,
+.gl-find-field > svg {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+.gl-find-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 280px;
+  height: 36px;
+  padding: 0 4px 0 11px;
+  border: 1px solid var(--gl-accent);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--gl-meta);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gl-accent) 16%, transparent);
+  animation: gl-find-in 160ms var(--ease);
+}
+@keyframes gl-find-in {
+  from {
+    width: 120px;
+    opacity: 0.4;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gl-find-field {
+    animation: none;
+  }
+}
+.gl-find-field input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--ink);
+}
+.gl-find-field input::placeholder {
+  color: var(--gl-meta);
+}
+.gl-find-field input::-webkit-search-cancel-button {
+  display: none;
+}
+.gl-find-close {
+  all: unset;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.gl-find-close:hover {
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
+}
+.gl-find-close:focus-visible {
+  outline: 2px solid var(--gl-accent);
+}
+.gl-find-close svg {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: var(--gl-meta);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+.gl-find-empty {
+  margin: 0;
+  padding: 22px 36px;
+  font-size: 14px;
+  color: var(--ink);
+}
+/* in find results, each term's bucket and category above its name */
+.gl-term-where {
+  margin-bottom: 2px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--gl-meta);
+}
+.gl mark {
+  padding: 0 1px;
+  border-radius: 3px;
+  background: color-mix(in srgb, #f0b44c 45%, transparent);
+  color: inherit;
+}
+.gl-tab {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 14px 11px;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--gl-meta);
+  cursor: pointer;
+  transition: color 150ms var(--ease), border-color 150ms var(--ease);
+}
+.gl-tab:hover {
+  color: var(--ink);
+}
+.gl-tab:focus-visible {
+  outline: 2px solid var(--gl-accent);
+  outline-offset: -4px;
+  border-radius: 6px;
+}
+.gl-tab.is-active {
+  border-bottom-color: var(--gl-accent);
+  color: var(--ink);
+  font-weight: 600;
+}
+.gl-tab-n {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--gl-meta) 12%, transparent);
+  font-size: 11.5px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--gl-meta);
+}
+.gl-tab.is-active .gl-tab-n {
+  background: var(--gl-sel-bg);
+  color: var(--gl-accent);
+}
+
+.gl-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+}
+
+/* left: the bucket's categories */
+/* compact rows, so the longest bucket's list (Quality of Service, nine categories) fits without
+   scrolling on a laptop-height window */
+.gl-cats {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 10px 10px;
+  border-right: 1px solid var(--gl-line);
+  overflow-y: auto;
+  /* no visible scrollbar (the page is one screen, see useNoScrollbar); still wheel-scrollable on a
+     window too short to fit it */
+  scrollbar-width: none;
+}
+.gl-cat {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 12px;
+  border-radius: 7px;
+  font-size: 13px;
+  line-height: 1.3;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background-color 120ms var(--ease);
+}
+.gl-cat:hover {
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
+}
+.gl-cat:focus-visible {
+  outline: 2px solid var(--gl-accent);
+  outline-offset: -2px;
+}
+.gl-cat.is-active {
+  background: var(--gl-sel-bg);
+  color: var(--gl-accent);
+  font-weight: 600;
+}
+.gl-cat-n {
+  flex: none;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--gl-meta);
+}
+.gl-cat.is-active .gl-cat-n {
+  color: inherit;
+}
+
+/* right: the selected category's definitions */
+.gl-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+/* one slim row: the category name (already highlighted on the left, so kept small) and the pager */
+.gl-panel-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 60px;
+  padding: 12px 36px;
+  border-bottom: 1px solid var(--gl-line);
+}
+.gl-panel-head h2 {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.3;
+  color: var(--gl-accent);
+}
+.gl-pager {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--gl-meta);
+}
+.gl-pager span {
+  margin-right: 6px;
+}
+.gl-pager button {
+  all: unset;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--gl-line);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 120ms var(--ease), border-color 120ms var(--ease);
+}
+.gl-pager button:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--gl-accent) 45%, var(--line));
+  background: var(--gl-sel-bg);
+}
+.gl-pager button:focus-visible {
+  outline: 2px solid var(--gl-accent);
+  outline-offset: 2px;
+}
+.gl-pager button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.gl-pager svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.gl-cats::-webkit-scrollbar,
+.gl-terms::-webkit-scrollbar {
+  display: none;
+}
+/* two columns of terms, filled down the rows; scrolls inside only on a very short window */
+.gl-terms {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: start;
+  column-gap: 48px;
+  row-gap: 20px;
+  margin: 0;
+  padding: 22px 36px 24px;
+  overflow-y: auto;
+  /* no visible scrollbar (the page is one screen, see useNoScrollbar); still wheel-scrollable on a
+     window too short to fit it */
+  scrollbar-width: none;
+  animation: gl-in 180ms var(--ease);
+}
+@keyframes gl-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gl-terms {
+    animation: none;
+  }
+}
+/* the hidden copy GlossaryList measures to cut pages: the same grid at the same width, out of
+   the layout and invisible */
+.gl-terms--measure {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  visibility: hidden;
+  pointer-events: none;
+  overflow: visible;
+  animation: none;
+}
+.gl-term dt {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--ink);
+}
+.gl-term dd {
+  margin: 4px 0 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-body, var(--ink));
+}
+
+/* narrower desktops: one column of terms */
+@media (max-width: 1200px) {
+  .gl-body {
+    grid-template-columns: 264px minmax(0, 1fr);
+  }
+  .gl-terms {
+    grid-template-columns: 1fr;
+  }
+}
+/* tablet and phone: the frame takes its natural height and the page scrolls; categories stack
+   above the definitions */
+@media (max-width: 900px) {
+  .gl-body {
+    grid-template-columns: 1fr;
+  }
+  /* the open find field takes its own full-width line under the tabs */
+  .gl-bar {
+    flex-wrap: wrap;
+    padding-right: 20px;
+  }
+  .gl-find:has(.gl-find-field) {
+    flex-basis: 100%;
+    padding-bottom: 12px;
+  }
+  .gl-find-field {
+    width: 100%;
+  }
+  .gl-cats {
+    border-right: 0;
+    border-bottom: 1px solid var(--gl-line);
+  }
+  .gl-panel-head {
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 18px 20px 14px;
+  }
+  .gl-terms {
+    padding: 18px 20px 22px;
   }
 }

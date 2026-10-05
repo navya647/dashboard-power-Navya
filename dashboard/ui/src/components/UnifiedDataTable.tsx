@@ -51,6 +51,7 @@ export default function UnifiedDataTable({ rows }: { rows: UnifiedTableRow[] }) 
               <td>
                 {r.reportedText ?? 'N/A'}
                 <div className="meaning">{r.reportedMeaning || 'N/A'}</div>
+                {r.note && <div className="meaning value-note">Note: {r.note}</div>}
               </td>
               <td>
                 <MetPill met={r.standardMet} />

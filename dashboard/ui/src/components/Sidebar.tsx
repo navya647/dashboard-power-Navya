@@ -3,10 +3,24 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import ThemeToggle from './ThemeToggle';
+import { MAP_HREF } from '@/lib/routes';
 
 // Placeholder icons — stand-ins for real ones, swap the path data out once real iconography for
 // each section is settled rather than treating these as final.
 const NAV = [
+  // Home goes to the map explorer, never the landing hero (MAP_HREF, shared with every other
+  // back-to-the-map control)
+  {
+    href: MAP_HREF,
+    label: 'Home',
+    icon: <path d="M4 11 12 4l8 7M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9M10 20v-6h4v6" />,
+  },
+  {
+    href: '/glance',
+    label: 'At a glance',
+    // sorted bars: one indicator, every DISCOM side by side
+    icon: <path d="M4 5h13M4 10h9M4 15h15M4 20h6" />,
+  },
   {
     href: '/about',
     label: 'About',
@@ -17,21 +31,17 @@ const NAV = [
       </>
     ),
   },
-  // Home still routes to '/' — the landing page — only its position in the nav list moved.
-  {
-    href: '/',
-    label: 'Home',
-    icon: <path d="M4 11 12 4l8 7M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9M10 20v-6h4v6" />,
-  },
   {
     href: '/accessibility',
     label: 'Accessibility',
-    icon: <path d="M12 3 3 7.5 12 12l9-4.5L12 3Zm-9 9 9 4.5 9-4.5M3 16.5l9 4.5 9-4.5" />,
+    // document with a tick: is the data published, and is it usable (public + machine-readable)
+    icon: <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7ZM14 2v4a2 2 0 0 0 2 2h4M9 15l2 2 4-4" />,
   },
   {
     href: '/methodology',
     label: 'Methodology',
-    icon: <path d="M9 4h6l3 4v12H6V8l3-4Zm-1 8h8M8 15h5" />,
+    // open book: how the data was compiled, a reference
+    icon: <path d="M12 7v14M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3Z" />,
   },
 ];
 
@@ -40,19 +50,16 @@ const NAV = [
  * main.app-main's margin unconditionally rather than behind any open/closed state). */
 export default function Sidebar() {
   const pathname = usePathname();
-
+  // the ACPET logo is never in the sidebar: every page carries it top right instead (the home page
+  // in HeroSection, the rest via PageLogo), so it stays in one place across the site. Its look is
+  // the home page map view's on every page (layout.css), background and nav placement included;
+  // only the landing hero's sunset tint is home-page-only.
   return (
     <aside className="sidebar">
       <div className="sidebar-inner">
-        <div className="brand">
-          {/* eslint-disable-next-line @next/next/no-img-element -- static export has no Image Optimization API */}
-          <img src="/acpet-logo.png" alt="ACPET" width={208} height={69} className="brand-logo brand-logo-light" />
-          {/* eslint-disable-next-line @next/next/no-img-element -- static export has no Image Optimization API */}
-          <img src="/acpet-logo-white.png" alt="ACPET" width={208} height={69} className="brand-logo brand-logo-dark" />
-        </div>
         <nav className="sidenav">
           {NAV.map((item) => {
-            const active = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
+            const active = item.href === MAP_HREF ? pathname === '/' : pathname.startsWith(item.href);
             return (
               <Link key={item.href} href={item.href} className={active ? 'active' : ''}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">

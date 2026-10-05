@@ -214,6 +214,10 @@ table.std-table tbody tr:hover {
   gap: 16px;
   margin-top: 14px;
 }
+/* one card per row, so charts that share a year axis line up vertically */
+.chart-grid--stacked {
+  grid-template-columns: minmax(0, 1fr);
+}
 .chart-card {
   background: var(--panel);
   border: 1px solid var(--line);

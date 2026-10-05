@@ -72,12 +72,12 @@
       "state": "Maharashtra",
       "years": {
         "2021-22": {
-          "regulation": "Maharashtra Electricity Regulatory Commission (Electricity Supply Code and Standards of Performance of Distribution Licensees including Power Quality) Regulations, 2021",
+          "regulation": "Maharashtra Electricity Regulatory Commission (Electricity Supply Code and Standards of Performance of Distribution Licensees including Power Quality) Regulations, 2021 (upto to 4th July 2024)",
           "indicators": {
             "SAIDI": {
-              "value": 3.694,
+              "value": 221.62,
               "subtypes": {
-                "default": 3.694
+                "default": 221.62
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer.",
               "standard_specified": "Targets set by the Commission through separate guidelines/order.",
@@ -120,9 +120,9 @@
               "reason_not_comparable": "Reporting mandated starting July 2024."
             },
             "CAIDI": {
-              "value": 2.639,
+              "value": 158.37,
               "subtypes": {
-                "default": 2.639
+                "default": 158.37
               },
               "indicator_meaning": "Average restoration time for consumers who experienced sustained interruptions.",
               "standard_specified": "Targets set by the Commission through separate guidelines/order.",
@@ -135,9 +135,9 @@
               "reason_not_comparable": "No benchmark defined in regulations."
             },
             "VOLTAGE VARIATION": {
-              "value": 13.6,
+              "value": null,
               "subtypes": {
-                "default": 13.6
+                "default": null
               },
               "indicator_meaning": "Maintenance of voltage at the point of supply within stipulated limits",
               "standard_specified": "Maintaining supply voltage at consumer terminals within limits of Un +10% / -15%.",
@@ -199,22 +199,22 @@
           "scoring": {
             "total_indicators": 8,
             "standards_available_pct": 100.0,
-            "data_reported_pct": 75.0,
+            "data_reported_pct": 62.5,
             "comparable_pct": 0.0,
             "compliance_pct": null,
-            "composite_score": 43.8,
+            "composite_score": 40.6,
             "grade": "C",
             "phantom_comparable_count": 0,
-            "indicators_reported": 6
+            "indicators_reported": 5
           }
         },
         "2025-26": {
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 2.384,
+              "value": 143.05,
               "subtypes": {
-                "default": 2.384
+                "default": 143.05
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer.",
               "standard_specified": "Targets set by the Commission through separate guidelines/order.",
@@ -257,9 +257,9 @@
               "reason_not_comparable": "No benchmark defined in regulations."
             },
             "CAIDI": {
-              "value": 0.941,
+              "value": 56.46,
               "subtypes": {
-                "default": 0.941
+                "default": 56.46
               },
               "indicator_meaning": "Average restoration time for consumers who experienced sustained interruptions.",
               "standard_specified": "Targets set by the Commission through separate guidelines/order.",
@@ -307,7 +307,7 @@
                 "default": null
               },
               "indicator_meaning": "Resolution of billing problems reported by consumers.",
-              "standard_specified": "Same Day (no info); 10 days (info needed); 15 days (site visit).",
+              "standard_specified": "within 24 hours for non-receipt of bill/inadequate payment time, and within the subsequent billing cycle for other billing complaints.",
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
               "reported_meaning": "N/A",
@@ -349,16 +349,16 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 2.498,
+              "value": 149.85,
               "subtypes": {
-                "default": 2.498
+                "default": 149.85
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer.",
               "standard_specified": "Targets set by the Commission through separate guidelines/order.",
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
-              "reported_meaning": "Total minutes of supply interruption for an average consumer over two quarters",
-              "unit_note": "per quarter",
+              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year",
+              "unit_note": "Based on two quarters of data only. Computed the same way as the other years (an average across the quarters available), so not scaled up.",
               "comparison_possible": false,
               "standard_met": null,
               "reason_not_comparable": "No benchmark defined in regulations."
@@ -372,8 +372,8 @@
               "standard_specified": "Targets set by the Commission through separate guidelines/order.",
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
-              "reported_meaning": "Total number of sustained interruptions for an average consumer  over two quarters",
-              "unit_note": "per quarter",
+              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year",
+              "unit_note": "Based on two quarters of data only. Computed the same way as the other years (an average across the quarters available), so not scaled up.",
               "comparison_possible": false,
               "standard_met": null,
               "reason_not_comparable": "No benchmark defined in regulations."
@@ -394,16 +394,16 @@
               "reason_not_comparable": "Performance data not reported."
             },
             "CAIDI": {
-              "value": 0.951,
+              "value": 57.06,
               "subtypes": {
-                "default": 0.951
+                "default": 57.06
               },
               "indicator_meaning": "Average restoration time for consumers who experienced sustained interruptions.",
               "standard_specified": "Targets set by the Commission through separate guidelines/order.",
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
-              "reported_meaning": "Average minutes taken to restore supply for each interruption event  over two quarters",
-              "unit_note": "per quarter",
+              "reported_meaning": "Average minutes taken to restore supply for each interruption event over the year",
+              "unit_note": "Based on two quarters of data only. Computed the same way as the other years (an average across the quarters available), so not scaled up.",
               "comparison_possible": false,
               "standard_met": null,
               "reason_not_comparable": "No benchmark defined in regulations."
@@ -486,9 +486,9 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 1.756,
+              "value": 105.39,
               "subtypes": {
-                "default": 1.756
+                "default": 105.39
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer.",
               "standard_specified": "Targets set by the Commission through separate guidelines/order.",
@@ -531,9 +531,9 @@
               "reason_not_comparable": "Reporting mandated starting July 2024."
             },
             "CAIDI": {
-              "value": 1.559,
+              "value": 93.54,
               "subtypes": {
-                "default": 1.559
+                "default": 93.54
               },
               "indicator_meaning": "Average restoration time for consumers who experienced sustained interruptions.",
               "standard_specified": "Targets set by the Commission through separate guidelines/order.",
@@ -623,9 +623,9 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 2.125,
+              "value": 127.51,
               "subtypes": {
-                "default": 2.125
+                "default": 127.51
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer.",
               "standard_specified": "Targets set by the Commission through separate guidelines/order.",
@@ -668,9 +668,9 @@
               "reason_not_comparable": "Reporting mandated starting July 2024."
             },
             "CAIDI": {
-              "value": 1.526,
+              "value": 91.58,
               "subtypes": {
-                "default": 1.526
+                "default": 91.58
               },
               "indicator_meaning": "Average restoration time for consumers who experienced sustained interruptions.",
               "standard_specified": "Targets set by the Commission through separate guidelines/order.",
@@ -759,18 +759,18 @@
       }
     },
     {
-      "sheet": "DGCVL,GUJARAT",
+      "sheet": "DGVCL,GUJARAT",
       "full_name": "Dakshin Gujarat Vij Company Limited",
-      "short_name": "DGCVL",
+      "short_name": "DGVCL",
       "state": "Gujarat",
       "years": {
         "2021-22": {
           "regulation": "Gujarat Electricity Regulatory Commission (Standards of Performance of Distribution Licensees) Regulations, 2023.",
           "indicators": {
             "SAIDI": {
-              "value": 6.317,
+              "value": 379.0,
               "subtypes": {
-                "default": 6.317
+                "default": 379.0
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer in a month",
               "standard_specified": "Targets set by the Commission through separate guidelines/order.",
@@ -807,21 +807,6 @@
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
               "reported_meaning": "Total number of momentary interruptions for an average consumer over the year.",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
-            "CAIDI": {
-              "value": 1.37,
-              "subtypes": {
-                "default": 1.37
-              },
-              "indicator_meaning": "Average restoration time for those consumers who  experienced sustained interruptions.",
-              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Average restoration time (Minutes) for interrupted consumers over the year",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
@@ -866,8 +851,8 @@
               "standard_specified": "Within 1 day in Urban areas and 3 days in Rural areas.",
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
-              "reported_meaning": null,
-              "unit_note": null,
+              "reported_meaning": "% failure rate of Distribution transformer",
+              "unit_note": "Unit not stated in the source for this year; taken from this DISCOM's other years.",
               "comparison_possible": false,
               "standard_met": null,
               "reason_not_comparable": "No benchmark defined in regulations."
@@ -890,23 +875,23 @@
           },
           "scoring": {
             "total_indicators": 8,
-            "standards_available_pct": 100.0,
-            "data_reported_pct": 100.0,
+            "standards_available_pct": 87.5,
+            "data_reported_pct": 87.5,
             "comparable_pct": 0.0,
             "compliance_pct": null,
-            "composite_score": 50.0,
-            "grade": "B",
+            "composite_score": 43.8,
+            "grade": "C",
             "phantom_comparable_count": 0,
-            "indicators_reported": 8
+            "indicators_reported": 7
           }
         },
         "2025-26": {
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 5.983,
+              "value": 359.0,
               "subtypes": {
-                "default": 5.983
+                "default": 359.0
               },
               "indicator_meaning": "The average duration of sustained interruptions per consumer occurring during the reporting period.",
               "standard_specified": "Targets set by the Commission through separate guidelines/order.",
@@ -949,9 +934,9 @@
               "reason_not_comparable": "No benchmark defined in regulations."
             },
             "CAIDI": {
-              "value": 0.817,
+              "value": 49.0,
               "subtypes": {
-                "default": 0.817
+                "default": 49.0
               },
               "indicator_meaning": "Average restoration time for those consumers who experienced sustained interruptions.",
               "standard_specified": "Targets set by the Commission through separate guidelines/order.",
@@ -1040,9 +1025,9 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 4.183,
+              "value": 251.0,
               "subtypes": {
-                "default": 4.183
+                "default": 251.0
               },
               "indicator_meaning": "The average duration of sustained interruptions per consumer occurring during the reporting period.",
               "standard_specified": "Targets set by the Commission through separate guidelines/order.",
@@ -1085,9 +1070,9 @@
               "reason_not_comparable": "No benchmark defined in regulations."
             },
             "CAIDI": {
-              "value": 0.65,
+              "value": 39.0,
               "subtypes": {
-                "default": 0.65
+                "default": 39.0
               },
               "indicator_meaning": "Average restoration time for those consumers who experienced sustained interruptions.",
               "standard_specified": "Targets set by the Commission through separate guidelines/order.",
@@ -1176,9 +1161,9 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 4.267,
+              "value": 256.0,
               "subtypes": {
-                "default": 4.267
+                "default": 256.0
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer in a month",
               "standard_specified": "Targets set by the Commission through separate guidelines/order.",
@@ -1221,9 +1206,9 @@
               "reason_not_comparable": "No benchmark defined in regulations."
             },
             "CAIDI": {
-              "value": 0.102,
+              "value": 61.1,
               "subtypes": {
-                "default": 0.102
+                "default": 61.1
               },
               "indicator_meaning": "Average restoration time for those consumers who experienced sustained interruptions",
               "standard_specified": "Targets set by the Commission through separate guidelines/order.",
@@ -1312,9 +1297,9 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 5.65,
+              "value": 339.0,
               "subtypes": {
-                "default": 5.65
+                "default": 339.0
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer in a month",
               "standard_specified": "Targets set by the Commission through separate guidelines/order.",
@@ -1351,21 +1336,6 @@
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
               "reported_meaning": "Total number of momentary interruptions for an average consumer over the year.",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
-            "CAIDI": {
-              "value": 1.289,
-              "subtypes": {
-                "default": 1.289
-              },
-              "indicator_meaning": "Average restoration time for those consumers who experienced sustained interruptions",
-              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Average restoration time (Minutes) for interrupted consumers over the year",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
@@ -1434,702 +1404,14 @@
           },
           "scoring": {
             "total_indicators": 8,
-            "standards_available_pct": 100.0,
-            "data_reported_pct": 100.0,
+            "standards_available_pct": 87.5,
+            "data_reported_pct": 87.5,
             "comparable_pct": 0.0,
             "compliance_pct": null,
-            "composite_score": 50.0,
-            "grade": "B",
-            "phantom_comparable_count": 0,
-            "indicators_reported": 8
-          }
-        }
-      }
-    },
-    {
-      "sheet": "UGVCL,GUJARAT",
-      "full_name": "Uttar Gujarat Vij Company Limited",
-      "short_name": "UGVCL",
-      "state": "Gujarat",
-      "years": {
-        "2021-22": {
-          "regulation": "Gujarat Electricity Regulatory Commission (Standards of Performance of Distribution Licensees) Regulations, 2023.",
-          "indicators": {
-            "SAIDI": {
-              "value": 3.043,
-              "subtypes": {
-                "default": 3.043
-              },
-              "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer in a month",
-              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year.",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
-            "SAIFI": {
-              "value": 2.51,
-              "subtypes": {
-                "default": 2.51
-              },
-              "indicator_meaning": "The average number of sustained power interruptions experienced by a consumer in a month",
-              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year.",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
-            "MAIFI": {
-              "value": 5.39,
-              "subtypes": {
-                "default": 5.39
-              },
-              "indicator_meaning": "The average number of momentary interruptions experienced by a consumer in a month",
-              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Total number of momentary interruptions for an average consumer over the year.",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
-            "CAIDI": {
-              "value": 1.214,
-              "subtypes": {
-                "default": 1.214
-              },
-              "indicator_meaning": "Average restoration time for those consumers who experienced sustained interruptions",
-              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Average restoration time (Minutes) for interrupted consumers over the year",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "Reported data not available."
-            },
-            "VOLTAGE VARIATION": {
-              "value": null,
-              "subtypes": {
-                "default": null
-              },
-              "indicator_meaning": "Maintenance of voltage at the point of supply within stipulated limits",
-              "standard_specified": "LV: ± 6%; HV: +6% & -9%; EHV: +10% & -12.5%.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "% compliance",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
-            "HARMONICS": {
-              "value": null,
-              "subtypes": {
-                "default": null
-              },
-              "indicator_meaning": "Unwanted electrical vibrations that distort the power supply",
-              "standard_specified": "Licensees must monitor HT consumers at strategic points.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "% compliance",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
-            "TRANSFORMER FAILURE": {
-              "value": 6.88,
-              "subtypes": {
-                "default": 6.88
-              },
-              "indicator_meaning": "Restoration of power by replacing failed distribution transformers",
-              "standard_specified": "Within 1 day in Urban areas and 3 days in Rural areas.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "% failure rate of Distribution transformer",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
-            "BILLING COMPLAINT RESOLUTION": {
-              "value": null,
-              "subtypes": {
-                "default": null
-              },
-              "indicator_meaning": "Resolution of billing problems reported by consumers",
-              "standard_specified": "Same Day (no info); 10 days (info needed); 15 days (site visit).",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "% of cases resolved within stipulated time : For current bills where no additional information is required; Where additional information relating to correctness of reading etc. is required",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            }
-          },
-          "scoring": {
-            "total_indicators": 8,
-            "standards_available_pct": 100.0,
-            "data_reported_pct": 62.5,
-            "comparable_pct": 0.0,
-            "compliance_pct": null,
-            "composite_score": 40.6,
+            "composite_score": 43.8,
             "grade": "C",
             "phantom_comparable_count": 0,
-            "indicators_reported": 5
-          }
-        },
-        "2025-26": {
-          "regulation": "",
-          "indicators": {
-            "SAIDI": {
-              "value": 2.14,
-              "subtypes": {
-                "default": 2.14
-              },
-              "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer in a month.",
-              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year.",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
-            "SAIFI": {
-              "value": 7.09,
-              "subtypes": {
-                "default": 7.09
-              },
-              "indicator_meaning": "The average number of sustained power interruptions experienced by a consumer in a month.",
-              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year.",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
-            "MAIFI": {
-              "value": 8.65,
-              "subtypes": {
-                "default": 8.65
-              },
-              "indicator_meaning": "The average number of momentary interruptions experienced by a consumer in a month.",
-              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Total number of momentary interruptions for an average consumer over the year.",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
-            "CAIDI": {
-              "value": 0.95,
-              "subtypes": {
-                "default": 0.95
-              },
-              "indicator_meaning": "Average restoration time for those consumers who experienced sustained interruptions.",
-              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Average restoration time (Minutes) for interrupted consumers over the year",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "Reported data not available."
-            },
-            "VOLTAGE VARIATION": {
-              "value": null,
-              "subtypes": {
-                "default": null
-              },
-              "indicator_meaning": "Maintenance of voltage at the point of supply within stipulated limits.",
-              "standard_specified": "LV: ± 6%; HV: +6% & -9%; EHV: +10% & -12.5%. Resolve network issues in 60-180 days.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "% compliance",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
-            "HARMONICS": {
-              "value": null,
-              "subtypes": {
-                "default": null
-              },
-              "indicator_meaning": "Unwanted electrical vibrations that distort the power supply.",
-              "standard_specified": "Maintenance of Total Harmonic Distortion in Voltage (THDV) within 3.5% for LT consumers; 3.0% for HT and EHT consumers.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "% compliance",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
-            "TRANSFORMER FAILURE": {
-              "value": 7.11,
-              "subtypes": {
-                "default": 7.11
-              },
-              "indicator_meaning": "Restoration of power by replacing failed distribution transformers.",
-              "standard_specified": "Within 6 hours in Urban areas and 24 hours in Rural areas.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "% failure rate of Distribution transformer",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
-            "BILLING COMPLAINT RESOLUTION": {
-              "value": null,
-              "subtypes": {
-                "default": null
-              },
-              "indicator_meaning": "Resolution of billing problems reported by consumers.",
-              "standard_specified": "Same Day (no info); 10 days (info needed); 15 days (site visit).",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "% of cases resolved within stipulated time : For current bills where no additional information is required; Where additional information relating to correctness of reading etc. is required",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            }
-          },
-          "scoring": {
-            "total_indicators": 8,
-            "standards_available_pct": 100.0,
-            "data_reported_pct": 62.5,
-            "comparable_pct": 0.0,
-            "compliance_pct": null,
-            "composite_score": 40.6,
-            "grade": "C",
-            "phantom_comparable_count": 0,
-            "indicators_reported": 5
-          }
-        },
-        "2024-25": {
-          "regulation": "",
-          "indicators": {
-            "SAIDI": {
-              "value": 2.238,
-              "subtypes": {
-                "default": 2.238
-              },
-              "indicator_meaning": "The average duration of sustained interruptions per consumer occurring during the reporting period.",
-              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year.",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
-            "SAIFI": {
-              "value": 2.76,
-              "subtypes": {
-                "default": 2.76
-              },
-              "indicator_meaning": "The average frequency of sustained power interruptions per consumer occurring during the reporting period.",
-              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year.",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
-            "MAIFI": {
-              "value": 5.6,
-              "subtypes": {
-                "default": 5.6
-              },
-              "indicator_meaning": "The average number of momentary interruptions per consumer occurring during the reporting period.",
-              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Total number of momentary interruptions for an average consumer over the year.",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
-            "CAIDI": {
-              "value": 0.812,
-              "subtypes": {
-                "default": 0.812
-              },
-              "indicator_meaning": "Average restoration time for those consumers who experienced sustained interruptions.",
-              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Average restoration time (Minutes) for interrupted consumers over the year",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "Reported data not available."
-            },
-            "VOLTAGE VARIATION": {
-              "value": null,
-              "subtypes": {
-                "default": null
-              },
-              "indicator_meaning": "Maintenance of voltage at the point of supply within stipulated limits.",
-              "standard_specified": "LV: ± 6%; HV: +6% & -9%; EHV: +10% & -12.5%. Resolve network issues in 60-180 days.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "% compliance",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
-            "HARMONICS": {
-              "value": null,
-              "subtypes": {
-                "default": null
-              },
-              "indicator_meaning": "Unwanted electrical vibrations that distort the power supply.",
-              "standard_specified": "Maintenance of Total Harmonic Distortion in Voltage (THDV) within 3.5% for LT consumers; 3.0% for HT and EHT consumers.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "% compliance",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
-            "TRANSFORMER FAILURE": {
-              "value": 6.72,
-              "subtypes": {
-                "default": 6.72
-              },
-              "indicator_meaning": "Restoration of power by replacing failed distribution transformers.",
-              "standard_specified": "Within 6 hours in Urban areas and 24 hours in Rural areas.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "% failure rate of Distribution transformer",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
-            "BILLING COMPLAINT RESOLUTION": {
-              "value": null,
-              "subtypes": {
-                "default": null
-              },
-              "indicator_meaning": "Resolution of billing problems reported by consumers.",
-              "standard_specified": "Same Day (no info); 10 days (info needed); 15 days (site visit).",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "% of cases resolved within stipulated time : For current bills where no additional information is required; Where additional information relating to correctness of reading etc. is required",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            }
-          },
-          "scoring": {
-            "total_indicators": 8,
-            "standards_available_pct": 100.0,
-            "data_reported_pct": 62.5,
-            "comparable_pct": 0.0,
-            "compliance_pct": null,
-            "composite_score": 40.6,
-            "grade": "C",
-            "phantom_comparable_count": 0,
-            "indicators_reported": 5
-          }
-        },
-        "2023-24": {
-          "regulation": "",
-          "indicators": {
-            "SAIDI": {
-              "value": 2.548,
-              "subtypes": {
-                "default": 2.548
-              },
-              "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer in a month",
-              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year.",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
-            "SAIFI": {
-              "value": 2.3,
-              "subtypes": {
-                "default": 2.3
-              },
-              "indicator_meaning": "The average number of sustained power interruptions experienced by a consumer in a month",
-              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year.",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
-            "MAIFI": {
-              "value": 4.61,
-              "subtypes": {
-                "default": 4.61
-              },
-              "indicator_meaning": "The average number of momentary interruptions experienced by a consumer in a month",
-              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Total number of momentary interruptions for an average consumer over the year.",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
-            "CAIDI": {
-              "value": 1.107,
-              "subtypes": {
-                "default": 1.107
-              },
-              "indicator_meaning": "Average restoration time for those consumers who experienced sustained interruptions",
-              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Average restoration time (Minutes) for interrupted consumers over the year",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "Reported data not available."
-            },
-            "VOLTAGE VARIATION": {
-              "value": null,
-              "subtypes": {
-                "default": null
-              },
-              "indicator_meaning": "Maintenance of voltage at the point of supply within stipulated limits",
-              "standard_specified": "LV: ± 6%; HV: +6% & -9%; EHV: +10% & -12.5%.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "% compliance",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
-            "HARMONICS": {
-              "value": null,
-              "subtypes": {
-                "default": null
-              },
-              "indicator_meaning": "Unwanted electrical vibrations that distort the power supply",
-              "standard_specified": "Maintenance of Total Harmonic Distortion in Voltage (THDV) within 3.5% for LT consumers; 3.0% for HT and EHT consumers.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "% compliance",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
-            "TRANSFORMER FAILURE": {
-              "value": 0.07,
-              "subtypes": {
-                "default": 0.07
-              },
-              "indicator_meaning": "Restoration of power by replacing failed distribution transformers",
-              "standard_specified": "Within 6 hours in Urban areas and 24 hours in Rural areas.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "% failure rate of Distribution transformer",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
-            "BILLING COMPLAINT RESOLUTION": {
-              "value": null,
-              "subtypes": {
-                "default": null
-              },
-              "indicator_meaning": "Resolution of billing problems reported by consumers",
-              "standard_specified": "Same Day; 10 days (info needed); 15 days (site visit).",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "% of cases resolved within stipulated time : For current bills where no additional information is required; Where additional information relating to correctness of reading etc. is required",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            }
-          },
-          "scoring": {
-            "total_indicators": 8,
-            "standards_available_pct": 100.0,
-            "data_reported_pct": 62.5,
-            "comparable_pct": 0.0,
-            "compliance_pct": null,
-            "composite_score": 40.6,
-            "grade": "C",
-            "phantom_comparable_count": 0,
-            "indicators_reported": 5
-          }
-        },
-        "2022-23": {
-          "regulation": "",
-          "indicators": {
-            "SAIDI": {
-              "value": 2.246,
-              "subtypes": {
-                "default": 2.246
-              },
-              "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer in a month",
-              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year.",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
-            "SAIFI": {
-              "value": 2.06,
-              "subtypes": {
-                "default": 2.06
-              },
-              "indicator_meaning": "The average number of sustained power interruptions experienced by a consumer in a month",
-              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year.",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
-            "MAIFI": {
-              "value": 4.53,
-              "subtypes": {
-                "default": 4.53
-              },
-              "indicator_meaning": "The average number of momentary interruptions experienced by a consumer in a month",
-              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Total number of momentary interruptions for an average consumer over the year.",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
-            "CAIDI": {
-              "value": 1.09,
-              "subtypes": {
-                "default": 1.09
-              },
-              "indicator_meaning": "Average restoration time for those consumers who experienced sustained interruptions",
-              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Average restoration time (Minutes) for interrupted consumers over the year",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "Reported data not available."
-            },
-            "VOLTAGE VARIATION": {
-              "value": null,
-              "subtypes": {
-                "default": null
-              },
-              "indicator_meaning": "Maintenance of voltage at the point of supply within stipulated limits",
-              "standard_specified": "LV: ± 6%; HV: +6% & -9%; EHV: +10% & -12.5%.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "% compliance",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
-            "HARMONICS": {
-              "value": null,
-              "subtypes": {
-                "default": null
-              },
-              "indicator_meaning": "Unwanted electrical vibrations that distort the power supply",
-              "standard_specified": "Licensees must monitor HT consumers at strategic points.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "% compliance",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
-            "TRANSFORMER FAILURE": {
-              "value": 6.84,
-              "subtypes": {
-                "default": 6.84
-              },
-              "indicator_meaning": "Restoration of power by replacing failed distribution transformers",
-              "standard_specified": "Within 1 day in Urban areas and 3 days in Rural areas.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "% failure rate of Distribution transformer",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
-            "BILLING COMPLAINT RESOLUTION": {
-              "value": null,
-              "subtypes": {
-                "default": null
-              },
-              "indicator_meaning": "Resolution of billing problems reported by consumers",
-              "standard_specified": "Same Day; 10 days (info needed); 15 days (site visit).",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "% of cases resolved within stipulated time : For current bills where no additional information is required; Where additional information relating to correctness of reading etc. is required",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            }
-          },
-          "scoring": {
-            "total_indicators": 8,
-            "standards_available_pct": 100.0,
-            "data_reported_pct": 62.5,
-            "comparable_pct": 0.0,
-            "compliance_pct": null,
-            "composite_score": 40.6,
-            "grade": "C",
-            "phantom_comparable_count": 0,
-            "indicators_reported": 5
+            "indicators_reported": 7
           }
         }
       }
@@ -2144,9 +1426,9 @@
           "regulation": "Gujarat Electricity Regulatory Commission (Standards of Performance of Distribution Licensees) Regulations, 2023.",
           "indicators": {
             "SAIDI": {
-              "value": 4.8,
+              "value": 288.0,
               "subtypes": {
-                "default": 4.8
+                "default": 288.0
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer in a month",
               "standard_specified": "Targets set by the Commission through separate guidelines/order.",
@@ -2188,21 +1470,6 @@
               "standard_met": null,
               "reason_not_comparable": "No benchmark defined in regulations."
             },
-            "CAIDI": {
-              "value": null,
-              "subtypes": {
-                "default": null
-              },
-              "indicator_meaning": "Average restoration time for those consumers who experienced sustained interruptions",
-              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "N/A",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "Data not reported."
-            },
             "VOLTAGE VARIATION": {
               "value": 100.0,
               "subtypes": {
@@ -2239,7 +1506,7 @@
                 "default": 5.39
               },
               "indicator_meaning": "Restoration of power by replacing failed distribution transformers",
-              "standard_specified": "Within 1 day in Urban areas and 3 days in Rural areas.",
+              "standard_specified": "inspect/test within 7 working days Urban / 15 working days Rural; a defective meter is generally replaced within 15 days after inspection/testing.",
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
               "reported_meaning": "% failure rate of Distribution transformer",
@@ -2249,9 +1516,9 @@
               "reason_not_comparable": "No benchmark defined in regulations."
             },
             "BILLING COMPLAINT RESOLUTION": {
-              "value": 50.39,
+              "value": 100.0,
               "subtypes": {
-                "default": 50.39
+                "default": 100.0
               },
               "indicator_meaning": "Resolution of billing problems reported by consumers",
               "standard_specified": "Same Day (no info); 10 days (info needed); 15 days (site visit).",
@@ -2266,12 +1533,12 @@
           },
           "scoring": {
             "total_indicators": 8,
-            "standards_available_pct": 100.0,
+            "standards_available_pct": 87.5,
             "data_reported_pct": 87.5,
             "comparable_pct": 0.0,
             "compliance_pct": null,
-            "composite_score": 46.9,
-            "grade": "B",
+            "composite_score": 43.8,
+            "grade": "C",
             "phantom_comparable_count": 0,
             "indicators_reported": 7
           }
@@ -2280,9 +1547,9 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 0.417,
+              "value": 25.0,
               "subtypes": {
-                "default": 0.417
+                "default": 25.0
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer in a month.",
               "standard_specified": "Targets set by the Commission through separate guidelines/order.",
@@ -2325,9 +1592,9 @@
               "reason_not_comparable": "No benchmark defined in regulations."
             },
             "CAIDI": {
-              "value": 0.039,
+              "value": 2.36,
               "subtypes": {
-                "default": 0.039
+                "default": 2.36
               },
               "indicator_meaning": "Average restoration time for those consumers who experienced sustained interruptions.",
               "standard_specified": "Targets set by the Commission through separate guidelines/order.",
@@ -2458,7 +1725,7 @@
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "Reported data is 45,570 pages long and not machine readable so the reported values could not be fetched."
+              "reason_not_comparable": "The available source table contains only Apr-Jul 2024 and does not provide Aug-Mar or an annual total."
             },
             "CAIDI": {
               "value": null,
@@ -2488,7 +1755,7 @@
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "Reported data is 45,570 pages long and not machine readable so the reported values could not be fetched."
+              "reason_not_comparable": "100% compliance is derived from zero deviations in the tested sample"
             },
             "HARMONICS": {
               "value": null,
@@ -2503,7 +1770,7 @@
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "Reported data is 45,570 pages long and not machine readable so the reported values could not be fetched."
+              "reason_not_comparable": "100% compliance is derived from zero deviations in the tested sample"
             },
             "TRANSFORMER FAILURE": {
               "value": null,
@@ -2511,7 +1778,7 @@
                 "default": null
               },
               "indicator_meaning": "Restoration of power by replacing failed distribution transformers.",
-              "standard_specified": "Within 6 hours in Urban areas and 24 hours in Rural areas.",
+              "standard_specified": "Before 6 Dec 2023, the 2005 rules apply: inspect/test within 7 working days Urban / 15 working days Rural; a defective meter is generally replaced within 15 days after inspection/testing. After 6th Dec 2023: Within 6 hours in Urban areas and 24 hours in Rural areas.",
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
               "reported_meaning": "N/A",
@@ -2552,9 +1819,9 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 4.867,
+              "value": 327.0,
               "subtypes": {
-                "default": 4.867
+                "default": 327.0
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer in a month",
               "standard_specified": "Targets set by the Commission through separate guidelines/order.",
@@ -2597,9 +1864,9 @@
               "reason_not_comparable": "No benchmark defined in regulations."
             },
             "CAIDI": {
-              "value": 1.126,
+              "value": 67.56,
               "subtypes": {
-                "default": 1.126
+                "default": 67.56
               },
               "indicator_meaning": "Average restoration time for those consumers who experienced sustained interruptions",
               "standard_specified": "Targets set by the Commission through separate guidelines/order.",
@@ -2624,7 +1891,7 @@
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "100% compliance is derived from zero deviations in the tested sample"
             },
             "HARMONICS": {
               "value": 100.0,
@@ -2639,7 +1906,7 @@
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "100% compliance is derived from zero deviations in the tested sample"
             },
             "TRANSFORMER FAILURE": {
               "value": 5.44,
@@ -2647,7 +1914,7 @@
                 "default": 5.44
               },
               "indicator_meaning": "Restoration of power by replacing failed distribution transformers",
-              "standard_specified": "Within 6 hours in Urban areas and 24 hours in Rural areas.",
+              "standard_specified": "inspect/test within 7 working days Urban / 15 working days Rural; a defective meter is generally replaced within 15 days after inspection/testing.",
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
               "reported_meaning": "% failure rate of Distribution transformer",
@@ -2688,9 +1955,9 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 4.417,
+              "value": 265.0,
               "subtypes": {
-                "default": 4.417
+                "default": 265.0
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer in a month",
               "standard_specified": "Targets set by the Commission through separate guidelines/order.",
@@ -2732,21 +1999,6 @@
               "standard_met": null,
               "reason_not_comparable": "No benchmark defined in regulations."
             },
-            "CAIDI": {
-              "value": 1.258,
-              "subtypes": {
-                "default": 1.258
-              },
-              "indicator_meaning": "Average restoration time for those consumers who experienced sustained interruptions",
-              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Average restoration time (Minutes) for interrupted consumers over the year",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
             "VOLTAGE VARIATION": {
               "value": 100.0,
               "subtypes": {
@@ -2760,7 +2012,7 @@
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "100% compliance is derived from zero deviations in the tested sample"
             },
             "HARMONICS": {
               "value": 100.0,
@@ -2775,7 +2027,7 @@
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "100% compliance is derived from zero deviations in the tested sample"
             },
             "TRANSFORMER FAILURE": {
               "value": 4.93,
@@ -2783,7 +2035,7 @@
                 "default": 4.93
               },
               "indicator_meaning": "Restoration of power by replacing failed distribution transformers",
-              "standard_specified": "Within 1 day in Urban areas and 3 days in Rural areas.",
+              "standard_specified": "inspect/test within 7 working days Urban / 15 working days Rural; a defective meter is generally replaced within 15 days after inspection/testing.",
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
               "reported_meaning": "% failure rate of Distribution transformer",
@@ -2810,14 +2062,14 @@
           },
           "scoring": {
             "total_indicators": 8,
-            "standards_available_pct": 100.0,
-            "data_reported_pct": 100.0,
+            "standards_available_pct": 87.5,
+            "data_reported_pct": 87.5,
             "comparable_pct": 0.0,
             "compliance_pct": null,
-            "composite_score": 50.0,
-            "grade": "B",
+            "composite_score": 43.8,
+            "grade": "C",
             "phantom_comparable_count": 0,
-            "indicators_reported": 8
+            "indicators_reported": 7
           }
         }
       }
@@ -2832,9 +2084,9 @@
           "regulation": "Gujarat Electricity Regulatory Commission (Standards of Performance of Distribution Licensees) Regulations, 2023.",
           "indicators": {
             "SAIDI": {
-              "value": 209.133,
+              "value": 12548.0,
               "subtypes": {
-                "default": 209.133
+                "default": 12548.0
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer in a month",
               "standard_specified": "Targets set by the Commission through separate guidelines/order.",
@@ -2876,21 +2128,6 @@
               "standard_met": null,
               "reason_not_comparable": "No benchmark defined in regulations."
             },
-            "CAIDI": {
-              "value": 2.194,
-              "subtypes": {
-                "default": 2.194
-              },
-              "indicator_meaning": "Average restoration time for those consumers who experienced sustained interruptions",
-              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Average restoration time (Minutes) for interrupted consumers over the year.",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
             "VOLTAGE VARIATION": {
               "value": 100.0,
               "subtypes": {
@@ -2922,9 +2159,9 @@
               "reason_not_comparable": "No benchmark defined in regulations."
             },
             "TRANSFORMER FAILURE": {
-              "value": 2.8,
+              "value": null,
               "subtypes": {
-                "default": 2.8
+                "default": null
               },
               "indicator_meaning": "Restoration of power by replacing failed distribution transformers",
               "standard_specified": "Within 1 day in Urban areas and 3 days in Rural areas.",
@@ -2954,23 +2191,23 @@
           },
           "scoring": {
             "total_indicators": 8,
-            "standards_available_pct": 100.0,
-            "data_reported_pct": 87.5,
+            "standards_available_pct": 87.5,
+            "data_reported_pct": 62.5,
             "comparable_pct": 0.0,
             "compliance_pct": null,
-            "composite_score": 46.9,
-            "grade": "B",
+            "composite_score": 37.5,
+            "grade": "C",
             "phantom_comparable_count": 0,
-            "indicators_reported": 7
+            "indicators_reported": 5
           }
         },
         "2025-26": {
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 11.333,
+              "value": 680.0,
               "subtypes": {
-                "default": 11.333
+                "default": 680.0
               },
               "indicator_meaning": "The average duration of sustained interruptions per consumer occurring during the reporting period.",
               "standard_specified": "Targets set by the Commission through separate guidelines/order.",
@@ -3013,9 +2250,9 @@
               "reason_not_comparable": "No benchmark defined in regulations."
             },
             "CAIDI": {
-              "value": 0.183,
+              "value": 11.0,
               "subtypes": {
-                "default": 0.183
+                "default": 11.0
               },
               "indicator_meaning": "Average restoration time for those consumers who experienced sustained interruptions.",
               "standard_specified": "Targets set by the Commission through separate guidelines/order.",
@@ -3051,16 +2288,16 @@
               "standard_specified": "Maintenance of Total Harmonic Distortion in Voltage (THDV) within 3.5% for LT consumers; 3.0% for HT and EHT consumers.",
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
-              "reported_meaning": "% Compliance",
+              "reported_meaning": "% Deviation",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
               "reason_not_comparable": "No benchmark defined in regulations."
             },
             "TRANSFORMER FAILURE": {
-              "value": 9.32,
+              "value": null,
               "subtypes": {
-                "default": 9.32
+                "default": null
               },
               "indicator_meaning": "Restoration of power by replacing failed distribution transformers.",
               "standard_specified": "Within 6 hours in Urban areas and 24 hours in Rural areas.",
@@ -3073,9 +2310,9 @@
               "reason_not_comparable": "No benchmark defined in regulations."
             },
             "BILLING COMPLAINT RESOLUTION": {
-              "value": 92.43,
+              "value": null,
               "subtypes": {
-                "default": 92.43
+                "default": null
               },
               "indicator_meaning": "Resolution of billing problems reported by consumers.",
               "standard_specified": "Same Day (no info); 10 days (info needed); 15 days (site visit).",
@@ -3091,22 +2328,22 @@
           "scoring": {
             "total_indicators": 8,
             "standards_available_pct": 100.0,
-            "data_reported_pct": 87.5,
+            "data_reported_pct": 62.5,
             "comparable_pct": 0.0,
             "compliance_pct": null,
-            "composite_score": 46.9,
-            "grade": "B",
+            "composite_score": 40.6,
+            "grade": "C",
             "phantom_comparable_count": 0,
-            "indicators_reported": 7
+            "indicators_reported": 5
           }
         },
         "2024-25": {
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 12.617,
+              "value": 757.0,
               "subtypes": {
-                "default": 12.617
+                "default": 757.0
               },
               "indicator_meaning": "The average duration of sustained interruptions per consumer occurring during the reporting period.",
               "standard_specified": "Targets set by the Commission through separate guidelines/order.",
@@ -3149,9 +2386,9 @@
               "reason_not_comparable": "No benchmark defined in regulations."
             },
             "CAIDI": {
-              "value": 0.133,
+              "value": 8.0,
               "subtypes": {
-                "default": 0.133
+                "default": 8.0
               },
               "indicator_meaning": "Average restoration time for those consumers who experienced sustained interruptions.",
               "standard_specified": "Targets set by the Commission through separate guidelines/order.",
@@ -3187,7 +2424,7 @@
               "standard_specified": "Maintenance of Total Harmonic Distortion in Voltage (THDV) within 3.5% for LT consumers; 3.0% for HT and EHT consumers.",
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
-              "reported_meaning": "% Compliance",
+              "reported_meaning": "% Deviation",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
@@ -3240,9 +2477,9 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 179.367,
+              "value": 10762.0,
               "subtypes": {
-                "default": 179.367
+                "default": 10762.0
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer in a month",
               "standard_specified": "Targets set by the Commission through separate guidelines/order.",
@@ -3285,9 +2522,9 @@
               "reason_not_comparable": "No benchmark defined in regulations."
             },
             "CAIDI": {
-              "value": 1.785,
+              "value": 107.11,
               "subtypes": {
-                "default": 1.785
+                "default": 107.11
               },
               "indicator_meaning": "Average restoration time for those consumers who experienced sustained interruptions",
               "standard_specified": "Targets set by the Commission through separate guidelines/order.",
@@ -3297,7 +2534,7 @@
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "No benchmark defined in regulations. (derived full-year value)"
             },
             "VOLTAGE VARIATION": {
               "value": 100.0,
@@ -3323,7 +2560,7 @@
               "standard_specified": "Maintenance of Total Harmonic Distortion in Voltage (THDV) within 3.5% for LT consumers; 3.0% for HT and EHT consumers.",
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
-              "reported_meaning": "% Compliance",
+              "reported_meaning": "% Deviation",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
@@ -3376,9 +2613,9 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 50.4,
+              "value": 3024.0,
               "subtypes": {
-                "default": 50.4
+                "default": 3024.0
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer in a month",
               "standard_specified": "Targets set by the Commission through separate guidelines/order.",
@@ -3420,21 +2657,6 @@
               "standard_met": null,
               "reason_not_comparable": "Data not reported."
             },
-            "CAIDI": {
-              "value": 1.641,
-              "subtypes": {
-                "default": 1.641
-              },
-              "indicator_meaning": "Average restoration time for those consumers who experienced sustained interruptions",
-              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Average restoration time (Minutes) for interrupted consumers over the year",
-              "unit_note": null,
-              "comparison_possible": false,
-              "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
-            },
             "VOLTAGE VARIATION": {
               "value": 100.0,
               "subtypes": {
@@ -3459,7 +2681,7 @@
               "standard_specified": "Licensees must monitor HT consumers at strategic points.",
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
-              "reported_meaning": "% Compliance",
+              "reported_meaning": "% Deviation",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
@@ -3498,14 +2720,672 @@
           },
           "scoring": {
             "total_indicators": 8,
-            "standards_available_pct": 100.0,
-            "data_reported_pct": 75.0,
+            "standards_available_pct": 87.5,
+            "data_reported_pct": 62.5,
             "comparable_pct": 0.0,
             "compliance_pct": null,
-            "composite_score": 43.8,
+            "composite_score": 37.5,
             "grade": "C",
             "phantom_comparable_count": 0,
-            "indicators_reported": 6
+            "indicators_reported": 5
+          }
+        }
+      }
+    },
+    {
+      "sheet": "UGVCL,GUJARAT",
+      "full_name": "Uttar Gujarat Vij Company Limited",
+      "short_name": "UGVCL",
+      "state": "Gujarat",
+      "years": {
+        "2021-22": {
+          "regulation": "Gujarat Electricity Regulatory Commission (Standards of Performance of Distribution Licensees) Regulations, 2023.",
+          "indicators": {
+            "SAIDI": {
+              "value": 182.56,
+              "subtypes": {
+                "default": 182.56
+              },
+              "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer in a month",
+              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year.",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            },
+            "SAIFI": {
+              "value": 2.51,
+              "subtypes": {
+                "default": 2.51
+              },
+              "indicator_meaning": "The average number of sustained power interruptions experienced by a consumer in a month",
+              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year.",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            },
+            "MAIFI": {
+              "value": 5.39,
+              "subtypes": {
+                "default": 5.39
+              },
+              "indicator_meaning": "The average number of momentary interruptions experienced by a consumer in a month",
+              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "Total number of momentary interruptions for an average consumer over the year.",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            },
+            "VOLTAGE VARIATION": {
+              "value": null,
+              "subtypes": {
+                "default": null
+              },
+              "indicator_meaning": "Maintenance of voltage at the point of supply within stipulated limits",
+              "standard_specified": "LV: ± 6%; HV: +6% & -9%; EHV: +10% & -12.5%.",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "% compliance",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            },
+            "HARMONICS": {
+              "value": null,
+              "subtypes": {
+                "default": null
+              },
+              "indicator_meaning": "Unwanted electrical vibrations that distort the power supply",
+              "standard_specified": "Licensees must monitor HT consumers at strategic points.",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "% deviation",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            },
+            "TRANSFORMER FAILURE": {
+              "value": 6.88,
+              "subtypes": {
+                "default": 6.88
+              },
+              "indicator_meaning": "Restoration of power by replacing failed distribution transformers",
+              "standard_specified": "Within 1 day in Urban areas and 3 days in Rural areas.",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "% failure rate of Distribution transformer",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            },
+            "BILLING COMPLAINT RESOLUTION": {
+              "value": null,
+              "subtypes": {
+                "default": null
+              },
+              "indicator_meaning": "Resolution of billing problems reported by consumers",
+              "standard_specified": "Same Day (no info); 10 days (info needed); 15 days (site visit).",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "% of cases resolved within stipulated time : For current bills where no additional information is required; Where additional information relating to correctness of reading etc. is required",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            }
+          },
+          "scoring": {
+            "total_indicators": 8,
+            "standards_available_pct": 87.5,
+            "data_reported_pct": 50.0,
+            "comparable_pct": 0.0,
+            "compliance_pct": null,
+            "composite_score": 34.4,
+            "grade": "C",
+            "phantom_comparable_count": 0,
+            "indicators_reported": 4
+          }
+        },
+        "2025-26": {
+          "regulation": "",
+          "indicators": {
+            "SAIDI": {
+              "value": 128.4,
+              "subtypes": {
+                "default": 128.4
+              },
+              "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer in a month.",
+              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year.",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            },
+            "SAIFI": {
+              "value": 7.09,
+              "subtypes": {
+                "default": 7.09
+              },
+              "indicator_meaning": "The average number of sustained power interruptions experienced by a consumer in a month.",
+              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year.",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            },
+            "MAIFI": {
+              "value": 8.65,
+              "subtypes": {
+                "default": 8.65
+              },
+              "indicator_meaning": "The average number of momentary interruptions experienced by a consumer in a month.",
+              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "Total number of momentary interruptions for an average consumer over the year.",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            },
+            "CAIDI": {
+              "value": 57.0,
+              "subtypes": {
+                "default": 57.0
+              },
+              "indicator_meaning": "Average restoration time for those consumers who experienced sustained interruptions.",
+              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "Average restoration time (Minutes) for interrupted consumers over the year",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "Reported data not available."
+            },
+            "VOLTAGE VARIATION": {
+              "value": null,
+              "subtypes": {
+                "default": null
+              },
+              "indicator_meaning": "Maintenance of voltage at the point of supply within stipulated limits.",
+              "standard_specified": "LV: ± 6%; HV: +6% & -9%; EHV: +10% & -12.5%. Resolve network issues in 60-180 days.",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "% compliance",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            },
+            "HARMONICS": {
+              "value": null,
+              "subtypes": {
+                "default": null
+              },
+              "indicator_meaning": "Unwanted electrical vibrations that distort the power supply.",
+              "standard_specified": "Maintenance of Total Harmonic Distortion in Voltage (THDV) within 3.5% for LT consumers; 3.0% for HT and EHT consumers.",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "% compliance",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            },
+            "TRANSFORMER FAILURE": {
+              "value": 7.11,
+              "subtypes": {
+                "default": 7.11
+              },
+              "indicator_meaning": "Restoration of power by replacing failed distribution transformers.",
+              "standard_specified": "Within 6 hours in Urban areas and 24 hours in Rural areas.",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "% failure rate of Distribution transformer",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            },
+            "BILLING COMPLAINT RESOLUTION": {
+              "value": null,
+              "subtypes": {
+                "default": null
+              },
+              "indicator_meaning": "Resolution of billing problems reported by consumers.",
+              "standard_specified": "Same Day (no info); 10 days (info needed); 15 days (site visit).",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "% of cases resolved within stipulated time : For current bills where no additional information is required; Where additional information relating to correctness of reading etc. is required",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            }
+          },
+          "scoring": {
+            "total_indicators": 8,
+            "standards_available_pct": 100.0,
+            "data_reported_pct": 62.5,
+            "comparable_pct": 0.0,
+            "compliance_pct": null,
+            "composite_score": 40.6,
+            "grade": "C",
+            "phantom_comparable_count": 0,
+            "indicators_reported": 5
+          }
+        },
+        "2024-25": {
+          "regulation": "",
+          "indicators": {
+            "SAIDI": {
+              "value": 134.28,
+              "subtypes": {
+                "default": 134.28
+              },
+              "indicator_meaning": "The average duration of sustained interruptions per consumer occurring during the reporting period.",
+              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year.",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            },
+            "SAIFI": {
+              "value": 2.76,
+              "subtypes": {
+                "default": 2.76
+              },
+              "indicator_meaning": "The average frequency of sustained power interruptions per consumer occurring during the reporting period.",
+              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year.",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            },
+            "MAIFI": {
+              "value": 5.6,
+              "subtypes": {
+                "default": 5.6
+              },
+              "indicator_meaning": "The average number of momentary interruptions per consumer occurring during the reporting period.",
+              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "Total number of momentary interruptions for an average consumer over the year.",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            },
+            "CAIDI": {
+              "value": 58.0,
+              "subtypes": {
+                "default": 58.0
+              },
+              "indicator_meaning": "Average restoration time for those consumers who experienced sustained interruptions.",
+              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "Average restoration time (Minutes) for interrupted consumers over the year",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "Reported data not available."
+            },
+            "VOLTAGE VARIATION": {
+              "value": null,
+              "subtypes": {
+                "default": null
+              },
+              "indicator_meaning": "Maintenance of voltage at the point of supply within stipulated limits.",
+              "standard_specified": "LV: ± 6%; HV: +6% & -9%; EHV: +10% & -12.5%. Resolve network issues in 60-180 days.",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "% compliance",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            },
+            "HARMONICS": {
+              "value": null,
+              "subtypes": {
+                "default": null
+              },
+              "indicator_meaning": "Unwanted electrical vibrations that distort the power supply.",
+              "standard_specified": "Maintenance of Total Harmonic Distortion in Voltage (THDV) within 3.5% for LT consumers; 3.0% for HT and EHT consumers.",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "% compliance",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            },
+            "TRANSFORMER FAILURE": {
+              "value": 6.72,
+              "subtypes": {
+                "default": 6.72
+              },
+              "indicator_meaning": "Restoration of power by replacing failed distribution transformers.",
+              "standard_specified": "Within 6 hours in Urban areas and 24 hours in Rural areas.",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "% failure rate of Distribution transformer",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            },
+            "BILLING COMPLAINT RESOLUTION": {
+              "value": null,
+              "subtypes": {
+                "default": null
+              },
+              "indicator_meaning": "Resolution of billing problems reported by consumers.",
+              "standard_specified": "Same Day (no info); 10 days (info needed); 15 days (site visit).",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "% of cases resolved within stipulated time : For current bills where no additional information is required; Where additional information relating to correctness of reading etc. is required",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            }
+          },
+          "scoring": {
+            "total_indicators": 8,
+            "standards_available_pct": 100.0,
+            "data_reported_pct": 62.5,
+            "comparable_pct": 0.0,
+            "compliance_pct": null,
+            "composite_score": 40.6,
+            "grade": "C",
+            "phantom_comparable_count": 0,
+            "indicators_reported": 5
+          }
+        },
+        "2023-24": {
+          "regulation": "",
+          "indicators": {
+            "SAIDI": {
+              "value": 152.9,
+              "subtypes": {
+                "default": 152.9
+              },
+              "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer in a month",
+              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year.",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            },
+            "SAIFI": {
+              "value": 2.3,
+              "subtypes": {
+                "default": 2.3
+              },
+              "indicator_meaning": "The average number of sustained power interruptions experienced by a consumer in a month",
+              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year.",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            },
+            "MAIFI": {
+              "value": 4.61,
+              "subtypes": {
+                "default": 4.61
+              },
+              "indicator_meaning": "The average number of momentary interruptions experienced by a consumer in a month",
+              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "Total number of momentary interruptions for an average consumer over the year.",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            },
+            "CAIDI": {
+              "value": 66.41,
+              "subtypes": {
+                "default": 66.41
+              },
+              "indicator_meaning": "Average restoration time for those consumers who experienced sustained interruptions",
+              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "Average restoration time (Minutes) for interrupted consumers over the year",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "Reported data not available. (full-year derived value)"
+            },
+            "VOLTAGE VARIATION": {
+              "value": null,
+              "subtypes": {
+                "default": null
+              },
+              "indicator_meaning": "Maintenance of voltage at the point of supply within stipulated limits",
+              "standard_specified": "LV: ± 6%; HV: +6% & -9%; EHV: +10% & -12.5%.",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "% compliance",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            },
+            "HARMONICS": {
+              "value": null,
+              "subtypes": {
+                "default": null
+              },
+              "indicator_meaning": "Unwanted electrical vibrations that distort the power supply",
+              "standard_specified": "Maintenance of Total Harmonic Distortion in Voltage (THDV) within 3.5% for LT consumers; 3.0% for HT and EHT consumers.",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "% compliance",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            },
+            "TRANSFORMER FAILURE": {
+              "value": 7.34,
+              "subtypes": {
+                "default": 7.34
+              },
+              "indicator_meaning": "Restoration of power by replacing failed distribution transformers",
+              "standard_specified": "Within 6 hours in Urban areas and 24 hours in Rural areas.",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "% failure rate of Distribution transformer",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            },
+            "BILLING COMPLAINT RESOLUTION": {
+              "value": null,
+              "subtypes": {
+                "default": null
+              },
+              "indicator_meaning": "Resolution of billing problems reported by consumers",
+              "standard_specified": "Same Day; 10 days (info needed); 15 days (site visit).",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "% of cases resolved within stipulated time : For current bills where no additional information is required; Where additional information relating to correctness of reading etc. is required",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            }
+          },
+          "scoring": {
+            "total_indicators": 8,
+            "standards_available_pct": 100.0,
+            "data_reported_pct": 62.5,
+            "comparable_pct": 0.0,
+            "compliance_pct": null,
+            "composite_score": 40.6,
+            "grade": "C",
+            "phantom_comparable_count": 0,
+            "indicators_reported": 5
+          }
+        },
+        "2022-23": {
+          "regulation": "",
+          "indicators": {
+            "SAIDI": {
+              "value": 134.79,
+              "subtypes": {
+                "default": 134.79
+              },
+              "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer in a month",
+              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year.",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            },
+            "SAIFI": {
+              "value": 2.06,
+              "subtypes": {
+                "default": 2.06
+              },
+              "indicator_meaning": "The average number of sustained power interruptions experienced by a consumer in a month",
+              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year.",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            },
+            "MAIFI": {
+              "value": 4.53,
+              "subtypes": {
+                "default": 4.53
+              },
+              "indicator_meaning": "The average number of momentary interruptions experienced by a consumer in a month",
+              "standard_specified": "Targets set by the Commission through separate guidelines/order.",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "Total number of momentary interruptions for an average consumer over the year.",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            },
+            "VOLTAGE VARIATION": {
+              "value": null,
+              "subtypes": {
+                "default": null
+              },
+              "indicator_meaning": "Maintenance of voltage at the point of supply within stipulated limits",
+              "standard_specified": "LV: ± 6%; HV: +6% & -9%; EHV: +10% & -12.5%.",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "% compliance",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            },
+            "HARMONICS": {
+              "value": null,
+              "subtypes": {
+                "default": null
+              },
+              "indicator_meaning": "Unwanted electrical vibrations that distort the power supply",
+              "standard_specified": "Licensees must monitor HT consumers at strategic points.",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "% compliance",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            },
+            "TRANSFORMER FAILURE": {
+              "value": 6.84,
+              "subtypes": {
+                "default": 6.84
+              },
+              "indicator_meaning": "Restoration of power by replacing failed distribution transformers",
+              "standard_specified": "Within 1 day in Urban areas and 3 days in Rural areas.",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "% failure rate of Distribution transformer",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            },
+            "BILLING COMPLAINT RESOLUTION": {
+              "value": null,
+              "subtypes": {
+                "default": null
+              },
+              "indicator_meaning": "Resolution of billing problems reported by consumers",
+              "standard_specified": "Same Day; 10 days (info needed); 15 days (site visit).",
+              "benchmark": "N/A",
+              "benchmark_meaning": "N/A",
+              "reported_meaning": "% of cases resolved within stipulated time : For current bills where no additional information is required; Where additional information relating to correctness of reading etc. is required",
+              "unit_note": null,
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "No benchmark defined in regulations."
+            }
+          },
+          "scoring": {
+            "total_indicators": 8,
+            "standards_available_pct": 87.5,
+            "data_reported_pct": 50.0,
+            "comparable_pct": 0.0,
+            "compliance_pct": null,
+            "composite_score": 34.4,
+            "grade": "C",
+            "phantom_comparable_count": 0,
+            "indicators_reported": 4
           }
         }
       }
@@ -3520,14 +3400,14 @@
           "regulation": "RERC ( Standards of Performance for Distribution Licensees) Regulations, 2021",
           "indicators": {
             "SAIDI": {
-              "value": 36.8,
+              "value": 2208.0,
               "subtypes": {
-                "default": 36.8
+                "default": 2208.0
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer in a month",
               "standard_specified": "Thirty hours per consumers per six months or fifteen hours per consumer per quarter .",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
+              "benchmark": "15 hours per consumer per quarter (or 30 hours per six months)",
+              "benchmark_meaning": "Quarterly/Half-yearly duration limits set by the Commission.",
               "reported_meaning": "Total minutes of supply interruption for an average consumer over the year.",
               "unit_note": null,
               "comparison_possible": false,
@@ -3541,8 +3421,8 @@
               },
               "indicator_meaning": "The average number of sustained power interruptions experienced by a consumer in a month",
               "standard_specified": "Twenty interruptions per consumer per six months or ten interruptions per consumer per quarter .",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
+              "benchmark": "10 interruptions per consumer per quarter (or 20 per six months)",
+              "benchmark_meaning": "Quarterly/Half-yearly frequency limits set by the Commission.",
               "reported_meaning": "Total number of sustained interruptions for an average consumer over the year.",
               "unit_note": null,
               "comparison_possible": false,
@@ -3656,13 +3536,13 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 18.05,
+              "value": 1083.0,
               "subtypes": {
-                "default": 18.05
+                "default": 1083.0
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer in a year.",
               "standard_specified": "Thirty hours per consumers per six months or fifteen hours per consumer per quarter.",
-              "benchmark": "N/A",
+              "benchmark": "15 hours per consumer per quarter (or 30 hours per six months)",
               "benchmark_meaning": "Quarterly/Half-yearly duration limits set by the Commission.",
               "reported_meaning": "Total minutes of supply interruption for an average consumer over the year.",
               "unit_note": null,
@@ -3677,7 +3557,7 @@
               },
               "indicator_meaning": "The average number of sustained power interruptions experienced by a consumer in a year.",
               "standard_specified": "Twenty interruptions per consumer per six months or ten interruptions per consumer per quarter.",
-              "benchmark": "N/A",
+              "benchmark": "10 interruptions per consumer per quarter (or 20 per six months)",
               "benchmark_meaning": "Quarterly/Half-yearly frequency limits set by the Commission.",
               "reported_meaning": "Total number of sustained interruptions for an average consumer over the year.",
               "unit_note": null,
@@ -3716,9 +3596,9 @@
               "reason_not_comparable": "Not listed for overall standard reporting in the regulation."
             },
             "VOLTAGE VARIATION": {
-              "value": 0.94,
+              "value": 94.3,
               "subtypes": {
-                "default": 0.94
+                "default": 94.3
               },
               "indicator_meaning": "Maintenance of voltage at the point of supply within stipulated limits (+6% to -6% for LT; +6% to -9% for HT).",
               "standard_specified": "Resolve within 2 working days if no network work needed; 15 days if LT augmentation/DT capacity enhancement needed; 60 days new DT substation; 120 days new/augmented 33/11-kV substation..",
@@ -3792,13 +3672,13 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 18.99,
+              "value": 1139.4,
               "subtypes": {
-                "default": 18.99
+                "default": 1139.4
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer in a year.",
               "standard_specified": "Thirty hours per consumers per six months or fifteen hours per consumer per quarter.",
-              "benchmark": "N/A",
+              "benchmark": "15 hours per consumer per quarter (or 30 hours per six months)",
               "benchmark_meaning": "Quarterly/Half-yearly duration limits set by the Commission.",
               "reported_meaning": "Total minutes of supply interruption for an average consumer over the year.",
               "unit_note": null,
@@ -3813,7 +3693,7 @@
               },
               "indicator_meaning": "The average number of sustained power interruptions experienced by a consumer in a year.",
               "standard_specified": "Twenty interruptions per consumer per six months or ten interruptions per consumer per quarter.",
-              "benchmark": "N/A",
+              "benchmark": "10 interruptions per consumer per quarter (or 20 per six months)",
               "benchmark_meaning": "Quarterly/Half-yearly frequency limits set by the Commission.",
               "reported_meaning": "Total number of sustained interruptions for an average consumer over the year.",
               "unit_note": null,
@@ -3852,9 +3732,9 @@
               "reason_not_comparable": "Not listed for overall standard reporting in the regulation."
             },
             "VOLTAGE VARIATION": {
-              "value": 0.96,
+              "value": 96.19,
               "subtypes": {
-                "default": 0.96
+                "default": 96.19
               },
               "indicator_meaning": "Maintenance of voltage at the point of supply within stipulated limits (+6% to -6% for LT; +6% to -9% for HT).",
               "standard_specified": "Resolve within 2 working days if no network work needed; 15 days if LT augmentation/DT capacity enhancement needed; 60 days new DT substation; 120 days new/augmented 33/11-kV substation..",
@@ -3882,9 +3762,9 @@
               "reason_not_comparable": "Performance data not reported."
             },
             "TRANSFORMER FAILURE": {
-              "value": 0.99,
+              "value": 98.89,
               "subtypes": {
-                "default": 0.99
+                "default": 98.89
               },
               "indicator_meaning": "Restoration of power by replacing failed distribution transformers.",
               "standard_specified": "Within 8 hrs (Class-1/Urban), 24 hrs (Rural).",
@@ -3897,9 +3777,9 @@
               "reason_not_comparable": "N/A"
             },
             "BILLING COMPLAINT RESOLUTION": {
-              "value": 0.96,
+              "value": 95.83,
               "subtypes": {
-                "default": 0.96
+                "default": 95.83
               },
               "indicator_meaning": "Resolution of billing problems reported by consumers.",
               "standard_specified": "Within 3 working days (no info needed) or 7 working days (if info needed).",
@@ -3928,31 +3808,31 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 5.38,
+              "value": 1291.2,
               "subtypes": {
-                "default": 5.38
+                "default": 1291.2
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer in a month",
               "standard_specified": "Thirty hours per consumers per six months or fifteen hours per consumer per quarter",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Average hours of supply interruption for an average consumer per quarter.",
-              "unit_note": "per quarter",
+              "benchmark": "15 hours per consumer per quarter (or 30 hours per six months)",
+              "benchmark_meaning": "Quarterly/Half-yearly duration limits set by the Commission.",
+              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year.",
+              "unit_note": "Converted to minutes per year: reported as 5.38 average hours per quarter (× 4 quarters × 60 minutes).",
               "comparison_possible": false,
               "standard_met": null,
               "reason_not_comparable": "Different standard metric. (No benchmark for annual SAIDI)"
             },
             "SAIFI": {
-              "value": 4.52,
+              "value": 18.08,
               "subtypes": {
-                "default": 4.52
+                "default": 18.08
               },
               "indicator_meaning": "The average number of sustained power interruptions experienced by a consumer in a month",
               "standard_specified": "Twenty interruptions per consumer per six months or ten interruptions per consumer per quarter",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Average number of sustained interruptions for an average consumer per quarter.",
-              "unit_note": "per quarter",
+              "benchmark": "10 interruptions per consumer per quarter (or 20 per six months)",
+              "benchmark_meaning": "Quarterly/Half-yearly frequency limits set by the Commission.",
+              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year.",
+              "unit_note": "Converted to interruptions per year: reported as 4.52 average interruptions per quarter (× 4 quarters).",
               "comparison_possible": false,
               "standard_met": null,
               "reason_not_comparable": "Different standard metric. (No benchmark for annual SAIFI)"
@@ -4064,31 +3944,31 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 8.12,
+              "value": 1948.8,
               "subtypes": {
-                "default": 8.12
+                "default": 1948.8
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer in a month",
               "standard_specified": "Thirty hours per consumers per six months or fifteen hours per consumer per quarter .",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Average hours of supply interruption for an average consumer per quarter.",
-              "unit_note": "per quarter",
+              "benchmark": "15 hours per consumer per quarter (or 30 hours per six months)",
+              "benchmark_meaning": "Quarterly/Half-yearly duration limits set by the Commission.",
+              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year.",
+              "unit_note": "Converted to minutes per year: reported as 8.12 average hours per quarter (× 4 quarters × 60 minutes).",
               "comparison_possible": false,
               "standard_met": null,
               "reason_not_comparable": "Different standard metric. (No benchmark for annual SAIDI)"
             },
             "SAIFI": {
-              "value": 7.3,
+              "value": 29.2,
               "subtypes": {
-                "default": 7.3
+                "default": 29.2
               },
               "indicator_meaning": "The average number of sustained power interruptions experienced by a consumer in a month",
               "standard_specified": "Twenty interruptions per consumer per six months or ten interruptions per consumer per quarter .",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Average number of sustained interruptions for an average consumer per quarter.",
-              "unit_note": "per quarter",
+              "benchmark": "10 interruptions per consumer per quarter (or 20 per six months)",
+              "benchmark_meaning": "Quarterly/Half-yearly frequency limits set by the Commission.",
+              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year.",
+              "unit_note": "Converted to interruptions per year: reported as 7.3 average interruptions per quarter (× 4 quarters).",
               "comparison_possible": false,
               "standard_met": null,
               "reason_not_comparable": "Different standard metric. (No benchmark for annual SAIFI)"
@@ -4208,15 +4088,15 @@
           "regulation": "RERC ( Standards of Performance for Distribution Licensees) Regulations, 2021",
           "indicators": {
             "SAIDI": {
-              "value": 21.79,
+              "value": 1307.4,
               "subtypes": {
-                "default": 21.79
+                "default": 1307.4
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer.",
               "standard_specified": "Thirty hours per consumers per six months or fifteen hours per consumer per quarter .",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year.",
+              "benchmark": "15 hours per consumer per quarter (or 30 hours per six months)",
+              "benchmark_meaning": "Quarterly/Half-yearly duration limits set by the Commission.",
+              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year (derived from quarterly averages).",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
@@ -4229,9 +4109,9 @@
               },
               "indicator_meaning": "The average number of sustained power interruptions experienced by a consumer.",
               "standard_specified": "Twenty interruptions per consumer per six months or ten interruptions per consumer per quarter .",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year.",
+              "benchmark": "10 interruptions per consumer per quarter (or 20 per six months)",
+              "benchmark_meaning": "Quarterly/Half-yearly frequency limits set by the Commission.",
+              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year (derived from  quarterly averages).",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
@@ -4344,15 +4224,15 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 7.074,
+              "value": 424.44,
               "subtypes": {
-                "default": 7.074
+                "default": 424.44
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer.",
               "standard_specified": "Thirty hours per consumers per six months or fifteen hours per consumer per quarter .",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year.",
+              "benchmark": "15 hours per consumer per quarter (or 30 hours per six months)",
+              "benchmark_meaning": "Quarterly/Half-yearly duration limits set by the Commission.",
+              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year (derived from quarterly averages).",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
@@ -4365,9 +4245,9 @@
               },
               "indicator_meaning": "The average number of sustained power interruptions experienced by a consumer.",
               "standard_specified": "Twenty interruptions per consumer per six months or ten interruptions per consumer per quarter .",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year.",
+              "benchmark": "10 interruptions per consumer per quarter (or 20 per six months)",
+              "benchmark_meaning": "Quarterly/Half-yearly frequency limits set by the Commission.",
+              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year (derived from  quarterly averages).",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
@@ -4480,15 +4360,15 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 7.406,
+              "value": 444.36,
               "subtypes": {
-                "default": 7.406
+                "default": 444.36
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer.",
               "standard_specified": "Thirty hours per consumers per six months or fifteen hours per consumer per quarter.",
-              "benchmark": "N/A",
+              "benchmark": "15 hours per consumer per quarter (or 30 hours per six months)",
               "benchmark_meaning": "Quarterly/Half-yearly duration limits set by the Commission.",
-              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year.",
+              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year (derived from quarterly averages).",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
@@ -4501,9 +4381,9 @@
               },
               "indicator_meaning": "The average number of sustained power interruptions experienced by a consumer.",
               "standard_specified": "Twenty interruptions per consumer per six months or ten interruptions per consumer per quarter.",
-              "benchmark": "N/A",
+              "benchmark": "10 interruptions per consumer per quarter (or 20 per six months)",
               "benchmark_meaning": "Quarterly/Half-yearly frequency limits set by the Commission.",
-              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year.",
+              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year (derived from  quarterly averages).",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
@@ -4616,15 +4496,15 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 6.313,
+              "value": 378.8,
               "subtypes": {
-                "default": 6.313
+                "default": 378.8
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer.",
               "standard_specified": "Thirty hours per consumers per six months or fifteen hours per consumer per quarter.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year.",
+              "benchmark": "15 hours per consumer per quarter (or 30 hours per six months)",
+              "benchmark_meaning": "Quarterly/Half-yearly duration limits set by the Commission.",
+              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year (derived from quarterly averages).",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
@@ -4637,9 +4517,9 @@
               },
               "indicator_meaning": "The average number of sustained power interruptions experienced by a consumer.",
               "standard_specified": "Twenty interruptions per consumer per six months or ten interruptions per consumer per quarter.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year.",
+              "benchmark": "10 interruptions per consumer per quarter (or 20 per six months)",
+              "benchmark_meaning": "Quarterly/Half-yearly frequency limits set by the Commission.",
+              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year (derived from  quarterly averages).",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
@@ -4752,15 +4632,15 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 4.304,
+              "value": 258.23,
               "subtypes": {
-                "default": 4.304
+                "default": 258.23
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer in a month",
               "standard_specified": "Thirty hours per consumers per six months or fifteen hours per consumer per quarter .",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year.",
+              "benchmark": "15 hours per consumer per quarter (or 30 hours per six months)",
+              "benchmark_meaning": "Quarterly/Half-yearly duration limits set by the Commission.",
+              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year (derived from quarterly averages).",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
@@ -4773,9 +4653,9 @@
               },
               "indicator_meaning": "The average number of sustained power interruptions experienced by a consumer in a month",
               "standard_specified": "Twenty interruptions per consumer per six months or ten interruptions per consumer per quarter .",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year.",
+              "benchmark": "10 interruptions per consumer per quarter (or 20 per six months)",
+              "benchmark_meaning": "Quarterly/Half-yearly frequency limits set by the Commission.",
+              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year (derived from  quarterly averages).",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
@@ -4896,15 +4776,15 @@
           "regulation": "RERC ( Standards of Performance for Distribution Licensees) Regulations, 2021",
           "indicators": {
             "SAIDI": {
-              "value": 21.783,
+              "value": 1307.0,
               "subtypes": {
-                "default": 21.783
+                "default": 1307.0
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer in a month",
               "standard_specified": "Thirty hours per consumers per six months or fifteen hours per consumer per quarter .",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year.",
+              "benchmark": "15 hours per consumer per quarter (or 30 hours per six months)",
+              "benchmark_meaning": "Quarterly/Half-yearly duration limits set by the Commission.",
+              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year (derived from quarterly averages).",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
@@ -4917,9 +4797,9 @@
               },
               "indicator_meaning": "The average number of sustained power interruptions experienced by a consumer in a month",
               "standard_specified": "Twenty interruptions per consumer per six months or ten interruptions per consumer per quarter .",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year.",
+              "benchmark": "10 interruptions per consumer per quarter (or 20 per six months)",
+              "benchmark_meaning": "Quarterly/Half-yearly frequency limits set by the Commission.",
+              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year (derived from  quarterly averages).",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
@@ -5032,15 +4912,15 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 13.85,
+              "value": 831.0,
               "subtypes": {
-                "default": 13.85
+                "default": 831.0
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer in a month",
               "standard_specified": "Thirty hours per consumers per six months or fifteen hours per consumer per quarter.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year.",
+              "benchmark": "15 hours per consumer per quarter (or 30 hours per six months)",
+              "benchmark_meaning": "Quarterly/Half-yearly duration limits set by the Commission.",
+              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year (derived from quarterly averages).",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
@@ -5053,9 +4933,9 @@
               },
               "indicator_meaning": "The average number of sustained power interruptions experienced by a consumer in a month",
               "standard_specified": "Twenty interruptions per consumer per six months or ten interruptions per consumer per quarter.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year.",
+              "benchmark": "10 interruptions per consumer per quarter (or 20 per six months)",
+              "benchmark_meaning": "Quarterly/Half-yearly frequency limits set by the Commission.",
+              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year (derived from  quarterly averages).",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
@@ -5168,15 +5048,15 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 10.14,
+              "value": 608.4,
               "subtypes": {
-                "default": 10.14
+                "default": 608.4
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer in a year.",
               "standard_specified": "Thirty hours per consumers per six months or fifteen hours per consumer per quarter.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "Quarterly duration limits set by the Commission.",
-              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year.",
+              "benchmark": "15 hours per consumer per quarter (or 30 hours per six months)",
+              "benchmark_meaning": "Quarterly/Half-yearly duration limits set by the Commission.",
+              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year (derived from quarterly averages).",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
@@ -5189,9 +5069,9 @@
               },
               "indicator_meaning": "The average number of sustained power interruptions experienced by a consumer in a year.",
               "standard_specified": "Twenty interruptions per consumer per six months or ten interruptions per consumer per quarter.",
-              "benchmark": "N/A",
-              "benchmark_meaning": "Quarterly frequency limits set by the Commission.",
-              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year.",
+              "benchmark": "10 interruptions per consumer per quarter (or 20 per six months)",
+              "benchmark_meaning": "Quarterly/Half-yearly frequency limits set by the Commission.",
+              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year (derived from  quarterly averages).",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
@@ -5304,16 +5184,16 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 3.18,
+              "value": 190.8,
               "subtypes": {
-                "default": 3.18
+                "default": 190.8
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer in a month",
               "standard_specified": "Fifteen hours per consumer per quarter",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Total hours of supply interruption for an average consumer over the year",
-              "unit_note": null,
+              "benchmark": "15 hours per consumer per quarter (or 30 hours per six months)",
+              "benchmark_meaning": "Quarterly/Half-yearly duration limits set by the Commission.",
+              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year (derived from quarterly averages).",
+              "unit_note": "Converted to minutes: the source figure 3.18 was in hours (labelled \"Total hours...\" in the previous version of the workbook).",
               "comparison_possible": false,
               "standard_met": null,
               "reason_not_comparable": "Different standard metric. (No benchmark for annual SAIDI)"
@@ -5325,9 +5205,9 @@
               },
               "indicator_meaning": "The average number of sustained power interruptions experienced by a consumer in a month",
               "standard_specified": "Ten interruptions per consumer per quarter",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year",
+              "benchmark": "10 interruptions per consumer per quarter (or 20 per six months)",
+              "benchmark_meaning": "Quarterly/Half-yearly frequency limits set by the Commission.",
+              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year (derived from  quarterly averages).",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
@@ -5440,15 +5320,15 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 28.247,
+              "value": 1694.85,
               "subtypes": {
-                "default": 28.247
+                "default": 1694.85
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer in a month",
               "standard_specified": "Thirty hours per consumers per six months or fifteen hours per consumer per quarter .",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year.",
+              "benchmark": "15 hours per consumer per quarter (or 30 hours per six months)",
+              "benchmark_meaning": "Quarterly/Half-yearly duration limits set by the Commission.",
+              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year (derived).",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
@@ -5461,9 +5341,9 @@
               },
               "indicator_meaning": "The average number of sustained power interruptions experienced by a consumer in a month",
               "standard_specified": "Twenty interruptions per consumer per six months or ten interruptions per consumer per quarter .",
-              "benchmark": "N/A",
-              "benchmark_meaning": "N/A",
-              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year.",
+              "benchmark": "10 interruptions per consumer per quarter (or 20 per six months)",
+              "benchmark_meaning": "Quarterly/Half-yearly frequency limits set by the Commission.",
+              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year (derived).",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
@@ -5584,9 +5464,9 @@
           "regulation": "ORISSA ELECTRICITY REGULATORY COMMISSION (LICENSEES' STANDARDS OF PERFORMANCE) REGULATIONS, 2004",
           "indicators": {
             "SAIDI": {
-              "value": 155.067,
+              "value": 9304.0,
               "subtypes": {
-                "default": 155.067
+                "default": 9304.0
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer.",
               "standard_specified": "Based on the information provided by the Licensees, the Commission may notify the target levels for these indices annually",
@@ -5858,9 +5738,9 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 210.0,
+              "value": 12600.0,
               "subtypes": {
-                "default": 210.0
+                "default": 12600.0
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer.",
               "standard_specified": "Target levels to be notified annually by the Commission",
@@ -5903,9 +5783,9 @@
               "reason_not_comparable": "No benchmark defined in regulations."
             },
             "CAIDI": {
-              "value": 0.847,
+              "value": 50.81,
               "subtypes": {
-                "default": 0.847
+                "default": 50.81
               },
               "indicator_meaning": "Average restoration time for those consumers who experienced sustained interruptions.",
               "standard_specified": "N/A",
@@ -5995,9 +5875,9 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 175.983,
+              "value": 10559.0,
               "subtypes": {
-                "default": 175.983
+                "default": 10559.0
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer.",
               "standard_specified": "Target levels to be notified annually by the Commission",
@@ -6132,9 +6012,9 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 137.383,
+              "value": 8243.0,
               "subtypes": {
-                "default": 137.383
+                "default": 8243.0
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer.",
               "standard_specified": "Target levels to be notified annually by the Commission",
@@ -6277,9 +6157,9 @@
           "regulation": "ORISSA ELECTRICITY REGULATORY COMMISSION (LICENSEES' STANDARDS OF PERFORMANCE) REGULATIONS, 2004",
           "indicators": {
             "SAIDI": {
-              "value": 455.517,
+              "value": 27331.0,
               "subtypes": {
-                "default": 455.517
+                "default": 27331.0
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer.",
               "standard_specified": "Based on the information provided by the Licensees, the Commission may notify the target levels for these indices annually",
@@ -6551,9 +6431,9 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 324.317,
+              "value": 19459.0,
               "subtypes": {
-                "default": 324.317
+                "default": 19459.0
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer.",
               "standard_specified": "Target levels to be notified annually by the Commission",
@@ -6596,9 +6476,9 @@
               "reason_not_comparable": "No benchmark defined in regulations."
             },
             "CAIDI": {
-              "value": 0.617,
+              "value": 36.99,
               "subtypes": {
-                "default": 0.617
+                "default": 36.99
               },
               "indicator_meaning": "Average restoration time for those consumers who experienced sustained interruptions.",
               "standard_specified": "N/A",
@@ -6688,9 +6568,9 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 348.95,
+              "value": 20937.0,
               "subtypes": {
-                "default": 348.95
+                "default": 20937.0
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer.",
               "standard_specified": "Target levels to be notified annually by the Commission",
@@ -6825,9 +6705,9 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 378.383,
+              "value": 22703.0,
               "subtypes": {
-                "default": 378.383
+                "default": 22703.0
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer in a month",
               "standard_specified": "Target levels to be notified annually by the Commission",
@@ -6970,9 +6850,9 @@
           "regulation": "ORISSA ELECTRICITY REGULATORY COMMISSION (LICENSEES' STANDARDS OF PERFORMANCE) REGULATIONS, 2004",
           "indicators": {
             "SAIDI": {
-              "value": 155.617,
+              "value": 9337.0,
               "subtypes": {
-                "default": 155.617
+                "default": 9337.0
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer.",
               "standard_specified": "Based on the information provided by the Licensees, the Commission may notify the target levels for these indices annually",
@@ -7244,9 +7124,9 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 271.367,
+              "value": 16282.0,
               "subtypes": {
-                "default": 271.367
+                "default": 16282.0
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer.",
               "standard_specified": "Target levels to be notified annually by the Commission",
@@ -7289,9 +7169,9 @@
               "reason_not_comparable": "No benchmark defined in regulations."
             },
             "CAIDI": {
-              "value": 0.859,
+              "value": 51.53,
               "subtypes": {
-                "default": 0.859
+                "default": 51.53
               },
               "indicator_meaning": "Average restoration time for those consumers who experienced sustained interruptions.",
               "standard_specified": "N/A",
@@ -7381,9 +7261,9 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 267.417,
+              "value": 16045.0,
               "subtypes": {
-                "default": 267.417
+                "default": 16045.0
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer.",
               "standard_specified": "Target levels to be notified annually by the Commission",
@@ -7518,9 +7398,9 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 127.45,
+              "value": 7647.0,
               "subtypes": {
-                "default": 127.45
+                "default": 7647.0
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer in a month",
               "standard_specified": "Target levels to be notified annually by the Commission",
@@ -7663,9 +7543,9 @@
           "regulation": "ORISSA ELECTRICITY REGULATORY COMMISSION (LICENSEES' STANDARDS OF PERFORMANCE) REGULATIONS, 2004",
           "indicators": {
             "SAIDI": {
-              "value": 424.017,
+              "value": 25441.0,
               "subtypes": {
-                "default": 424.017
+                "default": 25441.0
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer.",
               "standard_specified": "Based on the information provided by the Licensees, the Commission may notify the target levels for these indices annually",
@@ -7937,9 +7817,9 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 344.733,
+              "value": 20684.0,
               "subtypes": {
-                "default": 344.733
+                "default": 20684.0
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer.",
               "standard_specified": "Target levels to be notified annually by the Commission",
@@ -7982,9 +7862,9 @@
               "reason_not_comparable": "No benchmark defined in regulations."
             },
             "CAIDI": {
-              "value": 0.813,
+              "value": 48.78,
               "subtypes": {
-                "default": 0.813
+                "default": 48.78
               },
               "indicator_meaning": "Average restoration time for those consumers who experienced sustained interruptions.",
               "standard_specified": "N/A",
@@ -8006,7 +7886,7 @@
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
               "reported_meaning": "% cases exceeding voltage limits for EHT and LT.",
-              "unit_note": null,
+              "unit_note": "A percentage of EHT and LT cases, not a case count like FY23–FY24 (HT only); the two cannot be converted.",
               "comparison_possible": false,
               "standard_met": null,
               "reason_not_comparable": "No benchmark defined in regulations."
@@ -8074,9 +7954,9 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 305.2,
+              "value": 18312.0,
               "subtypes": {
-                "default": 305.2
+                "default": 18312.0
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer.",
               "standard_specified": "Target levels to be notified annually by the Commission",
@@ -8211,9 +8091,9 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 329.5,
+              "value": 19770.0,
               "subtypes": {
-                "default": 329.5
+                "default": 19770.0
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer.",
               "standard_specified": "Target levels to be notified annually by the Commission",
@@ -8280,7 +8160,7 @@
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
               "reported_meaning": "Cases exceeding voltage limits for HT were reported.",
-              "unit_note": null,
+              "unit_note": "Unit unclear in the source: listed as a count of HT cases, but 1.5 is not a whole number of cases.",
               "comparison_possible": false,
               "standard_met": null,
               "reason_not_comparable": "No benchmark defined in regulations for case quantity."
@@ -8356,9 +8236,9 @@
           "regulation": "Telangana State Electricity Regulatory\nCommission (Licensees’ Standards of Performance) Regulation, 2016.",
           "indicators": {
             "SAIDI": {
-              "value": 46.0,
+              "value": 2760.0,
               "subtypes": {
-                "default": 46.0
+                "default": 2760.0
               },
               "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer.",
               "standard_specified": "The Commission would notify the target levels for these indices annually based on Licensee info.",
@@ -8492,9 +8372,9 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 28.25,
+              "value": 1695.0,
               "subtypes": {
-                "default": 28.25
+                "default": 1695.0
               },
               "indicator_meaning": "Average duration of sustained interruptions per consumer in a year.",
               "standard_specified": "The Commission would notify the target levels for these indices annually based on Licensee info.",
@@ -8628,9 +8508,9 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 91.82,
+              "value": 5509.2,
               "subtypes": {
-                "default": 91.82
+                "default": 5509.2
               },
               "indicator_meaning": "Average duration of sustained interruptions per consumer in a year.",
               "standard_specified": "The Commission would notify the target levels for these indices annually based on Licensee info.",
@@ -8764,9 +8644,9 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 171.2,
+              "value": 10272.0,
               "subtypes": {
-                "default": 171.2
+                "default": 10272.0
               },
               "indicator_meaning": "Average duration of sustained interruptions per consumer in a year.",
               "standard_specified": "The Commission would notify the target levels for these indices annually based on Licensee info.",
@@ -9044,9 +8924,9 @@
           "regulation": "Telangana State Electricity Regulatory\nCommission (Licensees’ Standards of Performance) Regulation, 2016.",
           "indicators": {
             "SAIDI": {
-              "value": 46.0,
+              "value": 2760.0,
               "subtypes": {
-                "default": 46.0
+                "default": 2760.0
               },
               "indicator_meaning": "Average duration of sustained interruptions per consumer in a year.",
               "standard_specified": "The Commission would notify the target levels for these indices annually based on Licensee info.",
@@ -9180,9 +9060,9 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 7.124,
+              "value": 427.46,
               "subtypes": {
-                "default": 7.124
+                "default": 427.46
               },
               "indicator_meaning": "Average duration of sustained interruptions per consumer in a year.",
               "standard_specified": "The Commission would notify the target levels for these indices annually based on Licensee info.",
@@ -9316,9 +9196,9 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 91.82,
+              "value": 5509.2,
               "subtypes": {
-                "default": 91.82
+                "default": 5509.2
               },
               "indicator_meaning": "Average duration of sustained interruptions per consumer in a year.",
               "standard_specified": "The Commission would notify the target levels for these indices annually based on Licensee info.",

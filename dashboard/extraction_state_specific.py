@@ -15,8 +15,8 @@ Two sheet shapes:
     no Year column, no reported figures at all — just the regulation's named indicators,
     standards and benchmarks with nothing to compare them against.
 
-Excludes the workbook's `verification` and `calculations` sheets — internal QA working notes,
-not published indicator data.
+Excludes the workbook's `verification`, `calculations` and `Calculations for MSEDCL` sheets —
+internal QA / working notes, not published indicator data.
 """
 import json, re
 import openpyxl
@@ -33,10 +33,27 @@ STATE_MAP = {
 STATE_ORDER = ['Maharashtra', 'Gujarat', 'Rajasthan', 'Madhya Pradesh', 'Odisha', 'Telangana',
                'Karnataka', 'Tamil Nadu', 'Bihar', 'West Bengal', 'Uttar Pradesh', 'Andhra Pradesh']
 
-EXCLUDE_SHEETS = {'verification', 'calculations'}
+EXCLUDE_SHEETS = {'verification', 'calculations', 'Calculations for MSEDCL'}
 FRAMEWORK_ONLY_SHEETS = {'UP', 'TAMIL NADU', 'KARNATAKA', 'ANDHRA PRADESH', 'WEST BENGAL'}
 
 YEAR_RE = re.compile(r'^\d{4}-\d{2,4}$')
+
+
+def sheet_values(ws):
+    """Row tuples of cell values, with percent-formatted numbers rescaled to percentage points.
+
+    A cell Excel displays as '61.98%' stores 0.6198. Most percentages in the workbook are typed as
+    61.98 in a General cell, so the stored fraction is rescaled to match what the sheet actually
+    shows (e.g. MSEDCL FY23–FY25, TPNODL/TPSODL FY25)."""
+    out = []
+    for row in ws.iter_rows():
+        out.append(tuple(
+            round(c.value * 100, 6)
+            if isinstance(c.value, (int, float)) and not isinstance(c.value, bool) and '%' in (c.number_format or '')
+            else c.value
+            for c in row
+        ))
+    return out
 
 
 def clean(v):
@@ -63,6 +80,14 @@ def to_number(x):
     if x is None or isinstance(x, str):
         return None
     return round(float(x), 2)
+
+
+def is_header_row(r):
+    """A year block's header row. Normally column 0 reads 'Year', but the four Gujarat sheets'
+    2024-25 header has the year typed into that cell instead ('2024-25' | 'Indicator Type' | ...),
+    which would otherwise match YEAR_RE and be read in as an indicator record — so the
+    'Indicator Type' heading in column 1 also marks a header."""
+    return clean(r[0]) == 'Year' or (len(r) > 1 and clean(r[1]) == 'Indicator Type')
 
 
 def header_cols(header_row):
@@ -115,7 +140,7 @@ def parse_indicator_row(row, col):
 
 
 def parse_discom_sheet(sheet_name, ws):
-    rows = list(ws.iter_rows(values_only=True))
+    rows = sheet_values(ws)
     n = len(rows)
     full_name = clean(rows[0][0]) if rows else None
     code, _, state_part = sheet_name.partition(',')
@@ -131,7 +156,7 @@ def parse_discom_sheet(sheet_name, ws):
             i += 1
             continue
         c0 = clean(r[0])
-        if c0 == 'Year':
+        if is_header_row(r):
             col = header_cols(r)
             j = i + 1
             by_year = {}
@@ -141,7 +166,7 @@ def parse_discom_sheet(sheet_name, ws):
                     j += 1
                     continue
                 c0j = clean(rj[0])
-                if c0j == 'Year':
+                if is_header_row(rj):
                     break
                 if c0j and YEAR_RE.match(str(c0j)):
                     by_year.setdefault(c0j, []).append(rj)
@@ -177,7 +202,7 @@ def parse_framework_sheet(sheet_name, ws):
     """UP / TAMIL NADU / KARNATAKA / ANDHRA PRADESH / WEST BENGAL: a flat list of the regulation's
     named indicators with no Year column and no reported figures — just what's required, not
     whether it's met."""
-    rows = list(ws.iter_rows(values_only=True))
+    rows = sheet_values(ws)
     state = STATE_MAP.get(sheet_name.strip().upper(), sheet_name.strip())
     regulation = []
     header_idx = None
@@ -204,6 +229,11 @@ def parse_framework_sheet(sheet_name, ws):
     return {'state': state, 'regulation': ' | '.join(regulation), 'indicators': entries}
 
 
+# One spelling of each licensee's legal name across the dashboard: the reliability workbook's
+# (data/discoms2.json, so run extraction_common.py first). This sheet spells e.g. MPEZ "Poorva".
+with open('data/discoms2.json', encoding='utf-8') as f:
+    CANONICAL_NAMES = {d['short_name']: d['full_name'] for d in json.load(f)['discoms']}
+
 discoms = []
 frameworks = []
 for sheet_name in wb.sheetnames:
@@ -212,7 +242,9 @@ for sheet_name in wb.sheetnames:
     if sheet_name in FRAMEWORK_ONLY_SHEETS:
         frameworks.append(parse_framework_sheet(sheet_name, wb[sheet_name]))
     else:
-        discoms.append(parse_discom_sheet(sheet_name, wb[sheet_name]))
+        d = parse_discom_sheet(sheet_name, wb[sheet_name])
+        d['full_name'] = CANONICAL_NAMES.get(d['short_name'], d['full_name'])
+        discoms.append(d)
 
 all_years = sorted({y for d in discoms for y in d['years']}, reverse=True)
 

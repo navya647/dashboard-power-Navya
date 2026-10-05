@@ -50,6 +50,11 @@ const UT_POPULATION_2026: Record<string, number> = {
   Lakshadweep: 70_000,
 };
 
+/** True for a union territory (a key of the UT table above), so copy can say "UT" vs "state". */
+export function isUnionTerritory(name: string): boolean {
+  return name in UT_POPULATION_2026;
+}
+
 export function formatPopulation(name: string): string | null {
   const value = STATE_POPULATION_2026[name] ?? UT_POPULATION_2026[name];
   if (!value) return null;

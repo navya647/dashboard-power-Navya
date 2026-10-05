@@ -11,14 +11,15 @@ export const STATUS = {
   mapNone: '#dfe2e8',
 };
 
-/** Map fills — a muted terracotta/clay for a tracked state with reported data (clickable through
- * to its full report), an off-white for a tracked state still awaiting reported data (not
- * clickable — see stateMapStatus), and a lighter tint of the tracked clay for states entirely
- * outside ACPET's tracked scope. Mirrors --map-tracked/--map-no-data/--map-idle in tokens.css. */
+/** Map fills, solid only — a muted terracotta/clay for a tracked state with reported data
+ * (clickable through to its full report), an off-white for a tracked state still awaiting reported
+ * data (not clickable — see stateMapStatus), and a muted warm greige for states entirely
+ * outside ACPET's tracked scope ("Coming soon"). Mirrors --map-tracked/--map-no-data/--map-idle in
+ * tokens.css — the legend and search-list swatches draw the same fills from those tokens. */
 export const MAP_STATUS = {
   tracked: '#b0825c',
   noData: '#e9e6de',
-  idle: '#c8a88d',
+  idle: '#cbc0ae',
 };
 
 /** Muted gold used for the transmission network and any hover/selection glow on the map —
@@ -26,7 +27,7 @@ export const MAP_STATUS = {
 export const TRANSMISSION_GOLD = '#d8ae3f';
 
 /** Default state border color — a deep warm brown, dark enough to stay visible against every
- * map fill (tracked clay, idle clay, no-data off-white) rather than the low-contrast gold. */
+ * map fill (tracked clay, idle greige, no-data off-white) rather than the low-contrast gold. */
 export const MAP_BORDER = '#4a3320';
 
 /** Warm paper tone a state's fill washes toward when another state is hovered — deliberately a

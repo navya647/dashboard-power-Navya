@@ -45,7 +45,7 @@ export default function StateShape({ geojson, name, size = 72, color }: Props) {
 
   return (
     <svg width={shape.width} height={shape.height} viewBox={shape.viewBox} className="state-shape" aria-hidden="true">
-      <path d={shape.d} fill={color} fillOpacity={0.82} stroke="rgba(255,255,255,0.55)" strokeWidth={1} strokeLinejoin="round" />
+      <path d={shape.d} style={{ fill: color }} fillOpacity={0.82} stroke="rgba(255,255,255,0.55)" strokeWidth={1} strokeLinejoin="round" />
     </svg>
   );
 }

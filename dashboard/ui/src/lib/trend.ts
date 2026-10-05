@@ -26,7 +26,7 @@ export const YOY_META: Record<YoyStatus, { text: string; cls: string }> = {
 };
 
 /** Year-on-year performance assessment used everywhere it's shown (main dashboard chart cards and
- * the Compare page) — see CLAUDE.md working preferences and DataRules.tsx's "Trend Assessment"
+ * the Compare page) — see CLAUDE.md working preferences and the Methodology page's Rules
  * section. Compares one fiscal year's reported value against the *immediately preceding* fiscal
  * year in the displayed period — never an earlier usable year found by skipping past a missing one,
  * so a gap always reads as Not assessable for the year right after it, not a silently-bridged

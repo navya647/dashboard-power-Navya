@@ -4,50 +4,80 @@
 
 /* Always visible — a permanent part of the layout, not a drawer with an open/closed state. No
    transform/transition needed since there's nothing to slide in or out. */
+/* the sidebar's width, shared by everything that sits beside it (main's margin, the page
+   backdrop, the home page's stage) — wide enough for the bold active label ("Accessibility",
+   "Methodology") to sit with room either side */
+:root {
+  --sb-w: 112px;
+}
+
 .sidebar {
-  width: 95px;
-  background: color-mix(in srgb, var(--sidebar-bg) 88%, transparent);
-  border-right: 1px solid var(--line);
+  /* sidebar colour tokens — everything below reads these, so a context that needs a different
+     surface (the home page landing view, at the end of this file) only re-points the tokens.
+     The defaults are the home page map view's sidebar, on every page: a deeper, more structured
+     step of the warm neutral behind the map (--mv-* in tokens.css), sharing a family with the
+     panels, its active item a tonal variation of it. */
+  --sb-surface: linear-gradient(to bottom, var(--mv-sidebar-top), var(--mv-sidebar-bottom));
+  --sb-tint: none; /* an opaque surface laid over --sb-surface, crossfaded via --sb-tint-opacity */
+  --sb-tint-opacity: 0;
+  --sb-divider: var(--mv-line);
+  --sb-shadow: none;
+  --sb-text: color-mix(in srgb, var(--muted) 30%, var(--ink) 70%);
+  --sb-text-strong: var(--ink);
+  --sb-hover-bg: var(--mv-hover);
+  --sb-press-bg: var(--mv-press);
+  --sb-active-bg: var(--mv-active);
+  --sb-indicator: var(--mv-indicator);
+  /* one size for every view (the landing view's, so nothing resizes on the hand-off to the map);
+     the nav items and the theme toggle both read these */
+  --sb-label-size: 12px;
+  --sb-icon-size: 18px;
+  width: var(--sb-w);
+  background: var(--sb-surface);
+  border-right: 1px solid var(--sb-divider);
   position: fixed;
   left: 0;
   top: 0;
   height: 100vh;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--sb-shadow);
   z-index: 5;
   backdrop-filter: blur(24px) saturate(1.3);
 }
 
 .sidebar-inner {
-  width: 95px;
+  width: var(--sb-w);
   height: 100%;
   display: flex;
   flex-direction: column;
 }
 
-.brand {
-  display: flex;
-  align-items: center;
-  padding: 68px 3px 22px;
-  border-bottom: 1px solid var(--line);
-}
-.brand-logo {
-  width: 100%;
-  height: auto;
-}
-.brand-logo-dark {
-  display: none;
-}
-:root[data-theme='dark'] .brand-logo-light {
-  display: none;
-}
-:root[data-theme='dark'] .brand-logo-dark {
-  display: block;
-}
+/* no logo above the nav (it's top right of every page instead), so the nav starts a moderate step
+   down, scaled to the window height: neither tight to the top edge nor floating mid-sidebar */
 nav.sidenav {
   display: flex;
   flex-direction: column;
-  padding: 12px 6px;
+  padding: clamp(56px, 11vh, 110px) 8px 12px;
   gap: 4px;
+}
+/* the home page map view's sidebar, on every page: slightly larger, firmer icons and labels (the
+   landing hero uses the same, so nothing resizes on the hand-off between them) */
+.sidebar {
+  --sb-label-size: 12.5px;
+  --sb-icon-size: 20px;
+}
+.sidebar nav.sidenav a {
+  font-weight: 500;
+}
+.sidebar nav.sidenav a.active {
+  font-weight: 700;
+}
+/* light mode, every page (never the home page's landing hero, which has its own palette below):
+   labels, icons and the theme toggle in the map view's warm charcoal text tiers instead of the
+   default greys */
+:root:not([data-theme='dark']):not([data-hero-landing]) .sidebar {
+  --sb-text: #221c18;
+  --sb-text-strong: #1a1512;
+  --muted: #221c18; /* the theme toggle's label and icon */
 }
 /* Icon above label, centered — each item reads as its own small tile rather than a horizontal
    row, closer to a compact app-rail nav than a list of links. No white-space:nowrap here: at this
@@ -63,43 +93,43 @@ nav.sidenav a {
   align-items: center;
   gap: 5px;
   width: 100%;
-  padding: 10px 4px;
-  font-size: 10.5px;
+  padding: 10px 6px;
+  font-size: var(--sb-label-size);
   line-height: 1.25;
   text-align: center;
   /* a touch darker/brighter than the shared --muted secondary-text color (kept as its own rule
      here rather than changing --muted itself, which is used for secondary text everywhere else). */
-  color: color-mix(in srgb, var(--muted) 55%, var(--ink) 45%);
+  color: var(--sb-text);
   border-radius: 10px;
   font-family: inherit;
   transition: background 180ms var(--ease), color 180ms var(--ease);
 }
 nav.sidenav a svg {
-  width: 17px;
-  height: 17px;
+  width: var(--sb-icon-size);
+  height: var(--sb-icon-size);
 }
 nav.sidenav a:hover {
-  background: color-mix(in srgb, var(--ink) 5%, transparent);
-  color: var(--ink);
+  background: var(--sb-hover-bg);
+  color: var(--sb-text-strong);
 }
 nav.sidenav a:active {
-  background: color-mix(in srgb, var(--ink) 9%, transparent);
-  color: var(--ink);
+  background: var(--sb-press-bg);
+  color: var(--sb-text-strong);
 }
 /* A left accent bar + a subtle wash (not a solid fill), instead of the old full-color pill —
    reads as "this one's selected" without the icon/label needing to switch to white-on-blue. */
 nav.sidenav a.active {
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-  border-left: 1.5px solid var(--accent);
+  background: var(--sb-active-bg);
+  border-left: 1.5px solid var(--sb-indicator);
   border-radius: 0 10px 10px 0;
-  color: var(--ink);
+  color: var(--sb-text-strong);
   font-weight: 700;
 }
 
 .sidebar-foot {
   margin-top: auto;
-  padding: 12px 6px 16px;
-  border-top: 1px solid var(--line);
+  padding: 12px 8px 16px;
+  border-top: 1px solid var(--sb-divider);
 }
 /* Stacked, matching the nav items above it — a horizontal pill (icon beside "Light"/"Dark") no
    longer fits this width without wrapping awkwardly inside a pill shape. */
@@ -113,20 +143,28 @@ nav.sidenav a.active {
   gap: 5px;
   width: 100%;
   padding: 10px 4px;
-  font-size: 10.5px;
-  font-weight: 500;
+  font-size: var(--sb-label-size);
+  line-height: 1.25;
+  font-family: inherit;
   text-align: center;
   color: var(--muted);
   border: 1px solid var(--line);
   border-radius: 10px;
   transition: color 180ms var(--ease), border-color 180ms var(--ease), background-color 180ms var(--ease);
 }
-.theme-toggle:hover {
+.theme-toggle:hover:not(:disabled) {
   color: var(--ink);
   border-color: var(--accent-light);
 }
+/* disabled on the dark-only home page (see ThemeToggle.tsx) */
+.theme-toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.75;
+}
 .theme-toggle svg {
   flex: none;
+  width: var(--sb-icon-size);
+  height: var(--sb-icon-size);
 }
 
 /* Sidebar has no closed state at all, at any width — content is always pushed over by exactly its
@@ -141,8 +179,9 @@ nav.sidenav a.active {
    editorial text box caps at 44%), so it naturally shrinks to fit instead of needing to be scaled
    to fit. */
 main.app-main {
+  position: relative;
   padding: 72px 44px 56px;
-  margin-left: 95px;
+  margin-left: var(--sb-w);
   display: flex;
   flex-direction: column;
   gap: 30px;
@@ -342,4 +381,237 @@ main.app-main {
 
 .tour-btn--primary:hover {
   background: var(--accent-light);
+}
+
+/* sidebar tint layer (--sb-tint): a context-specific surface painted over the sidebar's own
+   background and shown via --sb-tint-opacity. It switches instantly, with the home page's frames
+   (no crossfade), so the sidebar never shows a half-way state. */
+.sidebar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: var(--sb-tint);
+  opacity: var(--sb-tint-opacity);
+  pointer-events: none;
+}
+.sidebar-inner {
+  position: relative;
+}
+/* set for one frame by HeroSection while it switches frames, so the nav items' own hover colour
+   transitions don't fade them between the sunset and normal palettes either */
+:root[data-hero-switching] .sidebar * {
+  transition: none !important;
+}
+
+/* (the home page map view's sidebar is the default one above — its own surface rather than a
+   --sb-tint, so the landing view's sunset tint below still fades away over it during the
+   animated hand-off) */
+
+/* ---------- home page landing view (:root[data-hero-landing], set by HeroSection) ----------
+   While the sunset hero is up, in both themes, the sidebar is a deep wash of the sunset photo's own
+   left-edge colours (#2e170b → #3f1e0d → #26130a), so it reads as part of the scene rather than a
+   separate grey strip, and stays dark enough for its light text. Instead of a border, a soft darker fade along the
+   right ~20px (the first layer of --sb-tint; an inset box-shadow would be hidden under
+   this ::before tint) reads as a slight recess, so it's a distinct layer but not a separate card.
+   Near-white text and icons (well above 7:1 on every stop), a lighter translucent active panel
+   with a warm amber indicator (hover is fainter still, so the active item stays distinct), and
+   no theme toggle (the landing view looks the same in either theme). Only colour tokens change —
+   type, sizes and spacing are the sidebar's own, shared by every view. */
+:root[data-hero-landing] .sidebar {
+  --sb-tint:
+    linear-gradient(to left, rgba(40, 12, 0, 0.16) 0, rgba(40, 12, 0, 0.07) 8px, rgba(40, 12, 0, 0) 20px),
+    linear-gradient(to bottom, #2e170b 0%, #3f1e0d 55%, #26130a 100%);
+  --sb-tint-opacity: 1;
+  --sb-divider: rgba(255, 255, 255, 0.08);
+  --sb-shadow: none;
+  --sb-text: #fffaf4;
+  --sb-text-strong: #ffffff;
+  --sb-hover-bg: rgba(255, 244, 232, 0.06);
+  --sb-press-bg: rgba(255, 244, 232, 0.12);
+  --sb-active-bg: rgba(255, 244, 232, 0.1);
+  --sb-indicator: #f0a868;
+}
+/* no seam against the hero. The sidebar is border-box, so its 1px right border sat outside the
+   tint layer (::before fills the padding box) and showed the sidebar's own theme surface through
+   it — the light line. With the border gone the tint covers the full width (unchanged), and
+   it overlaps the hero's edge by 1px so a fractional device-pixel boundary at non-integer zoom
+   can't leave a hairline either; it's paint only, so nothing in the layout shifts. */
+:root[data-hero-landing] .sidebar {
+  border-right: none;
+}
+:root[data-hero-landing] .sidebar::before {
+  right: -1px;
+}
+:root[data-hero-landing] .sidebar-foot {
+  opacity: 0;
+  visibility: hidden;
+}
+/* no sidebar at all on the landing view: the sunset frame runs the full width of the window
+   (hero.css extends the home stage under the sidebar for it), and the sidebar fades in with the
+   map on the hand-off (the data-hero-anim rules below) */
+:root[data-hero-landing] .sidebar {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* the home page's animated hand-offs (:root[data-hero-anim="to-map" | "to-hero"], set by
+   HeroSection for ~680ms): the sidebar stays mounted and in place, and crossfades between the
+   sunset palette and the normal one in step with the hero background (150–550ms, see the data-anim
+   rules in hero.css) — to the normal palette on the way to the map, back to the sunset one on the
+   way back. The theme toggle fades in with the map content (250–650ms) on the way there, and out
+   with it (0–350ms) on the way back. Outside these windows every one of these switches instantly
+   with the frame. */
+:root[data-hero-anim] .sidebar {
+  transition:
+    box-shadow 400ms cubic-bezier(0.22, 1, 0.36, 1) 150ms,
+    opacity 400ms cubic-bezier(0.22, 1, 0.36, 1) 150ms,
+    visibility 400ms cubic-bezier(0.22, 1, 0.36, 1) 150ms;
+}
+:root[data-hero-anim] .sidebar::before {
+  /* also over the 1px right border, which comes back with the normal palette: it then shows
+     gradually as this layer fades instead of popping in as a line at the start */
+  right: -1px;
+  transition: opacity 400ms cubic-bezier(0.22, 1, 0.36, 1) 150ms;
+}
+:root[data-hero-anim] nav.sidenav a {
+  transition:
+    opacity 400ms cubic-bezier(0.22, 1, 0.36, 1) 150ms,
+    visibility 400ms cubic-bezier(0.22, 1, 0.36, 1) 150ms,
+    color 400ms cubic-bezier(0.22, 1, 0.36, 1) 150ms,
+    background-color 400ms cubic-bezier(0.22, 1, 0.36, 1) 150ms,
+    border-color 400ms cubic-bezier(0.22, 1, 0.36, 1) 150ms;
+}
+:root[data-hero-anim] .sidebar-foot {
+  transition:
+    opacity 400ms cubic-bezier(0.22, 1, 0.36, 1) 250ms,
+    visibility 400ms cubic-bezier(0.22, 1, 0.36, 1) 250ms;
+}
+:root[data-hero-anim='to-hero'] .sidebar-foot {
+  transition:
+    opacity 350ms cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 350ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* light mode, every page (the home page's map view set the look; only the landing hero differs):
+   the sidebar takes a pale wash of the sunset photo's own colours (teal sky → hazy dusk → warm
+   sunset → the darker street), so it reads as part of the same scene instead of a flat off-white
+   strip. The photo doesn't run behind the sidebar (main starts at --sb-w), so this is a painted
+   gradient, not a see-through blur. */
+:root:not([data-theme='dark']):not([data-hero-landing]) .sidebar {
+  /* translucent (the same colours at 80%), so the surface reads lighter and glassier */
+  --sb-surface: linear-gradient(
+    to bottom,
+    rgba(200, 213, 211, 0.8) 0%,
+    rgba(214, 213, 203, 0.8) 38%,
+    rgba(226, 207, 181, 0.8) 64%,
+    rgba(208, 195, 180, 0.8) 100%
+  );
+  --sb-divider: rgba(74, 51, 32, 0.14);
+  --sb-hover-bg: rgba(255, 252, 247, 0.45);
+  --sb-press-bg: rgba(255, 252, 247, 0.7);
+  --sb-active-bg: rgba(255, 250, 242, 0.45);
+}
+/* dark-mode counterpart: the same photo-edge colours (teal sky → dusk → sunset → street), taken
+   deep so the sidebar's light text stays fully readable */
+:root[data-theme='dark']:not([data-hero-landing]) .sidebar {
+  --sb-surface: linear-gradient(to bottom, #1e2a2b 0%, #262724 38%, #3a2b1e 64%, #221d19 100%);
+  --sb-divider: rgba(255, 236, 214, 0.1);
+  --sb-hover-bg: rgba(255, 236, 214, 0.06);
+  --sb-press-bg: rgba(255, 236, 214, 0.12);
+  --sb-active-bg: rgba(255, 236, 214, 0.1);
+}
+
+/* ---- page backdrop (every page but home, whose map view draws the photo itself in hero.css as
+   .hero-sticky::before): the map's dusk sunset-road photo, same crop, in both themes — but blurred
+   right out into soft bands of its own colours (teal sky, dusk, warm sunset, the street) so it
+   reads as a faint wash behind the content rather than a picture. Faded by blur and its own
+   opacity, never an ivory or charcoal veil laid over it. Fixed behind the content area (the sidebar paints its own
+   photo-toned surface) and static, so the blur renders once rather than on every scroll. ---- */
+.page-backdrop {
+  position: fixed;
+  inset: 0 0 0 var(--sb-w);
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  /* light mode: a calm grey-beige ground under the photo, a step below the off-white --paper, so
+     inner pages don't read as bright/glaring and the map's status colours stand out */
+  background: #e4e1db;
+}
+:root[data-theme='dark'] .page-backdrop {
+  background: none;
+}
+.page-backdrop::before {
+  content: '';
+  position: absolute;
+  /* pushed well past the edges so the heavy blur's soft rim falls outside the view */
+  inset: -240px;
+  filter: blur(90px);
+  transform: translateZ(0);
+  background: url('/map-sunset-road.jpg') 50% 62% / cover no-repeat;
+  /* faded by its own transparency over the page colour (--paper, the body's background) rather
+     than a veil on top: a light hint of the scene in light mode, fainter still in dark mode so the
+     page stays dark and its light text keeps its contrast */
+  /* light mode: faded further and desaturated, so the sunset reads as a quiet hint of warmth
+     rather than a bright orange glow */
+  opacity: 0.24;
+}
+:root:not([data-theme='dark']) .page-backdrop::before {
+  filter: blur(90px) saturate(0.55);
+}
+:root[data-theme='dark'] .page-backdrop::before {
+  opacity: 0.22;
+}
+@media (prefers-reduced-transparency: reduce) {
+  .page-backdrop {
+    display: none;
+  }
+}
+
+/* ---- page logo (every page but home, whose HeroSection has its own): the same size and
+   top-right spot as the home page's .hero-coverage-badge, so the logo never moves between pages.
+   The PNGs carry ~13px of transparent margin above the artwork and ~30px to its right at 230px, so
+   these offsets put the artwork 32px from the top and right edges, as on home. The page keeps its
+   usual top padding: its opening rows (kicker, heading, breadcrumb) are left-aligned, so the logo
+   sits beside them rather than pushing the page down. ---- */
+.page-logo {
+  position: absolute;
+  z-index: 4;
+  top: 19px;
+  right: 2px;
+  line-height: 0;
+  pointer-events: none;
+}
+.page-logo img {
+  width: 230px;
+  height: auto;
+}
+/* one-screen pages (useNoScrollbar: About, At a glance) never draw the window's scrollbar */
+html[data-no-scrollbar] {
+  scrollbar-width: none;
+}
+html[data-no-scrollbar]::-webkit-scrollbar {
+  display: none;
+}
+.page-logo-dark {
+  display: none;
+}
+:root[data-theme='dark'] .page-logo-light {
+  display: none;
+}
+:root[data-theme='dark'] .page-logo-dark {
+  display: block;
+}
+@media (max-width: 980px) {
+  .page-logo img {
+    width: 170px;
+  }
+  main.app-main:has(> .page-logo) {
+    padding-top: 88px;
+  }
+  /* on a narrow screen the state page's breadcrumb row can't sit beside the logo, so it drops the
+     page's pull-up (state.css) and starts below it */
+  .page-logo ~ .state-page {
+    margin-top: 0;
+  }
 }

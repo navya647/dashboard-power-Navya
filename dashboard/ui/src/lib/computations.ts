@@ -36,18 +36,36 @@ export function stateIsTracked(discoms: Discom[], state: string, stateSpecific?:
  * a SoP indicator's reported value — in any year, in either dataset. A SoP regulatory-framework
  * listing alone (standards and benchmarks with no reported data by definition) does NOT count:
  * this specifically answers "is there real performance data to explore", which is what
- * distinguishes the map's "Tracked" fill from "Tracked — Data Not Reported". */
+ * distinguishes the map's "Tracked—Data Reported" fill from "Tracked—Data Not Reported". */
 export function stateHasReportedData(discoms: Discom[], state: string, stateSpecific?: StateSpecificData | null): boolean {
-  const reliabilityReported = discoms
-    .filter((d) => d.state === state)
-    .some((d) => Object.values(d.years).some((y) => Object.values(y.indicators).some((i) => i.value != null)));
-  if (reliabilityReported) return true;
-  return !!stateSpecific?.discoms
-    .filter((d) => d.state === state)
-    .some((d) => Object.values(d.years).some((y) => y.indicators.some((i) => i.reported != null)));
+  return stateReportedYears(discoms, state, stateSpecific).length > 0;
+}
+
+/** The fiscal years (raw "2023-24" keys, unordered) in which this state has an actual reported
+ * figure, by the same rule as stateHasReportedData — so a state page's "Reported data FY22–FY24"
+ * covers the years with real figures, not the dashboard-wide year list every sheet has rows for. */
+export function stateReportedYears(discoms: Discom[], state: string, stateSpecific?: StateSpecificData | null): string[] {
+  const years = new Set<string>();
+  for (const d of discoms) {
+    if (d.state !== state) continue;
+    for (const [y, yd] of Object.entries(d.years)) if (Object.values(yd.indicators).some((i) => i.value != null)) years.add(y);
+  }
+  for (const d of stateSpecific?.discoms ?? []) {
+    if (d.state !== state) continue;
+    for (const [y, yd] of Object.entries(d.years)) if (yd.indicators.some((i) => i.reported != null)) years.add(y);
+  }
+  return [...years];
 }
 
 export type StateMapStatus = 'tracked' | 'no-data' | 'idle';
+
+/** The one wording for each map status — the home map legend and the state search list (visible
+ * swatch labels and screen-reader text) both read from here so they can never drift apart. */
+export const MAP_STATUS_LABEL: Record<StateMapStatus, string> = {
+  tracked: 'Tracked—Data Reported',
+  'no-data': 'Tracked—Data Not Reported',
+  idle: 'Coming soon',
+};
 
 /** Three-way map status for a state: 'idle' (outside ACPET's scope in both datasets — "Coming
  * soon", not clickable), 'no-data' (in scope, but no reported figure anywhere yet — still

@@ -1,9 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useData } from '@/lib/DataContext';
-import { stateHueMap } from '@/lib/colors';
 import { slugify } from '@/lib/slug';
 import HeroSection from '@/components/HeroSection';
 
@@ -13,8 +12,6 @@ export default function OverviewPage() {
 
   const [compareSet, setCompareSet] = useState<string[]>([]);
   const [compareMode, setCompareMode] = useState(false);
-
-  const stateHue = useMemo(() => (discoms ? stateHueMap(discoms.state_order) : {}), [discoms]);
 
   if (loading) return <p className="detail-placeholder">Loading dashboard data…</p>;
   if (error || !discoms || !geojson) return <p className="detail-placeholder">Could not load dashboard data: {error}</p>;
@@ -36,20 +33,22 @@ export default function OverviewPage() {
 
   return (
     <div id="page-overview">
-      <HeroSection
-        discoms={discoms.discoms}
-        stateSpecific={stateSpecific}
-        geojson={geojson}
-        stateHue={stateHue}
-        compareSet={compareSet}
-        onToggleState={toggleState}
-        onRemove={removeState}
-        onViewFullReport={(name) => router.push(`/state/${slugify(name)}`)}
-        onCompare={goToCompare}
-        onClearAll={() => setCompareSet([])}
-        compareMode={compareMode}
-        onToggleCompareMode={() => setCompareMode((v) => !v)}
-      />
+      {/* HeroSection reads the URL (useSearchParams — /?view=map), which needs a Suspense boundary */}
+      <Suspense fallback={null}>
+        <HeroSection
+          discoms={discoms.discoms}
+          stateSpecific={stateSpecific}
+          geojson={geojson}
+          compareSet={compareSet}
+          onToggleState={toggleState}
+          onRemove={removeState}
+          onViewFullReport={(name) => router.push(`/state/${slugify(name)}`)}
+          onCompare={goToCompare}
+          onClearAll={() => setCompareSet([])}
+          compareMode={compareMode}
+          onCompareModeChange={setCompareMode}
+        />
+      </Suspense>
     </div>
   );
 }

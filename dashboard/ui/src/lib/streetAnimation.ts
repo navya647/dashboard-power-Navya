@@ -30,18 +30,12 @@ export const STREET_CONFIG = {
 export interface StreetController {
   /** false pauses everything (e.g. the landing view has scrolled away). */
   setActive(active: boolean): void;
-  setUserPaused(paused: boolean): void;
   destroy(): void;
-}
-
-interface UiRefs {
-  status?: HTMLElement | null;
-  statusText?: HTMLElement | null;
 }
 
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
 
-export function startStreetAnimation(svg: SVGSVGElement, ui: UiRefs): StreetController {
+export function startStreetAnimation(svg: SVGSVGElement): StreetController {
   const C = STREET_CONFIG;
   const q = <T extends Element>(sel: string) => [...svg.querySelectorAll<T>(sel)];
   const byId = <T extends Element>(id: string) => svg.querySelector<T>(`#${id}`);
@@ -57,29 +51,15 @@ export function startStreetAnimation(svg: SVGSVGElement, ui: UiRefs): StreetCont
   const energizeG = byId<SVGGElement>('transformer-energize');
 
   let powered = true;
-  let outageStart = -1;
-  let lastStatus = '';
-  function status() {
-    let text = 'All homes powered', state = 'ok';
-    if (outageStart >= 0) {
-      text = `Outage across the street · 0:${String(Math.min(59, Math.floor(now - outageStart))).padStart(2, '0')}`;
-      state = 'outage';
-    }
-    if (text === lastStatus) return;
-    lastStatus = text;
-    if (ui.statusText) ui.statusText.textContent = text;
-    if (ui.status) ui.status.dataset.state = state;
-  }
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduceMotion) {
     // static, fully lit street: no loop, no flicker
-    status();
-    return { setActive() {}, setUserPaused() {}, destroy() {} };
+    return { setActive() {}, destroy() {} };
   }
 
   // ---------- run state (declared first: track() below reads `running`) ----------
-  let running = false, active = true, userPaused = false, inView = true;
+  let running = false, active = true, inView = true;
   let raf = 0, lastTs = 0;
 
   // ---------- pausable clock + scheduled events ----------
@@ -190,9 +170,7 @@ export function startStreetAnimation(svg: SVGSVGElement, ui: UiRefs): StreetCont
     visual(false);
     setPulses(false);
     fanTarget = 0;
-    outageStart = now;
     if (dim) track(dim.animate([{ opacity: 0 }, { opacity: C.SCENE_DIM }], { duration: 60, fill: 'forwards' }));
-    status();
     after(C.STREET_OFF, restore);
   }
   function restore() {
@@ -203,8 +181,6 @@ export function startStreetAnimation(svg: SVGSVGElement, ui: UiRefs): StreetCont
     C.FLICKER.forEach((t, k) => after(t, () => visual(k % 2 === 0)));
     after(last, () => {
       powered = true;
-      outageStart = -1;
-      status();
       if (!tvRunning) tvTick();
     });
     if (dim) track(dim.animate([{ opacity: C.SCENE_DIM }, { opacity: 0 }], { duration: 600, fill: 'forwards' }));
@@ -228,11 +204,10 @@ export function startStreetAnimation(svg: SVGSVGElement, ui: UiRefs): StreetCont
       fanRate = fanTarget < fanRate ? Math.max(fanTarget, fanRate - dt / C.FAN_SPINDOWN) : Math.min(fanTarget, fanRate + dt / C.FAN_SPINUP);
       fanAnims.forEach((a) => (a.playbackRate = Math.max(0.0001, fanRate)));
     }
-    if (outageStart >= 0) status();
     raf = requestAnimationFrame(frame);
   }
   function apply() {
-    const run = active && !userPaused && inView && !document.hidden;
+    const run = active && inView && !document.hidden;
     if (run === running) return;
     running = run;
     if (run) {
@@ -249,14 +224,12 @@ export function startStreetAnimation(svg: SVGSVGElement, ui: UiRefs): StreetCont
   io.observe(svg);
   document.addEventListener('visibilitychange', apply);
 
-  status();
   tvTick();
   after(C.STREET_ON, trip);
   apply();
 
   return {
     setActive(v) { active = v; apply(); },
-    setUserPaused(v) { userPaused = v; apply(); },
     destroy() {
       cancelAnimationFrame(raf);
       io.disconnect();

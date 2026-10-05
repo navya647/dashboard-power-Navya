@@ -1,0 +1,581 @@
+/* ---- Indicator module (IndicatorModule.tsx) — one per selected indicator on the state page.
+   Header (category label | download; name + unit | DISCOM keys) over two columns: a quiet side
+   column with the standard in force and the source documents (the Accessibility page's acm-*
+   markup, see SourceDocuments.tsx), and the trend chart taking the width. ---- */
+
+.im-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.im {
+  --im-rule: var(--line);
+  --im-soft: color-mix(in srgb, var(--ink) 3.5%, transparent);
+  --im-quiet: color-mix(in srgb, var(--ink) 62%, transparent);
+  width: 100%;
+  max-width: 1300px;
+  margin-inline: auto;
+  background: var(--panel);
+  border: 1px solid var(--im-rule);
+  border-radius: 12px;
+  padding: 16px 22px 14px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* reported figures but no standard specified for the state: a cool tint on the whole box, and a
+   tag on the label row saying why */
+.im--no-standard {
+  --im-tint: var(--accent-text);
+  background: color-mix(in srgb, var(--im-tint) 7%, var(--panel));
+  border-color: color-mix(in srgb, var(--im-tint) 45%, transparent);
+}
+.im--no-standard .im-dot--hollow {
+  background: transparent;
+}
+.im-flag {
+  display: inline-block;
+  margin-left: 12px;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--accent-text) 16%, transparent);
+  color: var(--accent-text);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  vertical-align: 1px;
+}
+
+.im a:focus-visible,
+.im button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ---------- header ---------- */
+.im-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "eyebrow dl"
+    "title keys";
+  align-items: center;
+  column-gap: 28px;
+  row-gap: 2px;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--im-rule);
+}
+.im-eyebrow {
+  grid-area: eyebrow;
+  margin: 0;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--im-quiet);
+}
+.im-title {
+  grid-area: title;
+  min-width: 0;
+  align-self: end;
+}
+.im-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.im-name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.1;
+}
+.im-name button {
+  all: unset;
+  cursor: pointer;
+}
+.im-info {
+  all: unset;
+  cursor: pointer;
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: var(--im-quiet);
+  transition:
+    background 160ms var(--ease),
+    color 160ms var(--ease);
+}
+.im-info:hover {
+  background: var(--mv-hover);
+  color: var(--ink);
+}
+.im-meta {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--im-quiet);
+}
+
+/* download: top-right, on the category label's row; not built yet */
+.im-dl-wrap {
+  grid-area: dl;
+  justify-self: end;
+  position: relative;
+  display: inline-flex;
+}
+.im-dl {
+  all: unset;
+  cursor: default;
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  border: 1px solid var(--im-rule);
+  color: var(--im-quiet);
+  transition:
+    background 160ms var(--ease),
+    color 160ms var(--ease);
+}
+.im-dl:hover,
+.im-dl:focus-visible {
+  background: var(--mv-hover);
+  color: var(--ink);
+}
+.im-tip {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 5;
+  padding: 7px 11px;
+  border-radius: 8px;
+  background: var(--chart-tooltip-bg);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: var(--shadow-md);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-3px);
+  transition:
+    opacity 140ms var(--ease),
+    transform 140ms var(--ease);
+}
+.im-tip::before {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  right: 10px;
+  border: 5px solid transparent;
+  border-bottom-color: var(--chart-tooltip-bg);
+}
+.im-dl:hover + .im-tip,
+.im-dl:focus-visible + .im-tip {
+  opacity: 1;
+  transform: none;
+}
+
+/* DISCOM keys — the line colours; click to hide/show a line */
+.im-keys {
+  grid-area: keys;
+  align-self: end;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 2px;
+  margin: 0 -8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.im-key {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+  transition:
+    background 160ms var(--ease),
+    opacity 160ms var(--ease);
+}
+.im-key:hover {
+  background: var(--mv-hover);
+}
+.im-key-swatch {
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--key);
+  flex: none;
+}
+.im-key.off {
+  opacity: 0.45;
+  text-decoration: line-through;
+}
+
+/* ---------- body: side (standard + sources) | main (chart) ---------- */
+.im-body {
+  display: grid;
+  grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+  gap: 24px;
+  align-items: stretch;
+}
+.im-side {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-right: 22px;
+  border-right: 1px solid var(--im-rule);
+}
+.im-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.im-label {
+  margin: 0 0 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--im-quiet);
+}
+.im-na {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--im-quiet);
+}
+
+/* ---------- the standard in force ---------- */
+.im-reg {
+  display: flex;
+  flex-direction: column;
+}
+.im-reg + .im-reg {
+  padding-top: 14px;
+  border-top: 1px dashed var(--im-rule);
+}
+.im-reg .im-label ~ .im-label {
+  margin-top: 10px;
+}
+.im-reg-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0 10px;
+  margin-bottom: 8px;
+}
+.im-reg-head b {
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--ink);
+}
+.im-reg-head span {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--im-quiet);
+}
+.im-std {
+  margin: 0;
+  padding: 1px 0 1px 12px;
+  border-left: 2px solid color-mix(in srgb, var(--accent-text) 70%, transparent);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+.im-bench {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--ink);
+}
+.im-bench-note {
+  margin: 4px 0 0;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--im-quiet);
+}
+
+/* ---------- sources (acm-* blocks from the Accessibility page) ---------- */
+.im-sources {
+  margin-top: auto;
+  padding-top: 2px;
+  border-top: 1px solid var(--im-rule);
+}
+.im-sources .acm-block {
+  margin-top: 10px;
+}
+/* the side column is narrower than the Accessibility card, so its year links run a touch tighter
+   to keep each DISCOM's years on one line */
+.im-sources .acm-years {
+  gap: 4px;
+}
+.im-sources .acm-years a {
+  padding: 2px 6px;
+  font-size: 11.5px;
+}
+.im-sources .acm-reports th {
+  padding-right: 12px;
+}
+.im-sources .acm-reports.is-merged th {
+  padding-right: 12px;
+}
+.im-sources .acm-reports td.acm-merged {
+  padding-left: 12px;
+}
+
+/* ---------- trend ---------- */
+.im-chart {
+  position: relative;
+  flex: 1;
+  min-height: 250px;
+}
+/* the canvas never feeds back into its own box, so the chart can fill the row without growing it */
+.im-chart canvas {
+  position: absolute;
+  inset: 0;
+}
+.im-empty {
+  margin: 0;
+  flex: 1;
+  display: grid;
+  place-items: center;
+  min-height: 200px;
+  padding: 24px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--im-quiet);
+  background: var(--im-soft);
+  border-radius: 10px;
+}
+
+/* legend, then notes — one quiet band under the chart */
+.im-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--im-rule);
+}
+.im-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.im-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.im-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: none;
+}
+.im-dot--hollow {
+  background: var(--panel);
+  box-shadow: inset 0 0 0 2px var(--im-quiet);
+}
+.im-dash {
+  width: 18px;
+  border-top: 2px dashed var(--chart-benchmark);
+  flex: none;
+}
+.im-foot-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  max-width: 80ch;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--im-quiet);
+}
+.im-foot-notes p {
+  margin: 0;
+}
+
+/* ---------- definition pop-up ---------- */
+.idef-root {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+.idef-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 8, 6, 0.4);
+  animation: idefFade 160ms var(--ease) both;
+}
+.idef-modal {
+  position: relative;
+  width: min(480px, 100%);
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  background: var(--panel);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  padding: 20px 22px 22px;
+  animation: idefPop 200ms var(--ease) both;
+}
+.idef-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+.idef-head h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+}
+.idef-close {
+  all: unset;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  padding: 2px 7px;
+  border-radius: 4px;
+  color: var(--muted);
+}
+.idef-close:hover {
+  background: var(--mv-hover);
+  color: var(--ink);
+}
+.idef-close:focus-visible {
+  outline: 2px solid var(--accent);
+}
+.idef-definition {
+  margin: 10px 0 16px;
+  font-size: 14.5px;
+  line-height: 1.55;
+}
+.idef-meta {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.idef-meta > div {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: 12px;
+}
+.idef-meta dt {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-top: 2px;
+}
+.idef-meta dd {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+@keyframes idefPop {
+  from {
+    transform: translateY(8px) scale(0.98);
+    opacity: 0;
+  }
+}
+@keyframes idefFade {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .idef-modal,
+  .idef-backdrop {
+    animation: none;
+  }
+}
+
+
+/* ---------- responsive ---------- */
+@media (max-width: 1100px) {
+  .im-body {
+    grid-template-columns: minmax(270px, 300px) minmax(0, 1fr);
+    gap: 24px;
+  }
+  .im-side {
+    padding-right: 22px;
+  }
+}
+@media (max-width: 860px) {
+  .im {
+    padding: 16px 16px 14px;
+  }
+  /* label + download on top, name under it, keys below the name */
+  .im-head {
+    grid-template-areas:
+      "eyebrow dl"
+      "title title"
+      "keys keys";
+  }
+  .im-keys {
+    justify-content: flex-start;
+    margin: 8px 0 0 -8px;
+  }
+  .im-body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+  /* chart first on narrow screens; the standard and sources follow */
+  .im-main {
+    order: -1;
+  }
+  .im-side {
+    padding-right: 0;
+    border-right: 0;
+    padding-top: 16px;
+    border-top: 1px solid var(--im-rule);
+  }
+  .im-sources {
+    margin-top: 0;
+  }
+}
+@media (max-width: 600px) {
+  .im-name {
+    font-size: 24px;
+  }
+  .im-chart {
+    min-height: 240px;
+  }
+  .idef-meta > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+}

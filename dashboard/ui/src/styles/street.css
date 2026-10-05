@@ -7,8 +7,6 @@
   position: absolute;
   inset: 0;
   overflow: hidden;
-  transform-origin: 62% 55%;
-  will-change: opacity, transform;
 
   /* sky */
   --sky-top: #0e1834; --sky-mid: #27386a; --sky-low: #6f567c; --sky-horizon: #e4966a;
@@ -42,8 +40,6 @@
   --pole-light: #8b7b69; --pole-dark: #5b4f43; --wire: #131822; --pulse: #ffe8a6;
   --tx-top: #9ba2a9; --tx-left: #80878f; --tx-front: #636a72; --tx-fin: #4b5158;
   --bushing: #cbc3b0; --lamp-head: #d8d2c2; --lamp-light: #ffd98a; --bird: #10131b;
-  /* HUD */
-  --street-ok: #6fd49a; --street-outage: #ff6b5e;
 }
 /* Light theme: the same street at early evening instead of night, so it sits with the light page:
    brighter grass, road and paving, softer unlit windows, and a gentler off-state shade. Done by
@@ -104,64 +100,42 @@
 .street-scene #transformer-spark,
 .street-scene #transformer-energize { opacity: 0; pointer-events: none; }
 
-/* status pill + pause button, bottom-right of the landing view */
-.street-hud {
-  position: absolute;
-  right: var(--hero-gutter, 32px);
-  bottom: 28px;
-  z-index: 3;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: #f6f1e8;
-  pointer-events: auto; /* .hero-bg-fabric is pointer-events: none */
+@media (max-width: 980px) {
+  /* mobile stacks the headline over the photo, so it's dimmed behind the text */
+  .street-layer { opacity: 0.45; }
 }
-.street-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  padding: 7px 14px 7px 12px;
-  border-radius: 999px;
-  background: rgba(14, 20, 38, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  font-size: 12.5px;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-.street-pill-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--street-ok);
-  box-shadow: 0 0 10px var(--street-ok);
-}
-.street-pill[data-state='outage'] .street-pill-dot { background: var(--street-outage); box-shadow: 0 0 10px var(--street-outage); }
-.street-toggle {
-  width: 32px;
-  height: 32px;
-  display: grid;
-  place-items: center;
-  padding: 0;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(14, 20, 38, 0.5);
-  color: inherit;
-  cursor: pointer;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-.street-toggle svg { width: 12px; height: 12px; fill: currentColor; }
-.street-toggle:hover { background: rgba(255, 255, 255, 0.12); }
-.street-toggle:focus-visible { outline: 2px solid #ffd66b; outline-offset: 3px; }
 
-@media (prefers-reduced-motion: reduce) {
-  .street-toggle { display: none; }
+/* ---------- sunset photo: the landing page's current background ----------
+   Reuses .street-layer's positioning and mobile dimming; the animated street
+   (StreetHero.tsx) is no longer rendered. The layer itself is a fill sampled from the photo's own
+   sky (deeper at the bottom, like the photo); the photo sits on the right side only (::after) and
+   fades into that fill from the middle, so the sun and pole land towards the right while the
+   headline stays on a calm, matching surface. Same in both themes (see the light-theme text
+   overrides below). */
+.street-layer.hero-photo-layer {
+  background: linear-gradient(to bottom, #b0480e 0%, #9a3d0c 55%, #5c2209 100%);
+}
+.street-layer.hero-photo-layer::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 0 40%;
+  background: url('/hero-sunset.jpg') 50% 40% / cover no-repeat;
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 35%);
+  mask-image: linear-gradient(to right, transparent 0, #000 35%);
 }
 @media (max-width: 980px) {
-  .street-hud { display: none; }
-  /* mobile stacks the headline over the street (no scroll reveal), so dim it like the old photo */
-  .street-layer { opacity: 0.45 !important; transform: none !important; }
+  /* mobile stacks the headline over the photo, so it covers the full width there */
+  .street-layer.hero-photo-layer::after {
+    left: 0;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+}
+
+/* the landing view looks the same in both themes: on desktop the headline always sits on the
+   sunset (and fades out with it), so the light theme uses the dark theme's text colours there.
+   Mobile stacks the copy over a dimmed photo on the page colour, so it keeps the theme's own. */
+@media (min-width: 981px) {
+  :root:not([data-theme='dark']) .hero-editorial h1 { color: #ffffff; }
+  :root:not([data-theme='dark']) .hero-editorial p.lede { color: #f0f2f5; }
 }

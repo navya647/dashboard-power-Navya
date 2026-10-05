@@ -2,7 +2,7 @@ import { fmt, fyLabel } from './format';
 import { categoryForType, sortCategories } from './sopCategories';
 import { buildFrameworkSeries, buildSopSeries } from './sop';
 import { CATEGORICAL } from './colors';
-import type { CardPoint, CardSeries } from '@/components/IndicatorVisualCard';
+import type { CardPoint, CardSeries } from './indicatorContext';
 import type { Discom, DiscomsData, StateSpecificData } from './types';
 
 /** One reported/notified fact for one DISCOM/indicator/year, from either dataset — everything
@@ -40,8 +40,13 @@ export interface UnifiedIndicatorAtom {
    * the chart still gets a full FY axis (see buildFrameworkSeries), but the Data Table collapses
    * it to one "All years" row rather than fabricating one row per fiscal year. */
   fyMode: 'perYear' | 'allYears';
+  /** source workbook + sheet this atom was extracted from (sheet null when not recorded) */
+  source: { workbook: string; sheet: string | null };
   points: UnifiedPoint[];
 }
+
+const RELIABILITY_WORKBOOK = 'Common Indicators';
+const SOP_WORKBOOK = 'State specific Indicators';
 
 /** Each field is the set of selected values for that filter — an empty array means "no constraint"
  * (matches every atom), not "match nothing"; StateDetail.tsx is what additionally treats an empty
@@ -130,6 +135,9 @@ function reliabilityAtoms(discoms: DiscomsData, ds: Discom[], colorOf: (key: str
           standardMet: ind?.standard_met ?? null,
           reasonNotComparable: ind?.reason_not_comparable ?? null,
           regulation: d.years[year]?.regulation || null,
+          note: ind?.unit_note ?? null,
+          // the reliability JSON stores some benchmarks as bare numbers — keep the raw form as text
+          benchmarkRaw: ind?.benchmark == null ? null : String(ind.benchmark),
           reportedText: ind?.value == null ? null : unitSuffix(ind.value),
           benchmarkText: benchNum == null ? null : unitSuffix(benchNum),
         };
@@ -149,6 +157,7 @@ function reliabilityAtoms(discoms: DiscomsData, ds: Discom[], colorOf: (key: str
         unitSuffix,
         yAxisLabel: isPct ? 'Percentage' : undefined,
         fyMode: 'perYear',
+        source: { workbook: RELIABILITY_WORKBOOK, sheet: d.sheet ?? null },
         points,
       });
     }
@@ -158,6 +167,13 @@ function reliabilityAtoms(discoms: DiscomsData, ds: Discom[], colorOf: (key: str
 
 const sopUnitSuffix = (v: number) => fmt(v, 2) + '%';
 
+/** The SoP sheets' own header row ("Indicator Type" / "Indicator" / "Indicator meaning" …) read in
+ * as a data row for a few DISCOMs — not a real indicator, so it never becomes an atom (and so never
+ * reaches the Indicator filter, charts or tables). Matched exactly, so no genuine indicator can hit it. */
+function isHeaderRowArtefact(s: { type: string | null; indicator: string | null }): boolean {
+  return s.type === 'Indicator Type' && s.indicator === 'Indicator';
+}
+
 function sopAtoms(stateSpecific: StateSpecificData, stateName: string, colorOf: (key: string) => string, yearsAsc: string[]): UnifiedIndicatorAtom[] {
   const atoms: UnifiedIndicatorAtom[] = [];
   const discomsForState = stateSpecific.discoms.filter((d) => d.state === stateName);
@@ -165,6 +181,7 @@ function sopAtoms(stateSpecific: StateSpecificData, stateName: string, colorOf: 
   if (discomsForState.length) {
     for (const d of discomsForState) {
       for (const s of buildSopSeries(d, yearsAsc)) {
+        if (isHeaderRowArtefact(s)) continue;
         const points: UnifiedPoint[] = s.points.map((p) => ({
           year: p.year,
           exists: p.entry != null,
@@ -195,6 +212,7 @@ function sopAtoms(stateSpecific: StateSpecificData, stateName: string, colorOf: 
           unitSuffix: sopUnitSuffix,
           yAxisLabel: 'Percentage',
           fyMode: 'perYear',
+          source: { workbook: SOP_WORKBOOK, sheet: d.sheet ?? null },
           points,
         });
       }
@@ -206,6 +224,7 @@ function sopAtoms(stateSpecific: StateSpecificData, stateName: string, colorOf: 
   if (!framework) return atoms;
 
   for (const s of buildFrameworkSeries(framework, yearsAsc)) {
+    if (isHeaderRowArtefact(s)) continue;
     const entry = s.points[0].entry!;
     const points: UnifiedPoint[] = yearsAsc.map((year) => ({
       year,
@@ -237,6 +256,7 @@ function sopAtoms(stateSpecific: StateSpecificData, stateName: string, colorOf: 
       unitSuffix: sopUnitSuffix,
       yAxisLabel: 'Percentage',
       fyMode: 'allYears',
+      source: { workbook: SOP_WORKBOOK, sheet: null },
       points,
     });
   }
@@ -254,6 +274,28 @@ export function buildUnifiedAtoms(discoms: DiscomsData | null | undefined, allDs
   if (discoms) atoms.push(...reliabilityAtoms(discoms, allDs, colorOf, yearsAsc));
   if (stateSpecific) atoms.push(...sopAtoms(stateSpecific, stateName, colorOf, yearsAsc));
   return atoms;
+}
+
+/** A standard cell that actually states one — not empty, not "N/A", and not the sheets' own
+ * "Not specified…" wording (which records that the regulation sets none). */
+export const statesStandard = (t: string | null | undefined): boolean => {
+  const v = t == null ? '' : String(t).trim();
+  return v !== '' && !/^n\/?a\.?$/i.test(v) && !/^not specified/i.test(v);
+};
+
+/** The indicators the State page offers: those the state's regulation sets a standard for (in
+ * words — a benchmark alone doesn't count), plus those with reported figures even without one
+ * (IndicatorModule tints those cards). An indicator with neither is never offered. Standards are
+ * state-level, so an indicator is kept or dropped for every DISCOM at once. */
+export function withStandardOrFigures(atoms: UnifiedIndicatorAtom[]): UnifiedIndicatorAtom[] {
+  const keep = new Set<string>();
+  for (const a of atoms) {
+    const ok =
+      statesStandard(a.standardSpecified) ||
+      a.points.some((p) => statesStandard(p.standardSpecified) || p.value != null);
+    if (ok) keep.add(a.indicator);
+  }
+  return atoms.filter((a) => keep.has(a.indicator));
 }
 
 export function matchesFilters(atom: UnifiedIndicatorAtom, f: UnifiedFilters): boolean {
@@ -378,7 +420,14 @@ export function buildUnifiedCards(atoms: UnifiedIndicatorAtom[]): UnifiedCard[] 
       discomFullLabel: oneDiscom?.discomFullLabel ?? null,
       unitSuffix: first.unitSuffix,
       yAxisLabel: first.yAxisLabel,
-      series: group.map((a) => ({ label: a.discomLabel, color: a.color, points: a.points.map(stripTableFields) })),
+      series: group.map((a) => ({
+        label: a.discomLabel,
+        color: a.color,
+        points: a.points.map(stripTableFields),
+        meaning: a.meaning,
+        isFramework: a.isFramework,
+        source: a.source,
+      })),
     });
   }
   return cards;
@@ -397,7 +446,10 @@ export interface UnifiedTableRow {
   reportedText: string | null;
   reportedMeaning: string | null;
   standardMet: boolean | null;
+  comparisonPossible: boolean | null;
+  reasonNotComparable: string | null;
   regulation: string | null;
+  note: string | null;
 }
 
 /** One Data Table row per actual source record — a framework's notified indicator collapses to a
@@ -422,7 +474,10 @@ export function buildUnifiedTableRows(atoms: UnifiedIndicatorAtom[]): UnifiedTab
         reportedText: p.reportedText,
         reportedMeaning: p.reportedMeaning,
         standardMet: p.standardMet,
+        comparisonPossible: p.comparisonPossible,
+        reasonNotComparable: p.reasonNotComparable,
         regulation: p.regulation,
+        note: p.note ?? null,
       });
       continue;
     }
@@ -441,7 +496,10 @@ export function buildUnifiedTableRows(atoms: UnifiedIndicatorAtom[]): UnifiedTab
         reportedText: p.reportedText,
         reportedMeaning: p.reportedMeaning,
         standardMet: p.standardMet,
+        comparisonPossible: p.comparisonPossible,
+        reasonNotComparable: p.reasonNotComparable,
         regulation: p.regulation,
+        note: p.note ?? null,
       });
     }
   }

@@ -3,25 +3,68 @@
      cool blue-grey paper, near-black ink, blue accent (corporate-SaaS palette).
    - status/categorical tokens encode data and must never be repurposed as chrome. */
 :root {
-  --paper: #eef1f7;
-  --panel: #ffffff;
-  --ink: #15181f;
-  /* darkened from #6b7280 (~4.3:1 on --paper, just under WCAG AA) to ~12.7:1 on --paper / ~14.4:1 on
-     --panel — same brightening pass applied to dark mode's --muted earlier, mirrored here since
-     secondary text (hints, labels, meta copy) was reading as too faint in light mode too. */
-  --muted: #262a32;
-  --line: rgba(21, 24, 31, 0.1);
+  /* The chrome surfaces (page, panel, line, sidebar, shadows) are the home page map view's
+     approved warm family (--mv-* below) — the map view is the visual source of truth, so every
+     page reads as the same system. --paper is that view's own base colour (the --hero-veil in
+     hero.css, without its photo). */
+  /* inside pages' canvas: a neutral off-white a step below the cards (--panel #fafaf8). The home
+     page's photographic ground keeps the original warm sand via --hero-ground (hero.css). */
+  --paper: #f3f3f0;
+  --hero-ground: #d4cdc0;
+  --panel: var(--mv-surface);
+  /* darkened again (was #15181f) so every piece of body text reads at full strength */
+  --ink: #111111;
+  /* darkened from #6b7280 (~4.3:1 on --paper, just under WCAG AA), then #262a32, and again here
+     for stronger secondary text (hints, labels, meta copy) — still a step lighter than --ink. */
+  --muted: #333333; /* secondary text: ~12:1 — raised for maximum readability */
+  /* light-mode-only surface tokens for the soft off-white system. Each is read as
+     var(--token, <original expression>) and reset to `initial` in dark mode, so dark mode falls
+     back to exactly its original value. */
+  --faint: #4d4d4d; /* placeholders: ~8.4:1 on white inputs */
+  --text-supporting: #3d3d3d; /* captions/sub-labels that used to be --muted at reduced opacity */
+  /* light mode doesn't fade text with opacity: rules write opacity: max(var(--fade-floor), <orig>)
+     so light renders them solid (1) and dark keeps the original fade (floor 0). Toggled-off legend
+     items use --off-floor the same way: still visibly "off" in light mode, but readable. */
+  --fade-floor: 1;
+  --off-floor: 0.75;
+  --control-text: #1a1a1a; /* unselected segmented-control label */
+  --input-bg: #ffffff;
+  --control-track: #f1f1ee; /* segmented-control track and other secondary control surfaces */
+  /* the state page masthead (accent bar, silhouette, wash) uses the interaction blue in light mode
+     instead of each state's categorical hue; dark mode keeps the hue */
+  --state-accent: var(--accent);
+  --accent-hover: #21475f;
+  --accent-active: #1b3d52;
+  --line: var(--mv-line);
 
   --charcoal: #15181f;
-  --sidebar-bg: #f7f4ec;
-  --accent: #3b5fe0;
-  --accent-light: #7c93ea;
+  --sidebar-bg: var(--mv-sidebar-top);
+  --accent: #28546f;
+  --accent-light: #21475f;
   /* --accent used as TEXT (not a button/fill background) — identical to --accent in light mode,
      but dark mode brightens it (see override below): --accent itself is unchanged there (so
      accent-background buttons/borders keep the same brand blue), yet #3b5fe0 as plain text only
      reaches ~2.7:1 against the dark panel, well under WCAG AA's 4.5:1 for normal text. */
   --accent-text: var(--accent);
   --hero-mist: #eef1f7;
+  /* the home page map view's surface family (sidebar, Explore card, legend), derived from that
+     view's warm sand background the way the landing view's sidebar is derived from its sunset:
+     the sidebar a deeper, more structured step of the same warm neutral, the floating cards a
+     lighter one, and the active nav item a tonal variation within it. The approved source of
+     truth for the whole dashboard's chrome: --panel/--line/--sidebar-bg/--shadow-float point
+     here, and so does the sidebar's default palette (.sidebar in layout.css). */
+  /* soft off-white, neutral (not beige): sidebar #f2f2ef, cards #fafaf8. The line is a neutral
+     translucent grey that composites to ≈ #d8d8d3 on a card and still shows on --paper; the
+     hover/press/active washes are neutral too, so no beige patches appear on the off-white. */
+  --mv-surface: #fafaf8;
+  --mv-sidebar-top: #f2f2ef;
+  --mv-sidebar-bottom: #f2f2ef;
+  --mv-line: rgba(0, 0, 0, 0.135);
+  --mv-hover: rgba(0, 0, 0, 0.035);
+  --mv-press: rgba(0, 0, 0, 0.07);
+  --mv-active: rgba(0, 0, 0, 0.06);
+  --mv-indicator: #8a5a36;
+  --mv-shadow-float: 0 18px 48px rgba(74, 51, 32, 0.14), 0 2px 8px rgba(74, 51, 32, 0.07);
 
   /* status — reserved, never themed */
   --good: #0ca30c;
@@ -50,33 +93,39 @@
 
   /* map fills — a restrained editorial palette, not a GIS choropleth: a muted terracotta/clay for
      a tracked state with reported data (clickable through to its full report), an off-white for a
-     tracked state still awaiting reported data (not clickable — see stateMapStatus), and a
-     lighter tint of the tracked clay for states outside scope entirely, receding into the
-     backdrop. Hover/selection state (handled in StateMesh, not here) is what actually lifts a
-     state forward. Mirrored in colors.ts as MAP_STATUS. */
+     tracked state still awaiting reported data (not clickable — see stateMapStatus), and a muted
+     warm greige for states outside scope entirely ("Coming soon"), quieter than the clay and set
+     apart from the sand background (in both themes) mainly by being less saturated. Solid fills
+     only, no pattern, separated by lightness and saturation (clay ~L*58, greige ~L*78,
+     near-neutral off-white ~L*91) so they stay distinct for colour-blind readers too.
+     Hover/selection state (handled in HeroMap, not here) is what actually lifts a state forward. Mirrored in colors.ts
+     as MAP_STATUS. */
   --map-tracked: #b0825c;
-  --map-idle: #c8a88d;
+  --map-idle: #cbc0ae;
   --map-no-data: #e9e6de;
   --map-highlight: #3b5fe0;
   --map-transmission: #d8ae3f;
 
-  --shadow-float: 0 18px 48px rgba(23, 37, 84, 0.1), 0 2px 8px rgba(23, 37, 84, 0.05);
+  --shadow-float: var(--mv-shadow-float);
 
   /* Chart.js options for grid lines/axis title/tooltip background can't reference a CSS custom
      property directly (they're plain JS strings baked into the chart's options object) — kept as
      tokens here anyway, read via getComputedStyle in IndicatorVisualCard.tsx, so the dark-mode
      variant lives in one shared place instead of being duplicated as a hardcoded literal in TSX. */
   --chart-grid: rgba(18, 23, 42, 0.05);
+  /* the indicator charts' dotted benchmark line — neutral, never a status colour */
+  --chart-benchmark: rgba(17, 17, 17, 0.72);
   /* reuses --muted rather than its own separate (and, before, lighter/fainter) hex, same
      consolidation already done for dark mode. */
   --chart-axis-title: var(--muted);
   --chart-tooltip-bg: #1c2127;
 
-  /* Shared opacity for every `:disabled` button (.control-compare-btn, .control-ghost-btn,
+  /* Shared opacity for every `:disabled` button (.control-compare-btn,
      .tour-btn--ghost) — one token so "how dim is disabled" stays consistent across the dashboard.
      Dark mode raises it (see override below): the same 0.4 fraction of an already-dark backdrop
      made disabled button text/labels read as too faint to tell they still say "Compare"/"Clear". */
-  --disabled-opacity: 0.4;
+  /* light: 0.6 (was 0.4, which left disabled labels at ~2.4:1 — clearly disabled, barely legible) */
+  --disabled-opacity: 0.75;
 
   /* Loaded via a Google Fonts <link> in layout.tsx's <head>, not next/font/google — this Next.js
      version's Turbopack build fails to resolve next/font/google's internal font module
@@ -91,10 +140,14 @@
   --radius: 8px;
   --radius-sm: 4px;
   --radius-pill: 999px;
-  --shadow-sm: 0 1px 2px rgba(23, 37, 84, 0.06), 0 1px 1px rgba(23, 37, 84, 0.04);
-  --shadow-md: 0 10px 28px rgba(23, 37, 84, 0.1), 0 2px 6px rgba(23, 37, 84, 0.05);
-  --shadow-lg: 0 22px 48px rgba(23, 37, 84, 0.12), 0 8px 18px rgba(23, 37, 84, 0.06);
+  /* tinted with the map view's warm shadow colour (--mv-shadow-float) rather than a cool navy */
+  --shadow-sm: 0 1px 2px rgba(74, 51, 32, 0.06), 0 1px 1px rgba(74, 51, 32, 0.04);
+  --shadow-md: 0 10px 28px rgba(74, 51, 32, 0.1), 0 2px 6px rgba(74, 51, 32, 0.05);
+  --shadow-lg: 0 22px 48px rgba(74, 51, 32, 0.12), 0 8px 18px rgba(74, 51, 32, 0.06);
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  /* filter menus (FilterDropdown) portal to <body> on this layer, above every page-level
+     z-index (sidebar/hero top out at 20) */
+  --z-dropdown: 50;
 }
 
 /* Dark theme — chrome tokens only (paper/panel/ink/muted/line/shadows). Status and categorical
@@ -107,33 +160,62 @@
   /* Lifted off near-black toward a softer charcoal — less harsh to look at for long stretches,
      and it gives --panel more headroom above --paper so cards still read as raised without
      needing pure-white borders to separate them. */
-  --paper: #1b1e25;
-  --panel: #262a33;
-  --ink: #e8e9ed;
-  /* Brightened again (was #adb4c0, ~6.9:1 on --panel) — still visibly a step below --ink
-     (11.84:1 on --panel) so secondary/instructional text stays secondary, but noticeably closer
-     to full readability now: ~9.4:1 on --panel / ~10.9:1 on --paper. */
-  --muted: #cdd1d9;
-  --line: rgba(232, 233, 237, 0.12);
+  /* the map view's own backdrop stays a light sand in dark mode too (a photo under a veil), which
+     can't sit under light text, so --paper is the deepest step of its dark surface family instead */
+  --paper: var(--mv-sidebar-bottom);
+  --panel: var(--mv-surface);
+  /* brightened (was #e8e9ed) so primary text reads at full strength */
+  --ink: #ffffff;
+  /* Brightened again (was #adb4c0, then #cdd1d9) — still a step below --ink so
+     secondary/instructional text stays secondary, but close to full readability. */
+  --muted: #f0f2f5;
+  --line: var(--mv-line);
   /* brightened from --accent (#3b5fe0, ~2.7:1 here) to ~7:1 against both --paper and --panel —
      verified with the standard WCAG relative-luminance formula, not eyeballed. */
-  --accent-text: #9db3f2;
+  --accent-text: #b8d0e6;
+  /* the muted blue as seen in dark mode before the light-mode off-white change, kept as is */
+  --accent: #3b6d94;
+  --accent-light: #8fb0cc;
+  --accent-hover: #4a7aa0;
+  --accent-active: #3b6d94;
+  /* light-mode-only tokens off: every reader falls back to its original dark expression */
+  --faint: initial;
+  --control-text: initial;
+  --text-supporting: initial;
+  /* text is never faded in dark mode either (readability); toggled-off items stay visibly off */
+  --fade-floor: 1;
+  --off-floor: 0.75;
+  --input-bg: initial;
+  --control-track: initial;
+  --hero-ground: initial;
+  --state-accent: initial;
   /* was 0.55 — still read as too faint on "Compare"/"Clear" when disabled, raised again. */
-  --disabled-opacity: 0.7;
+  --disabled-opacity: 0.8;
 
   /* --charcoal deliberately not overridden: it's the hamburger button's own fixed dark square
      (white bars on top), not a semantic alias for --ink, and must stay dark in both themes. */
-  --sidebar-bg: #21252d;
+  --sidebar-bg: var(--mv-sidebar-top);
   --hero-mist: #262a33;
+  /* map view surface family: a deep warm charcoal, sidebar a step deeper than the cards */
+  --mv-surface: #2a2622;
+  --mv-sidebar-top: #24201c;
+  --mv-sidebar-bottom: #1c1916;
+  --mv-line: rgba(246, 234, 216, 0.12);
+  --mv-hover: rgba(255, 236, 214, 0.04);
+  --mv-press: rgba(255, 236, 214, 0.1);
+  --mv-active: rgba(255, 236, 214, 0.07);
+  --mv-indicator: #e8d3b6;
+  --mv-shadow-float: 0 18px 48px rgba(20, 12, 4, 0.36), 0 2px 8px rgba(20, 12, 4, 0.22);
 
   --chart-grid: rgba(232, 233, 237, 0.09);
+  --chart-benchmark: rgba(255, 240, 222, 0.86);
   /* reuse the same brightened secondary-text color everywhere else in dark mode uses, rather than
      its own separate hand-picked hex (light mode keeps its own distinct, untouched value above). */
   --chart-axis-title: var(--muted);
   --chart-tooltip-bg: #2f3440;
 
-  --shadow-float: 0 18px 48px rgba(0, 0, 0, 0.36), 0 2px 8px rgba(0, 0, 0, 0.22);
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.24), 0 1px 1px rgba(0, 0, 0, 0.16);
-  --shadow-md: 0 10px 28px rgba(0, 0, 0, 0.32), 0 2px 6px rgba(0, 0, 0, 0.2);
-  --shadow-lg: 0 22px 48px rgba(0, 0, 0, 0.4), 0 8px 18px rgba(0, 0, 0, 0.24);
+  --shadow-float: var(--mv-shadow-float);
+  --shadow-sm: 0 1px 2px rgba(20, 12, 4, 0.24), 0 1px 1px rgba(20, 12, 4, 0.16);
+  --shadow-md: 0 10px 28px rgba(20, 12, 4, 0.32), 0 2px 6px rgba(20, 12, 4, 0.2);
+  --shadow-lg: 0 22px 48px rgba(20, 12, 4, 0.4), 0 8px 18px rgba(20, 12, 4, 0.24);
 }

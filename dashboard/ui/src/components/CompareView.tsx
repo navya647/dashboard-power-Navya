@@ -3,13 +3,12 @@
 import '@/lib/chartSetup';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { MAP_HREF } from '@/lib/routes';
 import { useData } from '@/lib/DataContext';
 import { compareColor, stateHasReportedData } from '@/lib/computations';
-import { fyLabel } from '@/lib/format';
 import {
   buildMultiDiscomAtoms,
   buildMultiDiscomComparableCards,
-  buildUnifiedTableRows,
   categoryOptions,
   indicatorOptions,
   jurisdictionDiscomOptions,
@@ -20,8 +19,6 @@ import {
 import DiscomMultiSelect from './DiscomMultiSelect';
 import IndicatorVisualCard from './IndicatorVisualCard';
 import StateShape from './StateShape';
-import UnifiedDataTable from './UnifiedDataTable';
-import YearPicker from './YearPicker';
 
 interface Props {
   states: string[];
@@ -42,9 +39,7 @@ function dataAvailabilityMessage(jurisdictions: string[], lacking: string[]): st
 }
 
 /** The Compare results view — same page architecture as the State Performance page: one chart
- * gallery (always the full FY-axis trend, never re-scoped by a year control) and one Data Table
- * beneath it, with its own fiscal-year focus control that narrows only the table, exactly like
- * `StateDetail.tsx`. Each selected state gets its own tickable DISCOM picker (`DiscomMultiSelect`)
+ * gallery (always the full FY-axis trend, never re-scoped by a year control). Each selected state gets its own tickable DISCOM picker (`DiscomMultiSelect`)
  * — no "whole state" option, so every line on the chart is always a specific, real DISCOM's own
  * reported figures, never an invented cross-DISCOM average (see CLAUDE.md).
  * `buildMultiDiscomComparableCards` matches indicators captured by at least one ticked DISCOM in
@@ -53,8 +48,6 @@ function dataAvailabilityMessage(jurisdictions: string[], lacking: string[]): st
 export default function CompareView({ states }: Props) {
   const { discoms, stateSpecific, geojson, loading, error } = useData();
   const router = useRouter();
-  const [selectedYear, setSelectedYear] = useState<string | null>(null);
-  const [showAllYears, setShowAllYears] = useState(true);
   const [selectedDiscoms, setSelectedDiscoms] = useState<Record<string, string[]>>({});
   // Same cascading Indicator Category / Type / Indicator narrowing as the State Performance
   // page's toolbar (StateDetail.tsx) — DISCOM selection is handled per-jurisdiction by the
@@ -70,7 +63,7 @@ export default function CompareView({ states }: Props) {
     return (
       <div className="state-page">
         <p className="detail-placeholder">Pick at least 2 jurisdictions to compare from the map explorer.</p>
-        <button type="button" className="back-btn" onClick={() => router.back()}>
+        <button type="button" className="back-btn" onClick={() => router.push(MAP_HREF)}>
           Back to Home
         </button>
       </div>
@@ -78,7 +71,7 @@ export default function CompareView({ states }: Props) {
   }
 
   const YEARS_ASC = [...discoms.years].reverse();
-  const activeYear = selectedYear ?? (discoms.years.includes('2023-24') ? '2023-24' : discoms.years[0]);
+  const activeYear = discoms.years.includes('2023-24') ? '2023-24' : discoms.years[0];
 
   // ticked DISCOMs default to "every DISCOM this state has" until the viewer narrows a state's
   // own picker — never a state-level median, just every real DISCOM line shown at once.
@@ -112,13 +105,6 @@ export default function CompareView({ states }: Props) {
   }));
   const cards = buildMultiDiscomComparableCards(filteredAtomsByState);
 
-  // the Data Table shows exactly the same comparable indicators as the chart gallery above it —
-  // scoped to the atoms that actually made it onto a card, not every atom either jurisdiction has.
-  const cardKeys = new Set(cards.map((c) => c.id));
-  const comparableAtoms = filteredAtomsByState.flatMap(({ atoms }) => atoms).filter((a) => cardKeys.has(`${a.dataset}::${a.category}::${a.type}::${a.indicator}`));
-  const allTableRows = buildUnifiedTableRows(comparableAtoms);
-  const tableRows = showAllYears ? allTableRows : allTableRows.filter((r) => r.fy === fyLabel(activeYear) || r.fy === 'All years');
-
   const lacking = states.filter((name) => !stateHasReportedData(discoms.discoms, name, stateSpecific));
   const availabilityMessage = dataAvailabilityMessage(states, lacking);
   const emptyPicks = selection.filter((s) => s.discomKeys.length === 0).map((s) => s.state);
@@ -127,14 +113,14 @@ export default function CompareView({ states }: Props) {
   return (
     <div className="state-page">
       <div className="state-topbar">
-        <button type="button" className="back-btn" onClick={() => router.back()}>
+        <button type="button" className="back-btn" onClick={() => router.push(MAP_HREF)}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
           Back to Home
         </button>
         <div className="breadcrumb">
-          India Power Supply and Service Quality Dashboard <span>/</span> <b>Compare</b>
+          India Power Supply, Service Quality and Safety Dashboard <span>/</span> <b>Compare</b>
         </div>
       </div>
 
@@ -298,30 +284,6 @@ export default function CompareView({ states }: Props) {
         </>
       )}
 
-      <div className="complete-data-band">
-        <div className="section-header">
-          <span className="section-title">Data Table</span>
-        </div>
-
-        <div className="complete-data-toggle complete-data-toggle-sticky">
-          <span>{showAllYears ? `Showing all ${discoms.years.length} fiscal years` : `Focused on ${fyLabel(activeYear)}`}</span>
-          {discoms.years.length > 1 && (
-            <YearPicker
-              years={discoms.years}
-              active={activeYear}
-              onChange={(y) => {
-                setSelectedYear(y);
-                setShowAllYears(false);
-              }}
-            />
-          )}
-          <button type="button" className="complete-data-toggle-btn" onClick={() => setShowAllYears((v) => !v)}>
-            {showAllYears ? 'Show one year' : 'Show all years'}
-          </button>
-        </div>
-
-        <UnifiedDataTable rows={tableRows} />
-      </div>
     </div>
   );
 }

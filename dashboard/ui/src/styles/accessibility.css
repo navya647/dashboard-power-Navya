@@ -1,238 +1,435 @@
-/* ---- Accessibility page: editorial + analytical, not a scorecard grid ----
-   Deliberately few boxed surfaces: the pipeline and the licensee matrix are the only two
-   bordered panels on the page. Everything else (stats, takeaway, regulation coverage, state
-   comparison) sits directly in the page flow — typography and rules carry the hierarchy. */
+/* ---- Accessibility page: the map is the page. States filled by status; a card for the clicked
+   state. Status colours (good / warning / critical) are data colours, used per state only. ---- */
 
-/* ---- headline stats: an inline statistical strip, not KPI cards ---- */
-.stat-strip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0;
-  margin-bottom: 14px;
+.acm {
+  max-width: 1240px;
+  /* states not yet covered: the home map's "Coming soon" look (hero.css) — the same greige fill,
+     dark border and fine dot grid — so "not covered" reads the same across the dashboard */
+  --acm-out: var(--map-idle);
+  --acm-out-line: rgba(74, 51, 32, 0.6);
+  --acm-out-dot: #7d6c58;
 }
-.stat-strip-item {
-  flex: 1 1 160px;
-  padding: 0 24px;
-  border-left: 1px solid var(--line);
+.acm-tone-readable {
+  --tone: var(--good);
 }
-.stat-strip-item:first-child {
-  padding-left: 0;
-  border-left: none;
+.acm-tone-pdf {
+  --tone: var(--warning);
 }
-.stat-strip-frac {
-  font-family: var(--font-condensed);
-  font-size: 26px;
-  font-weight: 700;
-  color: var(--ink);
-  line-height: 1.1;
+.acm-tone-none {
+  --tone: var(--critical);
 }
-.stat-strip-pct {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--accent-text);
-  margin-top: 1px;
+.acm-tone-out {
+  --tone: var(--acm-out);
 }
-.stat-strip-label {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+.acm-legend .acm-tone-out .acm-swatch {
+  background:
+    radial-gradient(circle, var(--acm-out-dot) 0.9px, transparent 1.3px) 0.5px 0.5px / 3.5px 3.5px,
+    var(--acm-out);
+  box-shadow: inset 0 0 0 1px var(--acm-out-line);
+}
+.acm-muted {
+  margin: 0;
   color: var(--muted);
-  margin-top: 3px;
+}
+.acm-arrow {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.75;
+}
+.acm-swatch {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--tone);
 }
 
-/* ---- compact current-coverage statement: quieter than the takeaway below it, since it's a scope
-   disclosure ("here's how much of India this page currently covers"), not an analytical finding ---- */
-.access-coverage-note {
-  font-size: 12.5px;
-  line-height: 1.55;
-  color: var(--muted);
-  margin: 0 0 16px;
-  max-width: 620px;
+/* ---- map beside the side panel ---- */
+.acm-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(300px, 400px);
+  /* narrower than the page so the card sits a little in from the right edge, closer to the map */
+  max-width: 1060px;
+  justify-content: space-between;
+  /* the map is pinned to the top of the row, so a card taller than the map (Andhra Pradesh) grows
+     the row downward without moving the map */
+  align-items: start;
+  gap: 56px;
+  margin-top: 36px;
+}
+.acm-map {
+  margin: 0;
+}
+.acm-map svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: calc(100vh - 245px);
+  overflow: visible;
 }
 
-/* ---- key takeaway: an editorial annotation, not a callout card ---- */
-.access-takeaway {
-  font-size: 14px;
-  line-height: 1.55;
-  color: var(--ink);
-  border-left: 2px solid var(--accent);
-  padding-left: 14px;
-  max-width: 620px;
-  margin-bottom: 4px;
+.acm-state {
+  stroke: var(--paper);
+  stroke-width: 0.8;
+  stroke-linejoin: round;
 }
-
-.section-title-figure {
-  margin-left: auto;
+.acm-state--out {
+  fill: var(--acm-out);
+  stroke: var(--acm-out-line);
+  stroke-width: 0.8;
+}
+.acm-out-dots {
+  pointer-events: none;
+}
+.acm-out-dot {
+  fill: var(--acm-out-dot);
+}
+.acm-state:not(.acm-state--out) {
+  fill: var(--tone);
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 500ms var(--ease),
+    filter 160ms var(--ease);
+}
+.acm-states.is-shown .acm-state:not(.acm-state--out) {
+  opacity: 0.92;
+}
+.acm-states.is-shown.has-selection .acm-state:not(.acm-state--out):not(.is-selected) {
+  opacity: 0.72;
+  transition-delay: 0ms !important;
+}
+.acm-states.is-shown .acm-state.is-selected {
+  opacity: 1;
+}
+.acm-state:not(.acm-state--out):hover {
+  filter: brightness(1.12);
+}
+.acm-state:focus {
+  outline: none;
+}
+.acm-state:focus-visible {
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+.acm-outline {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+.acm-label {
   font-family: var(--font-sans);
   font-size: 15px;
   font-weight: 700;
-  color: var(--muted);
+  fill: var(--ink);
+  paint-order: stroke;
+  stroke: var(--paper);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+  pointer-events: none;
 }
 
-/* ---- Pipeline: the one strong primary visual — a single analytical surface ---- */
-.pipeline {
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  padding: 18px 4px;
-}
-.pipeline-stage {
+.acm-legend {
   display: flex;
-  align-items: center;
-  gap: 14px;
-}
-.pipeline-stage-label {
-  flex: none;
-  width: 190px;
-  font-family: var(--font-condensed);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 16px;
+  margin-top: 10px;
+  font-size: 12.5px;
   color: var(--ink);
 }
-.pipeline-stage-track {
-  flex: 1;
-  height: 20px;
-  border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--ink) 5%, transparent);
-  overflow: hidden;
-}
-.pipeline-stage-fill {
-  height: 100%;
-  border-radius: var(--radius-sm);
-  transition: width 900ms var(--ease);
-}
-.pipeline-stage-fill--muted {
-  background: var(--muted);
-}
-.pipeline-stage-fill--accent {
-  background: var(--accent);
-}
-.pipeline-stage-fill--good {
-  background: var(--good);
-}
-.pipeline-gap {
-  font-size: 12px;
-  color: var(--warning-deep);
-  padding: 8px 0 8px 20px;
-  border-left: 2px dashed var(--warning);
-  margin-left: 9px;
-}
-
-/* ---- Regulation coverage: a flowing line in the page, no card ---- */
-.reg-coverage-flow {
-  font-size: 13.5px;
-  line-height: 2.1;
-  margin: 4px 0 6px;
-}
-.reg-coverage-item {
+.acm-legend > span {
   display: inline-flex;
   align-items: center;
   gap: 7px;
   white-space: nowrap;
 }
-.reg-coverage-sep {
-  color: var(--line);
-  margin: 0 2px;
-}
-.reg-coverage-summary {
-  font-size: 12.5px;
-  color: var(--good-deep);
-  font-weight: 600;
-  margin: 2px 0 14px;
-}
 
-/* ---- State comparison: one continuous dot-matrix visual, never one card per state ---- */
-.dot-matrix {
-  border-top: 1px solid var(--line);
-  padding-top: 6px;
-}
-.dot-matrix-legend {
-  font-size: 11px;
-  color: var(--muted);
-  margin-bottom: 10px;
-}
-.dot-matrix-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 6px 18px;
-  padding: 9px 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--ink) 6%, transparent);
-}
-.dot-matrix-row:last-child {
-  border-bottom: none;
-}
-.dot-matrix-row.active {
-  background: color-mix(in srgb, var(--accent) 6%, transparent);
-}
-.dot-matrix-state {
-  all: unset;
-  cursor: pointer;
-  flex: none;
-  width: 148px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  border-radius: var(--radius-sm);
-  padding: 2px 4px;
-}
-.dot-matrix-state:hover,
-.dot-matrix-state:focus-visible {
-  color: var(--accent-text);
-}
-.dot-matrix-lines {
-  flex: 1;
-  min-width: 220px;
+/* ---- side: the headline until a state is picked ---- */
+/* a state's card opens centred on the map (the side column stretches to the row's height and
+   centres its card); the headline (no state picked) sits a little above the map's middle instead */
+.acm-side {
+  align-self: stretch;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  justify-content: center;
 }
-.dot-matrix-line {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+/* with a card open the side column only reserves its width; the card itself is positioned by
+   AccessibilityView (centred on the map, kept inside the window) and adds nothing to page height */
+.acm-side.has-card {
+  position: relative;
 }
-.dot-matrix-line-label {
-  flex: none;
-  width: 116px;
-  font-size: 10.5px;
+.acm-side.has-card .acm-card-wrap {
+  position: absolute;
+  left: 0;
+  right: 0;
+}
+.acm-side:has(.acm-intro) {
+  justify-content: flex-start;
+  padding-top: clamp(24px, 9vh, 96px);
+}
+.acm-intro {
+  animation: acm-in 260ms var(--ease);
+}
+.acm-big {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 96px;
+  font-weight: 700;
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.acm-big span {
+  font-size: 40px;
   color: var(--muted);
+  letter-spacing: 0;
 }
-.dot-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
+.acm-intro-text {
+  margin: 14px 0 0;
+  max-width: 360px;
+  font-size: 19px;
+  line-height: 1.4;
+  color: var(--ink);
 }
-.dot-cell {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  flex: none;
+.acm-intro-reg {
+  margin: 22px 0 0;
+  padding-top: 16px;
+  max-width: 360px;
+  border-top: 1px solid var(--line);
+  font-size: 14.5px;
+  color: var(--ink);
 }
-.dot-cell-on {
-  background: var(--good);
-}
-.dot-cell-off {
-  background: var(--critical);
-}
-.dot-cell-na {
-  background: color-mix(in srgb, var(--ink) 14%, transparent);
-}
-.dot-matrix-line-value {
-  flex: none;
-  font-size: 11px;
-  color: var(--muted);
-  min-width: 30px;
-}
-.dot-matrix-na {
-  font-size: 12px;
-  color: var(--muted);
+.acm-hint {
+  margin: 28px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-text);
 }
 
-/* ---- Status text (no icon glyphs — text + color only) ---- */
+/* ---- side: the selected state's card ---- */
+.acm-card {
+  padding: 20px 22px 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+  box-shadow: var(--shadow-md);
+  animation: acm-in 260ms var(--ease);
+}
+@keyframes acm-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+.acm-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.acm-card-head h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 23px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--ink);
+}
+.acm-close {
+  all: unset;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  margin: -2px -4px 0 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.acm-close:hover {
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
+}
+.acm-close:focus-visible {
+  outline: 2px solid var(--accent-text);
+}
+.acm-close svg {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+.acm-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.acm-block {
+  margin-top: 16px;
+}
+.acm-block h3 {
+  margin: 0 0 6px;
+  font-family: var(--font-sans);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.acm-block .acm-muted {
+  font-size: 13px;
+}
+
+.acm-years {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.acm-years a {
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-text);
+  text-decoration: none;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  transition: background-color 120ms var(--ease);
+}
+.acm-years a:hover {
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
+}
+.acm-reports {
+  border-collapse: collapse;
+}
+.acm-reports th {
+  padding: 2px 14px 2px 0;
+  text-align: left;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.acm-reports td {
+  padding: 2px 0;
+}
+/* one entry shared by every DISCOM: a bracket line ties it to all the names */
+.acm-reports td.acm-merged {
+  vertical-align: middle;
+  padding-left: 14px;
+  border-left: 2px solid var(--line);
+}
+.acm-reports.is-merged th {
+  padding-right: 14px;
+}
+
+.acm-docs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.acm-docs a {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 4px 0;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--ink);
+  text-decoration: none;
+}
+.acm-doc-title {
+  flex: 1;
+  min-width: 0;
+}
+.acm-docs a .acm-arrow {
+  color: var(--accent-text);
+  align-self: flex-start;
+  margin-top: 5px;
+}
+.acm-docs li + li {
+  border-top: 1px solid color-mix(in srgb, var(--line) 60%, transparent);
+}
+.acm-docs a:hover .acm-doc-title {
+  color: var(--accent-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.acm-regulator {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 14px;
+  padding-top: 12px;
+  width: 100%;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-text);
+  text-decoration: none;
+}
+.acm-regulator:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.acm-regulator:focus-visible,
+.acm-years a:focus-visible,
+.acm-docs a:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .acm-state:not(.acm-state--out) {
+    transition: none;
+  }
+  .acm-intro,
+  .acm-card {
+    animation: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .acm-side:has(.acm-intro) {
+    padding-top: 0;
+  }
+  .acm-side.has-card .acm-card-wrap {
+    position: static;
+  }
+  .acm-stage {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    margin-top: 28px;
+  }
+  .acm-map svg {
+    max-height: none;
+  }
+  .acm-big {
+    font-size: 72px;
+  }
+}
+
+/* ---- Status text (StatusIcon, used by IndicatorSummary) ---- */
 .access-status {
   font-size: 12.5px;
   font-weight: 500;
@@ -254,153 +451,4 @@
   border-radius: var(--radius-pill);
   background: color-mix(in srgb, var(--ink) 6%, transparent);
   color: var(--muted);
-}
-
-/* ---- Licensee matrix: the one large structured surface on the page ---- */
-.access-matrix-surface {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 16px 20px 8px;
-  box-shadow: var(--shadow-sm);
-}
-.access-matrix-toolbar {
-  padding: 8px 0;
-  border: none;
-  box-shadow: none;
-  background: transparent;
-}
-.access-gaps-toggle {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--ink);
-  cursor: pointer;
-  margin-left: auto;
-}
-.access-matrix-count {
-  font-size: 12px;
-  color: var(--muted);
-  margin: 4px 0 10px;
-}
-table.access-matrix {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-table.access-matrix thead th {
-  text-align: left;
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted);
-  padding: 6px 8px;
-  border-bottom: 2px solid var(--line);
-  position: sticky;
-  top: 0;
-  background: var(--panel);
-}
-tr.access-matrix-group-row th {
-  text-align: left;
-  font-family: var(--font-condensed);
-  font-weight: 700;
-  font-size: 12px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--ink);
-  padding: 10px 8px 4px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-table.access-matrix td {
-  padding: 5px 8px;
-  border-bottom: 1px solid color-mix(in srgb, var(--ink) 6%, transparent);
-  vertical-align: middle;
-}
-.access-matrix-abbr {
-  font-weight: 600;
-}
-.access-matrix-full {
-  color: var(--muted);
-  font-weight: 400;
-}
-
-@media (max-width: 900px) {
-  .stat-strip-item {
-    flex: 1 1 33%;
-    padding: 0 14px;
-  }
-}
-
-@media (max-width: 640px) {
-  .stat-strip {
-    flex-direction: column;
-    gap: 12px;
-  }
-  .stat-strip-item {
-    border-left: none;
-    border-top: 1px solid var(--line);
-    padding: 10px 0 0;
-  }
-  .stat-strip-item:first-child {
-    border-top: none;
-  }
-  .dot-matrix-row {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .dot-matrix-state {
-    width: auto;
-  }
-  .pipeline-stage {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-  }
-  .pipeline-stage-label {
-    width: auto;
-  }
-  .pipeline-stage-track {
-    width: 100%;
-  }
-
-  /* licensee rows become stacked mini-cards; the header row is visually redundant at this width */
-  table.access-matrix thead {
-    display: none;
-  }
-  table.access-matrix,
-  table.access-matrix tbody,
-  table.access-matrix tr,
-  table.access-matrix td {
-    display: block;
-    width: 100%;
-  }
-  table.access-matrix tr {
-    padding: 6px 0;
-  }
-  table.access-matrix td {
-    display: flex;
-    justify-content: space-between;
-    border-bottom: none;
-    padding: 3px 0;
-  }
-  table.access-matrix td[data-th]::before {
-    content: attr(data-th);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-  table.access-matrix td[data-th='DISCOM']::before {
-    content: '';
-  }
-  tr.access-matrix-group-row {
-    border-bottom: 1px solid var(--line);
-    margin-top: 6px;
-  }
 }

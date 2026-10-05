@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 const SLIDES = [
   {
-    title: 'Welcome to the India Power Supply and Service Quality Dashboard',
+    title: 'Welcome to the India Power Supply, Service Quality and Safety Dashboard',
     body: 'A quick look at how to find your way around before you dive in — this only takes a few seconds.',
   },
   {
@@ -19,7 +19,7 @@ const SLIDES = [
   },
   {
     title: 'Compare performance side by side',
-    body: 'Turn on Compare mode from the Analysis Pane, click states or union territories to add them, then review their comparable indicators.',
+    body: 'Switch to Compare in the "Explore the data" panel, add states or union territories from the list or the map, then review their comparable indicators.',
     image: '/tour/compare.png',
   },
 ];

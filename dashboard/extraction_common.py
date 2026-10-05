@@ -38,7 +38,19 @@ FULL_NAME_OVERRIDES = {
     'KESCO,UP': 'Kanpur Electricity Supply Company Limited',
 }
 
-EXCLUDE_SHEETS = {'color scheme', 'verification'}
+# Figures whose number is in a different unit from the meaning text beside it, rescaled to that
+# text's unit: (sheet, year, raw indicator) -> (factor, note shown on the dashboard). Only for
+# cases with documentary evidence.
+#   JdVVNL FY24 SAIDI: the Sep 2026 workbook gave 3.18 as "Total hours of supply interruption...";
+#   the Oct 2026 revision relabelled the row "Total minutes..." to match the other years but kept
+#   3.18, so it is 3.18 h = 190.8 min.
+UNIT_CORRECTIONS = {
+    ('JdVVNL,RAJ', '2023-24', 'SAIDI'): (
+        60, 'Converted to minutes: the source figure {raw} was in hours (labelled "Total hours..." '
+            'in the previous version of the workbook).'),
+}
+
+EXCLUDE_SHEETS ={'color scheme', 'verification', 'Calculations for MSEDCL'}
 
 YEAR_RE = re.compile(r'^\d{4}-\d{2,4}$')
 
@@ -87,6 +99,23 @@ def normalize_indicator(raw):
     return None, None
 
 
+def sheet_values(ws):
+    """Row tuples of cell values, with percent-formatted numbers rescaled to percentage points.
+
+    A cell Excel displays as '96.19%' stores 0.9619. Every other percentage in the workbook is
+    typed as 96.19 in a General cell, so the stored fraction is rescaled to match what the sheet
+    actually shows (e.g. AVVNL FY25, UGVCL FY24)."""
+    out = []
+    for row in ws.iter_rows():
+        out.append(tuple(
+            round(c.value * 100, 6)
+            if isinstance(c.value, (int, float)) and not isinstance(c.value, bool) and '%' in (c.number_format or '')
+            else c.value
+            for c in row
+        ))
+    return out
+
+
 def clean(v):
     if v is None:
         return None
@@ -112,24 +141,81 @@ def to_bool_yn(x):
 
 
 def normalize_value(canon_key, raw_val, meaning):
-    """Return (numeric_value, unit_note) for a canonical indicator's raw reported value."""
+    """Return (numeric_value, unit_note) for a canonical indicator's raw reported value.
+
+    Values stay in the unit the sheet reports them in (minutes or hours, per `reported_meaning`):
+    the UI labels each figure from that meaning text (ui/src/lib/indicatorUnits.ts), so converting
+    minutes to hours here showed e.g. 608.4 minutes as "10.14 minutes"."""
     if raw_val is None or isinstance(raw_val, str):
-        return None, None
+        return None
     val = float(raw_val)
-    m = (meaning or '').lower()
-    note = 'per quarter' if 'quarter' in m else None
-    if canon_key in ('SAIDI', 'CAIDI'):
-        if 'hour' in m or 'hr' in m:
-            return round(val, 3), note
-        return round(val / 60, 3), note  # default: reported in minutes
-    if canon_key in ('SAIFI', 'MAIFI'):
-        return round(val, 3), note
+    if canon_key in ('SAIDI', 'CAIDI', 'SAIFI', 'MAIFI'):
+        return round(val, 3)
     # percentage indicators
-    return round(val, 2), note
+    return round(val, 2)
+
+
+def _norm_meaning(m):
+    return re.sub(r'\s+', ' ', (m or '').strip()).rstrip('.').strip().lower()
+
+
+def _num(v):
+    return f'{v:,.2f}'.rstrip('0').rstrip('.')
+
+
+# Reporting bases that differ from the rest of their series only by period, restated onto the
+# annual basis the other years use (methods signed off by the user, Oct 2026). Keyed by the
+# normalized `reported_meaning`; each value: (factor, annual meaning text, note template).
+PERIOD_STANDARDISATION = {
+    # AVVNL SAIDI FY23–24: annual total = 4 quarters × the per-quarter average, in minutes.
+    'average hours of supply interruption for an average consumer per quarter': (
+        240, 'Total minutes of supply interruption for an average consumer over the year.',
+        'Converted to minutes per year: reported as {raw} average hours per quarter (× 4 quarters × 60 minutes).'),
+    # AVVNL SAIFI FY23–24: annual total = 4 quarters × the per-quarter average.
+    'average number of sustained interruptions for an average consumer per quarter': (
+        4, 'Total number of sustained interruptions for an average consumer over the year.',
+        'Converted to interruptions per year: reported as {raw} average interruptions per quarter (× 4 quarters).'),
+}
+
+# MSEDCL FY25: the Calculations for MSEDCL sheet computes every year as Σ(quarterly figure) ÷
+# Σ(quarterly consumers) over the quarters available, so a two-quarter year is on the same
+# per-consumer basis as the others — kept as is, with its coverage noted (signed off, Oct 2026).
+TWO_QUARTER_NOTE = ('Based on two quarters of data only. Computed the same way as the other years '
+                    '(an average across the quarters available), so not scaled up.')
+
+
+# Figures that can't be restated onto their series' basis (the source changes what is measured, not
+# just its unit) — left as reported, with the reason shown beside them on the dashboard.
+VALUE_NOTES = {
+    ('TPWODL,ODISHA', '2022-23', 'Voltage Variation'):
+        'Unit unclear in the source: listed as a count of HT cases, but 1.5 is not a whole number of cases.',
+    ('TPWODL,ODISHA', '2024-25', 'Voltage Variation'):
+        'A percentage of EHT and LT cases, not a case count like FY23–FY24 (HT only); the two cannot be converted.',
+}
+
+
+def standardise(sheet_name, year, raw_indicator, raw, meaning):
+    """(raw, meaning, unit_note) with a figure restated onto its series' common basis, if needed."""
+    if not isinstance(raw, (int, float)):
+        return raw, meaning, None
+    if (sheet_name, year, raw_indicator) in VALUE_NOTES:
+        return raw, meaning, VALUE_NOTES[(sheet_name, year, raw_indicator)]
+    factor = UNIT_CORRECTIONS.get((sheet_name, year, raw_indicator))
+    if factor:
+        f, note = factor
+        return round(raw * f, 6), meaning, note.format(raw=_num(raw))
+    nm = _norm_meaning(meaning)
+    if nm in PERIOD_STANDARDISATION:
+        f, new_meaning, note = PERIOD_STANDARDISATION[nm]
+        return round(raw * f, 6), new_meaning, note.format(raw=_num(raw))
+    if 'over two quarters' in nm:
+        annual = re.sub(r'\s+over two quarters', ' over the year', re.sub(r'\s+', ' ', meaning.strip()))
+        return raw, annual, TWO_QUARTER_NOTE
+    return raw, meaning, None
 
 
 def parse_sheet(sheet_name, ws):
-    rows = list(ws.iter_rows(values_only=True))
+    rows = sheet_values(ws)
     full_name = clean(rows[0][0]) or FULL_NAME_OVERRIDES.get(sheet_name)
     code, _, state_part = sheet_name.partition(',')
     code = code.strip()
@@ -170,10 +256,9 @@ def parse_sheet(sheet_name, ws):
                     canon, subtype = normalize_indicator(raw_indicator)
                     reported_raw = rj[7]
                     reported_meaning = clean(rj[8])
-                    value = None
-                    unit_note = None
-                    if canon:
-                        value, unit_note = normalize_value(canon, reported_raw, reported_meaning)
+                    reported_raw, reported_meaning, unit_note = standardise(
+                        sheet_name, clean(rj[0]), raw_indicator, reported_raw, reported_meaning)
+                    value = normalize_value(canon, reported_raw, reported_meaning) if canon else None
                     entries.append({
                         'raw_indicator': raw_indicator,
                         'canonical': canon,
@@ -276,6 +361,20 @@ for sheet_name in wb.sheetnames:
             'indicators': canon_map,
             'scoring': score_year(canon_map),
         }
+    # A reported figure whose meaning cell was left blank (e.g. DGVCL FY22 transformer failure)
+    # takes the meaning its other years all agree on, so it is labelled with the same unit.
+    for canon in CANONICAL_ORDER:
+        stated = {_norm_meaning(y['indicators'][canon]['reported_meaning']): y['indicators'][canon]['reported_meaning']
+                  for y in by_year.values()
+                  if canon in y['indicators'] and y['indicators'][canon]['value'] is not None
+                  and not is_na(y['indicators'][canon]['reported_meaning'])}
+        if len(stated) != 1:
+            continue
+        for y in by_year.values():
+            e = y['indicators'].get(canon)
+            if e and e['value'] is not None and is_na(e['reported_meaning']):
+                e['reported_meaning'] = next(iter(stated.values()))
+                e['unit_note'] = "Unit not stated in the source for this year; taken from this DISCOM's other years."
     discoms.append({
         'sheet': parsed['sheet'],
         'full_name': parsed['full_name'],

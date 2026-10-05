@@ -14,6 +14,8 @@ interface Props {
   compareColorOf: (name: string) => string | null;
   onStateClick: (name: string) => void;
   compareMode?: boolean;
+  /** a region highlighted from outside the map (StateSearch's active option) — shown like a hover */
+  highlighted?: string | null;
   onCentroids?: (centroids: Record<string, [number, number]>, size: { width: number; height: number }) => void;
 }
 
@@ -29,16 +31,18 @@ interface Props {
  * filter never composited back with the map beneath it; a plain <rect> with no explicit fill
  * defaults to opaque black in SVG, and the mix-blend-mode:multiply meant to soften it instead
  * produced a hard-edged box exactly the size of the map's own bounding box.) */
-export default function HeroMap({ discoms, stateSpecific, geojson, compareColorOf, onStateClick, compareMode, onCentroids }: Props) {
+export default function HeroMap({ discoms, stateSpecific, geojson, compareColorOf, onStateClick, compareMode, highlighted, onCentroids }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
+  const dotsId = `${useId().replace(/:/g, '')}-dots`;
   const [size, setSize] = useState({ width: 0, height: 0 });
-  const [hovered, setHovered] = useState<string | null>(null);
+  const [pointerHovered, setHovered] = useState<string | null>(null);
+  // a pointer hover wins over a highlight coming from the state search list
+  const hovered = pointerHovered ?? highlighted ?? null;
   // touch devices have no hover, so the first tap can't preview a state the way a mouse hover
   // does — it would otherwise jump straight to that state's report before the user ever saw the
   // tooltip. On such devices the first tap on a state just shows the tooltip (acts as "hover");
   // a second tap on the *same*, already-previewed state is what actually navigates.
   const [canHover, setCanHover] = useState(true);
-  const uid = useId().replace(/:/g, '');
 
   useEffect(() => {
     const mq = window.matchMedia('(hover: hover)');
@@ -93,7 +97,7 @@ export default function HeroMap({ discoms, stateSpecific, geojson, compareColorO
   // separate "Explore Performance →" line here previously looked like its own link/button when
   // nothing in the tooltip ever was.
   const hoveredDisabledForCompare = !!compareMode && hoveredStatus === 'idle';
-  const hoveredTip = hoveredDisabledForCompare ? 'Not yet included in current dashboard coverage' : null;
+  const hoveredTip = hoveredDisabledForCompare ? 'Coming soon' : null;
   const hoveredPopulation = hovered ? formatPopulation(hovered) : null;
 
   function handleClick(name: string, disabledForCompare: boolean) {
@@ -107,7 +111,7 @@ export default function HeroMap({ discoms, stateSpecific, geojson, compareColorO
       return;
     }
     // first tap previews (same as hover would), second tap on the same state confirms
-    if (hovered !== name) {
+    if (pointerHovered !== name) {
       setHovered(name);
       return;
     }
@@ -130,6 +134,12 @@ export default function HeroMap({ discoms, stateSpecific, geojson, compareColorO
             if (e.target === e.currentTarget) setHovered(null);
           }}
         >
+          <defs>
+            {/* "Coming soon": a fine dot grid over the solid fill, matching its legend swatch */}
+            <pattern id={dotsId} patternUnits="userSpaceOnUse" width="4" height="4">
+              <circle cx="2" cy="2" r="0.85" className="hero-map-idle-dot" />
+            </pattern>
+          </defs>
           <g className="hero-map-states">
             {projection.paths.map((p) => {
               const status = stateMapStatus(discoms, p.name, stateSpecific);
@@ -141,12 +151,13 @@ export default function HeroMap({ discoms, stateSpecific, geojson, compareColorO
               let fill = stateFillColor(status);
               if (selectColor) fill = lerpHex(fill, selectColor, 0.32);
               if (isDimmed) fill = lerpHex(fill, MAP_WASH, 0.22);
-              if (disabledForCompare) fill = lerpHex(fill, '#9a9a9a', 0.55);
 
               const strokeColor = selectColor ?? MAP_BORDER;
               const strokeWidth = selectColor ? 1.6 : isHovered ? 1.4 : 1.25;
-              const strokeOpacity = disabledForCompare ? 0.5 : selectColor ? 0.9 : isHovered ? 0.95 : 0.85;
+              const strokeOpacity = selectColor ? 0.9 : isHovered ? 0.95 : 0.85;
 
+              // "Coming soon" is its own solid fill, exactly as the legend shows it; in compare mode
+              // it's simply not clickable (cursor + tooltip)
               return (
                 <path
                   key={p.name}
@@ -164,24 +175,13 @@ export default function HeroMap({ discoms, stateSpecific, geojson, compareColorO
               );
             })}
           </g>
-          {/* landing-view "glass" skin: India as one borderless translucent shape with a glowing
-              outline and a light dot circling the mainland coast/border. HeroSection fades it out
-              (and the real state map in) via the --hero-glass CSS variable as the user scrolls. */}
-          <defs>
-            <linearGradient id={`${uid}-glass`} x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.52" />
-              <stop offset="20%" stopColor="#ffffff" stopOpacity="0.28" />
-              <stop offset="100%" stopColor="#ffffff" stopOpacity="0.50" />
-            </linearGradient>
-          </defs>
-          <g className="hero-map-glass" aria-hidden="true">
-            <path d={projection.outlineAll} fill={`url(#${uid}-glass)`} className="hero-glass-fill" />
-            <path d={projection.outlineAll} fill="none" className="hero-glass-edge" />
-            <g className="hero-glass-motion">
-              <path d={projection.outline} fill="none" pathLength={1000} className="hero-glass-trail">
-                <animate attributeName="stroke-dashoffset" from="60" to="-940" dur="80s" repeatCount="indefinite" />
-              </path>
-            </g>
+          {/* drawn over the fills, never hit-tested, so hover and clicks still reach the state */}
+          <g className="hero-map-idle-dots" aria-hidden="true">
+            {projection.paths
+              .filter((p) => stateMapStatus(discoms, p.name, stateSpecific) === 'idle')
+              .map((p) => (
+                <path key={p.name} d={p.d} fill={`url(#${dotsId})`} />
+              ))}
           </g>
         </svg>
       )}

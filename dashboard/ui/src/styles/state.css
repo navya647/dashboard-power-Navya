@@ -3,15 +3,6 @@
   font-size: 14px;
   padding: 8px 0 4px;
 }
-/* purely informational — explains why the analysis section already has content on first load
-   without the viewer touching a filter — so it's styled a step quieter than .detail-placeholder
-   (smaller, italic, no icon/border/background) rather than as an advisory or warning. */
-.default-view-note {
-  color: var(--muted);
-  font-size: 12.5px;
-  font-style: italic;
-  margin: -10px 0 0;
-}
 .state-page {
   display: flex;
   flex-direction: column;
@@ -25,6 +16,14 @@
   display: flex;
   align-items: center;
   gap: 14px;
+  /* .state-page's pull-up brings this row level with the bottom of the page logo (top right, see
+     layout.css), so a long breadcrumb wraps before running under it */
+  padding-right: 250px;
+}
+@media (max-width: 980px) {
+  .state-topbar {
+    padding-right: 0;
+  }
 }
 .back-btn {
   all: unset;
@@ -33,9 +32,9 @@
   align-items: center;
   gap: 8px;
   font-family: var(--font-condensed);
-  font-size: 13.5px;
-  font-weight: 500;
-  color: var(--muted);
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--ink);
   border: 1px solid var(--line);
   padding: 8px 16px;
   background: var(--panel);
@@ -55,97 +54,321 @@
   transform: translateX(-2px) scale(0.96);
 }
 .breadcrumb {
-  font-size: 12.5px;
-  color: var(--muted);
-  letter-spacing: 0.03em;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: 0.01em;
 }
 .breadcrumb b {
   color: var(--ink);
-  font-weight: 500;
+  font-weight: 700;
 }
 
-.coming-soon-panel {
+/* ---------- "data being compiled" view (CompilingState.tsx): no card, sits on the page
+   background, centred in whatever height the main area has left under the breadcrumb row.
+   Theme tokens only (the site's own accent, surfaces and page backdrop, as on every inner page);
+   all motion is switched off under prefers-reduced-motion. ---------- */
+.state-page--empty {
+  /* main.app-main's 72px top + 56px bottom padding, minus .state-page's own -32px pull-up */
+  min-height: calc(100vh - 96px);
+  min-height: calc(100dvh - 96px);
+}
+.compiling {
   position: relative;
+  isolation: isolate;
   overflow: hidden;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 420px;
+  padding: 0 16px;
+}
+
+/* the one map SVG: faint India texture + the selected region, from the same projection */
+.compiling-map {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  /* the zoomed map runs past the area on most states; feather it out instead of a hard crop.
+     Centred a little above the middle, where the selected region sits, so it stays fully visible */
+  -webkit-mask-image: radial-gradient(ellipse 50% 46% at 50% 45%, #000 50%, transparent 100%);
+  mask-image: radial-gradient(ellipse 50% 46% at 50% 45%, #000 50%, transparent 100%);
+}
+.compiling-map-india {
+  animation: fadeIn 600ms ease-out both;
+}
+/* light mode: India as a soft lighter landmass on the warm backdrop, not a grey smudge */
+.compiling-map-india path {
+  fill: #ffffff;
+  fill-opacity: 0.4;
+  stroke: var(--ink);
+  stroke-opacity: 0.09;
+  stroke-width: 0.6;
+}
+.compiling-map-region path,
+.compiling-map-region circle {
+  fill: var(--accent-text);
+  fill-opacity: 0.16;
+  stroke: var(--accent-text);
+  stroke-width: 1.75;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  stroke-dasharray: 5 5;
+  animation: compiling-dash 3.5s linear infinite, compiling-glow 3.5s ease-in-out infinite;
+}
+.compiling-map-region circle {
+  fill: none;
+}
+/* dark mode: the same faint texture and pale fill wash out against the charcoal page and let the
+   pill/title/button take over, so lift them a step — the region still clearly leads the backdrop */
+:root[data-theme='dark'] .compiling-map-india path {
+  fill: var(--ink);
+  fill-opacity: 0.07;
+  stroke-opacity: 0.125;
+  stroke-width: 0.7;
+}
+:root[data-theme='dark'] .compiling-map-region path,
+:root[data-theme='dark'] .compiling-map-region circle {
+  fill-opacity: 0.17;
+  stroke-width: 1.75;
+  --compiling-glow-min: 0.85;
+}
+/* small regions (see CompilingState's small-region treatment): fragments are too small for a
+   dash pattern to read, so they get a solid, slightly heavier stroke and a stronger fill; the
+   dashed, animated stroke moves to the locator ring around them */
+/* a small region masks its backdrop to a circle around itself instead (an SVG mask, see
+   CompilingState), so the page-wide feather is switched off */
+.compiling-map.compiling-map--small {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+/* --outline (Delhi only, see CompilingState) opts back out: one fragment, big enough at the small
+   zoom for the regular pale fill + dashed outline to read, so it matches the other pages */
+.compiling-map-region--small:not(.compiling-map-region--outline) path,
+:root[data-theme='dark'] .compiling-map-region--small:not(.compiling-map-region--outline) path {
+  fill-opacity: 0.55;
+  stroke-width: 2;
+  stroke-dasharray: none;
+  animation: none;
+}
+@keyframes compiling-dash {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+@keyframes compiling-glow {
+  0%,
+  100% {
+    stroke-opacity: var(--compiling-glow-min, 0.7);
+  }
+  50% {
+    stroke-opacity: 1;
+  }
+}
+
+.compiling-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  text-align: center;
-  gap: 14px;
-  padding: 56px 32px;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-md);
-  animation: fadeInUp 520ms var(--ease) both;
+  width: 100%;
+  max-width: 640px;
 }
-.coming-soon-panel::before {
+/* empty space the region is drawn into; JS sets the exact height once it has measured */
+.compiling-slot {
+  flex: none;
+  height: 170px;
+  margin-bottom: 24px;
+}
+.compiling-text {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+/* the headline's clean area is a soft clearing cut into the map texture (CompilingState's SVG
+   mask), not a painted pool, so it works on the photo backdrop */
+
+/* pill 16px → headline 32px → button */
+.compiling-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  /* the pill carries the status message on its own (the headline is just the name), so it's a
+     step up from a caption: ~18–20% larger text and padding than the original 11px / 3px 10px */
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  border: 1px solid color-mix(in srgb, var(--accent-text) 28%, transparent);
+  background: color-mix(in srgb, var(--panel) 72%, transparent);
+  color: var(--accent-text);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.compiling-pill-dot {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-text);
+}
+.compiling-pill-dot::after {
   content: '';
   position: absolute;
   inset: 0;
-  pointer-events: none;
-  background: radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--accent) 10%, transparent) 0%, transparent 60%);
-}
-.coming-soon-icon-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 56px;
-  height: 56px;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  background: var(--accent-text);
+  animation: compiling-pulse 2s ease-out infinite;
 }
-.coming-soon-icon {
-  color: var(--accent-text);
+@keyframes compiling-pulse {
+  from {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  to {
+    transform: scale(2.6);
+    opacity: 0;
+  }
 }
-.coming-soon-badge {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
-  border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-  color: var(--accent-text);
-  font-size: 12px;
-  font-weight: 600;
-}
-.coming-soon-panel h1 {
-  position: relative;
+
+/* the headline is just the region name, in ink like every other page title (the pill above is the
+   status; outline, pill and button carry the accent) */
+.compiling h1 {
+  margin: 0 0 32px;
   font-family: var(--font-display);
-  font-size: 32px;
+  /* full 32px for any name up to 30 characters; past that it steps down 0.3px per extra
+     character, floored at 26px, so even the longest name fits two balanced lines. --name-len is
+     the region name's length, set inline by CompilingState. */
+  font-size: clamp(26px, calc(32px - (var(--name-len, 0) - 30) * 0.3px), 32px);
+  text-wrap: balance;
   font-weight: 700;
+  line-height: 1.25;
   letter-spacing: -0.01em;
   color: var(--ink);
-  margin: 0;
 }
-.coming-soon-cta {
+
+/* solid accent button, white text, as the site's other primary controls */
+.compiling-cta {
   all: unset;
-  position: relative;
   box-sizing: border-box;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  margin-top: 4px;
-  padding: 12px 22px;
+  padding: 10px 20px;
   border-radius: 10px;
+  border: 1px solid var(--accent);
   background: var(--accent);
-  color: #fff;
+  color: #ffffff;
+  box-shadow: var(--shadow-sm);
   font-family: var(--font-condensed);
+  font-size: 13.5px;
   font-weight: 600;
-  font-size: 14px;
-  transition: background 160ms var(--ease), transform 120ms var(--ease);
+  transition: background 160ms var(--ease), box-shadow 160ms var(--ease), transform 120ms var(--ease);
 }
-.coming-soon-cta:hover {
-  background: #2f4bb1;
+.compiling-cta:hover {
+  border-color: var(--accent-hover);
+  background: var(--accent-hover);
+  box-shadow: var(--shadow-md);
 }
-.coming-soon-cta:active {
-  background: #24398a;
+.compiling-cta:active {
   transform: scale(0.97);
 }
+.compiling-cta:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 3px;
+}
+.compiling-cta-arrow {
+  display: inline-block;
+  transition: transform 200ms var(--ease);
+}
+.compiling-cta:hover .compiling-cta-arrow {
+  transform: translateX(3px);
+}
+
+/* staggered entrance: region, pill, headline, button — 80ms apart */
+.compiling-rise {
+  animation: compiling-rise 400ms ease-out both;
+}
+.compiling-text > :nth-child(1) {
+  animation-delay: 80ms;
+}
+.compiling-text > :nth-child(2) {
+  animation-delay: 160ms;
+}
+.compiling-text > :nth-child(3) {
+  animation-delay: 240ms;
+}
+/* the region's group already runs the dash/glow animations on its children; the rise runs on
+   the group itself (fill-box so the 8px lift is measured in its own space) */
+.compiling-map-region {
+  transform-box: fill-box;
+}
+@keyframes compiling-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .compiling {
+    padding: 0 8px;
+  }
+  /* the column is narrow, so the feather starts earlier (35% vs 50%) and is gentler: context land
+     beside a small region (e.g. the Kerala coast for Lakshadweep) stays mostly visible while the
+     edges still reach fully transparent, with no hard crop at the column edge */
+  .compiling-map {
+    -webkit-mask-image: radial-gradient(ellipse 50% 46% at 50% 45%, #000 35%, transparent 100%);
+    mask-image: radial-gradient(ellipse 50% 46% at 50% 45%, #000 35%, transparent 100%);
+  }
+  .compiling-slot {
+    height: 110px;
+  }
+  .compiling h1 {
+    /* the column is much narrower here, so the step-down starts at 16 characters (every short
+       name keeps 24px), floored at 18px */
+    font-size: clamp(18px, calc(24px - (var(--name-len, 0) - 16) * 0.3px), 24px);
+  }
+  .compiling-text {
+    width: 100%;
+  }
+  /* 13px doesn't fit the ~240px phone column on one line; 12px does */
+  .compiling-pill {
+    font-size: 12px;
+  }
+  .compiling-cta {
+    width: 100%;
+    padding: 10px 14px;
+    white-space: nowrap;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .compiling-map-india,
+  .compiling-rise,
+  .compiling-map-region path,
+  .compiling-map-region circle,
+  .compiling-pill-dot::after {
+    animation: none;
+  }
+  .compiling-pill-dot::after {
+    display: none;
+  }
+  .compiling-cta,
+  .compiling-cta-arrow {
+    transition: none;
+  }
+}
+
 
 .state-hero {
   position: relative;
@@ -156,7 +379,7 @@
   padding: 24px 32px;
   background: var(--panel);
   border: 1px solid var(--line);
-  border-left: 6px solid var(--accent);
+  border-left: 6px solid var(--hero-color, var(--accent));
   border-radius: var(--radius);
   box-shadow: var(--shadow-md);
   animation: fadeInUp 520ms var(--ease) both;
@@ -168,53 +391,148 @@
   pointer-events: none;
   background: linear-gradient(120deg, color-mix(in srgb, var(--hero-color, var(--accent)) 12%, transparent) 0%, transparent 55%);
 }
-/* the compact masthead: name/DISCOMs/silhouette on one line, source-derived counts on the next —
-   replaces the old tall hero + separate "State Overview" block below it (~35-45% shorter) */
-.state-hero-main {
-  position: relative;
-  display: flex;
-  flex-wrap: nowrap;
+/* the compact masthead (state page): two columns — silhouette + name + meta line on the left,
+   the DISCOM list on the right (short name in a fixed-width column, then the full name), both
+   vertically centred, split by a hairline. Height is just the taller column plus padding. */
+.state-hero--compact {
+  flex-direction: row;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  gap: 28px;
+  padding: 18px 24px;
 }
-/* capped to the box's left half so the DISCOM name list (often several long names joined with
-   " · ") wraps within its own column instead of stretching the row wide enough to force the
-   silhouette (.state-hero-shape) onto its own line below — the silhouette stays flex:none, so
-   `justify-content: space-between` on the row above pins it to the box's right edge. */
-.state-hero-text {
+.state-hero-title {
+  position: relative;
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
   min-width: 0;
-  max-width: 55%;
 }
 .state-hero-shape {
-  position: relative;
   flex: none;
+  display: flex;
   opacity: 0.92;
 }
+.state-hero-text {
+  min-width: 0;
+}
+/* long State/UT names wrap onto balanced lines inside their own column (never into the
+   divider) rather than shrinking */
+.state-hero--compact h1 {
+  font-size: 26px;
+  overflow-wrap: break-word;
+  text-wrap: balance;
+}
+/* secondary metadata: a touch smaller than the DISCOM rows so the order reads
+   name → DISCOMs → meta; wraps naturally for long strings */
+.state-hero-meta {
+  margin: 5px 0 0;
+  font-size: 12.25px;
+  line-height: 1.45;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+/* the divider is a pseudo-element inset by a share of the block's own height, so it stays a
+   little shorter than the DISCOM block whether it holds 1 row or 5. The 9px top/bottom padding
+   stands in for the removed "DISCOMs" caption (10px + 8px margin), split evenly so the list sits
+   centred while the block, divider and card keep their height. */
+.state-hero-discoms {
+  position: relative;
+  container-type: inline-size;
+  flex: 0 0 48%;
+  min-width: 0;
+  padding: 9px 0 9px 28px;
+}
+.state-hero-discoms::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 10%;
+  bottom: 10%;
+  width: 1px;
+  background: color-mix(in srgb, var(--line) 70%, transparent);
+}
+/* One grid for the whole list: every row's two parts (li and, when a 5+ list is split in two,
+   each half's ul too, are display:contents) drop straight into it, so all short names share one
+   column and every full name starts at the same x. The two halves of a 5+ list only sit side by
+   side when the column is wide enough for the long full names to stay on one line — narrower,
+   each name wrapped onto 2-4 lines and the split card came out taller (measured: 168-221px vs
+   159px as one list at 1280-1600px), so there they simply continue as one list. */
+.hero-discom-list {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 3.5px 12px;
+  font-size: 13px;
+  line-height: 1.35;
+}
+.hero-discom-list ul {
+  display: contents;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.hero-discom-list li {
+  display: contents;
+}
+@container (min-width: 740px) {
+  .hero-discom-list--split {
+    display: flex;
+    gap: 24px;
+  }
+  .hero-discom-list--split ul {
+    flex: 1 1 0;
+    min-width: 0;
+    display: grid;
+    /* same short-name column width in both halves, so the two lists line up with each other */
+    grid-template-columns: minmax(5.5em, max-content) minmax(0, 1fr);
+    gap: 3.5px 12px;
+  }
+}
+/* abbreviations: 600 (the heaviest Montserrat weight loaded — 700 was synthesised) so they
+   stay scannable without competing with the State/UT name */
+.hero-discom-list b {
+  font-family: var(--font-condensed);
+  font-weight: 600;
+  color: var(--ink);
+}
+/* long full names wrap within their column, so every row keeps its abbreviation beside it */
+.hero-discom-list span {
+  color: var(--ink);
+  opacity: max(var(--fade-floor), 0.85);
+  overflow-wrap: break-word;
+}
+.hero-discom-list-fullonly span {
+  grid-column: 1 / -1;
+}
+@media (max-width: 980px) {
+  .state-hero--compact {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+  .state-hero-discoms {
+    flex: none;
+    padding: 14px 0 0;
+    border-top: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+  }
+  .state-hero-discoms::before {
+    display: none;
+  }
+}
 @media (max-width: 720px) {
-  .state-hero-main {
+  .state-hero--compact {
+    padding: 16px 18px;
+  }
+  /* silhouette stays beside the name while there's room, drops above it when there isn't */
+  .state-hero-title {
     flex-wrap: wrap;
   }
-  .state-hero-text {
-    max-width: 100%;
+  .state-hero--compact h1 {
+    font-size: 23px;
   }
-}
-.state-hero-stats-inline {
-  position: relative;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 22px;
-  font-size: 12.5px;
-  color: var(--muted);
-  padding-top: 8px;
-  border-top: 1px solid var(--line);
-}
-.state-hero-stats-inline b {
-  font-family: var(--font-condensed);
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--ink);
-  margin-right: 4px;
+  .hero-discom-list {
+    column-gap: 10px;
+  }
 }
 
 /* ---------- one compact analytical toolbar drives every section below it — the chart gallery
@@ -275,11 +593,11 @@
   transition: border-color 180ms var(--ease);
 }
 .toolbar-field select:hover {
-  border-color: var(--accent-light);
+  border-color: color-mix(in srgb, var(--mv-indicator) 45%, var(--line));
 }
 .toolbar-field select:focus-visible {
   outline: none;
-  border-color: var(--accent);
+  border-color: var(--mv-indicator);
 }
 /* the <select> itself picks up `color` from inheritance/computed styles fine, but its dropdown
    popup list does not reliably inherit either color or background from the parent element on
@@ -307,8 +625,9 @@
   padding-top: 0;
 }
 
-/* ---------- Compare page's per-state DISCOM picker: a tickable checkbox panel behind a trigger
-   button, styled to sit in the same toolbar row as a plain <select> above. ---------- */
+/* ---------- FilterDropdown — the one trigger + menu shell behind every filter-bar control
+   (DISCOM and Indicator checkbox lists, the single-select Year list; also the Compare page's DISCOM
+   pickers). One trigger style and one menu style, so the three filters read as one system. ---------- */
 .discom-multiselect {
   position: relative;
   width: 100%;
@@ -327,6 +646,8 @@
   border: none;
   border-bottom: 1.5px solid var(--line);
   padding: 3px 2px;
+  line-height: 1.35;
+  text-align: left;
   cursor: pointer;
   transition: border-color 180ms var(--ease);
 }
@@ -334,45 +655,300 @@
   color: var(--muted);
   flex-shrink: 0;
 }
+/* hover/open/focus use the warm chrome's own active colour (--mv-indicator, the sidebar's
+   active-item rule), same as the plain <select> fields above, so all three filters match */
 .discom-multiselect-trigger:hover {
-  border-color: var(--accent-light);
+  border-color: color-mix(in srgb, var(--mv-indicator) 45%, var(--line));
 }
 .discom-multiselect-trigger[aria-expanded='true'] {
-  border-color: var(--accent);
+  border-color: var(--mv-indicator);
 }
+/* portalled into <body> and placed with position: fixed by FilterDropdown (left/top/bottom,
+   min-width and max-height set inline from the trigger), on the shared dropdown layer, so it sits
+   above every stacking context on the page instead of competing inside the filter bar's own */
 .discom-multiselect-panel {
-  position: absolute;
-  z-index: 20;
-  top: calc(100% + 6px);
-  left: 0;
-  min-width: 200px;
-  max-height: 260px;
+  position: fixed;
+  z-index: var(--z-dropdown);
+  box-sizing: border-box;
+  max-width: calc(100vw - 16px);
   overflow-y: auto;
+  overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 8px;
+  gap: 0;
+  padding: 6px;
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-md, var(--shadow-sm));
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--ink) 18%, transparent) transparent;
 }
+/* one row style for every menu: checkbox rows (<label>) and the Year list's option <button>s */
 .discom-multiselect-option {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 5px 6px;
+  padding: 4px 6px;
   border-radius: 4px;
   font-family: var(--font-condensed);
   font-size: 13px;
+  font-weight: 400;
+  line-height: 1.35;
   color: var(--ink);
   cursor: pointer;
 }
 .discom-multiselect-option:hover {
   background: var(--paper);
 }
+/* a plain square in the chrome's own line/active colours rather than the browser default */
 .discom-multiselect-option input {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  border: 1.5px solid color-mix(in srgb, var(--ink) 32%, transparent);
+  border-radius: 3px;
+  background: transparent center / 10px 10px no-repeat;
   cursor: pointer;
+  transition: background-color 120ms var(--ease), border-color 120ms var(--ease);
+}
+.discom-multiselect-option:hover input {
+  border-color: color-mix(in srgb, var(--ink) 50%, transparent);
+}
+.discom-multiselect-option input:checked {
+  border-color: var(--mv-indicator);
+  background-color: var(--mv-indicator);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' fill='none'%3E%3Cpath d='M2 5.2 4.1 7.2 8 2.9' stroke='%23fbf7f0' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+/* dark mode's --mv-indicator is a light sand, so the tick flips to the dark surface colour */
+:root[data-theme='dark'] .discom-multiselect-option input:checked {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' fill='none'%3E%3Cpath d='M2 5.2 4.1 7.2 8 2.9' stroke='%232a2622' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+/* Year: single-select rows, a button reset to the shared row, with a tick in the same 14px slot
+   the checkbox rows use, so the labels line up across all three menus */
+.year-select-option {
+  width: 100%;
+  margin: 0;
+  text-align: left;
+  background: none;
+  border: none;
+}
+.year-select-tick {
+  flex: none;
+  width: 14px;
+  height: 14px;
+}
+.year-select-option[aria-selected='true'] .year-select-tick {
+  background: var(--mv-indicator);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14' fill='none'%3E%3Cpath d='M3 7.3 5.9 10 11 4.2' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14' fill='none'%3E%3Cpath d='M3 7.3 5.9 10 11 4.2' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.discom-multiselect-trigger:focus-visible {
+  outline: 2px solid var(--mv-indicator);
+  outline-offset: 2px;
+}
+.discom-multiselect-option:has(input:focus-visible),
+.year-select-option:focus-visible {
+  outline: 2px solid var(--mv-indicator);
+  outline-offset: -2px;
+}
+
+/* ---------- State Performance filter bar: DISCOM · Indicator (+ Reset). Two explicit columns,
+   DISCOM ~32% and Indicator the rest, since it carries the longest names. Bottom-aligned so both
+   labels, values and underlines share one line. Reset sits outside the grid, absolutely placed in
+   a right-hand strip the bar always reserves (--reset-space), so showing or hiding it never moves
+   or resizes either field. */
+.toolbar--filters {
+  --reset-space: 56px;
+  grid-template-columns: minmax(150px, 1fr) minmax(260px, 2.1fr);
+  align-items: end;
+  column-gap: 20px;
+  padding-right: calc(18px + var(--reset-space));
+  position: relative;
+  z-index: 3;
+}
+/* bottom matches the triggers' (bar padding + their 1.5px underline), so its text sits on the
+   filter values' line */
+.toolbar--filters .toolbar-reset {
+  position: absolute;
+  right: 18px;
+  bottom: 11.5px;
+}
+/* fixed to one line box, so a value with secondary text (indicator + type) is exactly as tall as
+   a plain one and every trigger's underline lands at the same height */
+.filter-value {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  height: 1.35em;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.filter-value-main {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* the value row takes the trigger's free width (chevron stays at the right edge), so a value that
+   measures its own room (IndicatorSelect's MultiSummary) sees all of it */
+.discom-multiselect-trigger .filter-value {
+  flex: 1 1 auto;
+}
+.filter-value-fill {
+  position: relative;
+  flex: 1 1 auto;
+}
+/* off-screen copy used only for measuring whether a value fits */
+.filter-value-measure {
+  position: absolute;
+  left: 0;
+  top: 0;
+  visibility: hidden;
+  white-space: nowrap;
+  pointer-events: none;
+}
+/* the indicator's type as quiet secondary text beside it — the first thing to give way */
+.filter-value-sub {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text-supporting, var(--muted));
+  opacity: max(var(--fade-floor), 0.8);
+}
+.filter-value-placeholder {
+  color: var(--muted);
+  font-weight: 500;
+}
+/* left edge and width follow the Indicator field (at least 260px); long names wrap */
+.indicator-select-panel {
+  max-width: calc(100vw - 16px);
+}
+/* the "All DISCOMs" / "All years" row, set off from the individual rows below it */
+.discom-multiselect-option--all {
+  font-weight: 500;
+  margin-bottom: 4px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+  border-radius: 4px 4px 0 0;
+}
+.indicator-select-search {
+  box-sizing: border-box;
+  width: 100%;
+  margin-bottom: 4px;
+  padding: 6px 8px;
+  font-family: var(--font-condensed);
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--input-bg, var(--paper));
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  transition: border-color 150ms var(--ease), box-shadow 150ms var(--ease);
+}
+/* the warm active colour as the border plus a soft halo — clear, but not a bright ring */
+.indicator-select-search:focus-visible {
+  outline: none;
+  border-color: var(--mv-indicator);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--mv-indicator) 22%, transparent);
+}
+/* three levels, each stepped in: CATEGORY (small caps) → Type (medium) → indicator (selectable) */
+.indicator-select-group + .indicator-select-group {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--line);
+}
+.indicator-select-category {
+  padding: 5px 6px 1px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--mv-indicator);
+}
+.indicator-select-type {
+  padding: 5px 6px 1px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-supporting, var(--muted));
+  opacity: max(var(--fade-floor), 0.85);
+}
+.indicator-select-panel .discom-multiselect-option {
+  padding-left: 14px;
+}
+.indicator-select-panel .indicator-select-type ~ .discom-multiselect-option {
+  padding-left: 22px;
+}
+.indicator-select-empty {
+  padding: 6px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.toolbar-reset {
+  align-self: end;
+  justify-self: end;
+  padding: 3px 2px;
+  font-family: var(--font-condensed);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--accent-text);
+  background: none;
+  border: none;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.toolbar-reset:hover {
+  color: var(--ink);
+}
+.toolbar-reset:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+/* shown when a DISCOM change had to swap the picked indicator for that DISCOM's default */
+.filter-fallback-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: -12px 0 0;
+  padding: 8px 10px 8px 12px;
+  font-size: 12.5px;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  border-left: 2px solid var(--accent);
+  border-radius: 4px;
+}
+.filter-fallback-note span {
+  flex: 1;
+}
+.filter-fallback-note button {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  font-size: 15px;
+  line-height: 1;
+  color: var(--muted);
+  background: none;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.filter-fallback-note button:hover {
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+  color: var(--ink);
+}
+.filter-fallback-note button:focus-visible {
+  outline: 2px solid var(--accent);
+}
+@media (max-width: 720px) {
+  .toolbar--filters {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ---------- Compare page's page-level DISCOM legend: names every ticked DISCOM's color once, so
@@ -652,4 +1228,8 @@ table.detail-table td {
 table.detail-table .meaning {
   font-size: 11.5px;
   color: var(--muted);
+}
+table.detail-table .value-note {
+  margin-top: 2px;
+  font-style: italic;
 }

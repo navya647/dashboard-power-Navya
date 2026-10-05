@@ -1,18 +1,18 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import HeroMap from './HeroMap';
-import StreetHero from './StreetHero';
-import type { StreetController } from '@/lib/streetAnimation';
+import StateSearch from './StateSearch';
 import ComparePanel from './ComparePanel';
-import { compareColor } from '@/lib/computations';
+import { compareColor, MAP_STATUS_LABEL } from '@/lib/computations';
+import { LANDING_HREF, MAP_HREF, MAP_VIEW_PARAM, MAP_VIEW_VALUE } from '@/lib/routes';
 import type { Discom, IndiaGeoJSON, StateSpecificData } from '@/lib/types';
 
 interface Props {
   discoms: Discom[];
   stateSpecific?: StateSpecificData | null;
   geojson: IndiaGeoJSON;
-  stateHue: Record<string, string>;
   compareSet: string[];
   onToggleState: (name: string) => void;
   onRemove: (name: string) => void;
@@ -20,103 +20,57 @@ interface Props {
   onCompare: () => void;
   onClearAll: () => void;
   compareMode: boolean;
-  onToggleCompareMode: () => void;
+  onCompareModeChange: (on: boolean) => void;
 }
 
-function lerp(a: number, b: number, t: number) {
-  return a + (b - a) * t;
-}
-function clamp01(x: number) {
-  return Math.max(0, Math.min(1, x));
-}
-/** Maps outer scroll progress `p` onto a phase's own local 0..1 range, e.g. remap(p, 0.2, 0.6)
- * is 0 before 20%, 1 after 60%, and ramps smoothly in between — how every phase in the brief's
- * 0-20/20-45/45-65/65-80/80-100 timeline is expressed here. */
-function remap(p: number, a: number, b: number) {
-  if (b <= a) return p >= b ? 1 : 0;
-  return clamp01((p - a) / (b - a));
-}
-/** Slow-fast-slow — one consistent "camera move" character shared by every phase (editorial
- * recede, map centering, network reveal, chrome cascade), rather than a different curve per
- * element. Deliberately not a bounce/overshoot: the brief calls for calm and cinematic, not
- * playful. */
-function easeInOutCubic(t: number) {
-  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-}
-/** A restrained overshoot — used only for the map's own scale, so it settles into its final size
- * with a confident "snap" rather than a mechanical linear arrival, the way a premium product
- * page's hero visual tends to land. Position (translateX) stays on the plain in-out curve above
- * so the map never wobbles sideways — only its scale has this extra bit of life. */
-function easeOutBack(t: number) {
-  const c1 = 1.12;
-  const c3 = c1 + 1;
-  const p = t - 1;
-  return 1 + c3 * p * p * p + c1 * p * p;
-}
-
-/** A slow, eased scroll to `top`: the browser's own smooth scroll covers the hero's short track in
- * ~0.3s, which feels abrupt. This runs its own easeInOutCubic over `duration` ms, so the scroll-
- * driven street → map hand-off plays out at a silky pace. Any wheel/touch/key input from the user
- * cancels it, so it never fights them. */
-let cancelGlide: (() => void) | null = null;
-function glideTo(top: number, duration: number) {
-  cancelGlide?.();
-  const start = window.scrollY, dist = top - start;
-  if (Math.abs(dist) < 1) return;
-  const t0 = performance.now();
-  let raf = 0;
-  const stop = () => {
-    cancelAnimationFrame(raf);
-    ['wheel', 'touchstart', 'keydown'].forEach((ev) => window.removeEventListener(ev, stop));
-    cancelGlide = null;
-  };
-  const step = (now: number) => {
-    const t = Math.min(1, (now - t0) / duration);
-    window.scrollTo(0, start + dist * easeInOutCubic(t));
-    if (t < 1) raf = requestAnimationFrame(step);
-    else stop();
-  };
-  ['wheel', 'touchstart', 'keydown'].forEach((ev) => window.addEventListener(ev, stop, { passive: true }));
-  cancelGlide = stop;
-  raf = requestAnimationFrame(step);
-}
-
-/** Below this width the scroll-driven pin/transform is skipped entirely — a sticky, viewport-
- * height section is fragile on mobile (address-bar show/hide changes the actual viewport height
- * mid-scroll), so mobile just gets the fully-arrived static layout (map centered, chrome visible)
- * instead of trying to scrub the same cinematic transform through a much less predictable
- * viewport. */
+/** Below this width the home page is a plain stacked column (headline, then the compare panel
+ * and map); the desktop layout's full-height screens and map centring are skipped. */
 const MOBILE_QUERY = '(max-width: 980px)';
 function isMobile() {
   return typeof window !== 'undefined' && window.matchMedia(MOBILE_QUERY).matches;
 }
 
-/** Interactivity turns on once the map has finished translating/scaling to its centered, final
- * position — before that it's still mid-camera-move, so hover/click wouldn't mean anything, and
- * (just as importantly) the map's own transform hasn't settled at the identity value the click-
- * position math below assumes. */
-const MAP_SETTLE_END = 0.6;
+type HeroView = 'landing' | 'map';
+/** The animated hand-off in flight: landing → map, or map → landing (the mirror image) */
+type HeroAnim = 'to-map' | 'to-hero';
 
-/** How strongly the community photo shows behind the map once the view has settled. */
-const PHOTO_OPACITY = 0.3;
+/** Total length of either crossfade; matches the keyframe timings in hero.css (the last phase of
+ * each ends at 650ms). */
+const EXPLORE_ANIM_MS = 680;
+/** Accumulated wheel/trackpad delta (px) in one direction needed to navigate, and the pause after
+ * which a partial accumulation is forgotten. */
+const WHEEL_TRIGGER_PX = 40;
+const WHEEL_IDLE_RESET_MS = 300;
+/** After a navigation (and after a scrollable list inside the map view has used up a gesture), the
+ * wheel stays locked until the input goes quiet for this long, so a trackpad's momentum tail — or
+ * the rest of a gesture that just scrolled a list to its top — can never start another navigation:
+ * one gesture, at most one transition. */
+const GESTURE_GAP_MS = 250;
 
-/** A scroll-driven cinematic reveal, following the brief's five-phase timeline:
- *   0–20%  pure editorial cover — headline dominant, map already large but offset right
- *   20–60% the "camera" moves in — headline recedes (fades/lifts/shrinks left), the map
- *          translates from its offset position to dead center and reaches full scale, the
- *          transmission network becomes more visible
- *   60–97% control chrome (legend, compare panel) cascades in around the now-centered map
- *   97–100% settle room — everything is already in its final state
- * Kept short (previously 60–85%, with 85–100% dead) — the sticky pin held the fully-arrived view
- * static for a stretch of scroll with nothing left to animate, which read as a chunk of blank
- * scrollable space below the map before the section released.
- * Every phase reads off the same smoothed scroll progress via remap()+easeInOutCubic, so nothing
- * is a separate, disconnected animation — it's one continuous camera move through five stages. */
+/** Whether the wheel at `target` belongs to a scrollable element inside the stage (the state
+ * search list, the compare chip list, any overflow panel) because that element can still scroll in
+ * the wheel's direction. At its boundary in that direction it returns false, so the gesture is
+ * free to navigate. */
+function scrollableCanScroll(target: EventTarget | null, stop: Element, up: boolean) {
+  for (let n = target instanceof Element ? target : null; n && n !== stop; n = n.parentElement) {
+    if (n.scrollHeight <= n.clientHeight + 1) continue;
+    const { overflowY } = getComputedStyle(n);
+    if (overflowY !== 'auto' && overflowY !== 'scroll' && overflowY !== 'overlay') continue;
+    if (up ? n.scrollTop > 0 : n.scrollTop + n.clientHeight < n.scrollHeight - 1) return true;
+  }
+  return false;
+}
+
+/** The home page: exactly two full-screen frames — the sunset landing view (headline + "Explore
+ * dashboard") and the interactive map view. On desktop the page itself never scrolls (scrollY stays
+ * 0): the Explore button or a scroll down on the landing view plays the landing → map transition
+ * (triggerDashboardTransition), and a scroll up on the map view plays its mirror image back
+ * (triggerLandingTransition). Below the mobile breakpoint the two stack in a normal scrolling column
+ * instead (the map view is taller than a phone screen). */
 export default function HeroSection({
   discoms,
   stateSpecific,
   geojson,
-  stateHue,
   compareSet,
   onToggleState,
   onRemove,
@@ -124,45 +78,79 @@ export default function HeroSection({
   onCompare,
   onClearAll,
   compareMode,
-  onToggleCompareMode,
+  onCompareModeChange,
 }: Props) {
-  const stageRef = useRef<HTMLDivElement>(null);
-  const mapInnerRef = useRef<HTMLDivElement>(null);
-  const networkLayerRef = useRef<HTMLDivElement>(null);
-  const editorialRef = useRef<HTMLDivElement>(null);
-  // the animated street that replaced the landing photo, and its animation controller
-  const streetLayerRef = useRef<HTMLDivElement | null>(null);
-  const streetCtlRef = useRef<StreetController | null>(null);
-  const exploreRef = useRef<HTMLButtonElement>(null);
-  const photoImgRef = useRef<HTMLImageElement>(null);
-  const towerFadeRef = useRef<HTMLDivElement>(null);
-  // every one of these cascades in off the same chrome progress value — kept as individual named
-  // refs (rather than an indexed array) so each attaches to its JSX element as a plain identifier.
-  const controlCompareRef = useRef<HTMLDivElement>(null);
-  const mapChromeRef = useRef<HTMLDivElement>(null);
-  const revealedRef = useRef(false);
+  const stageRef = useRef<HTMLElement>(null);
+  const mapViewRef = useRef<HTMLDivElement>(null);
+  // The URL says which frame is showing (/?view=map — see lib/routes.ts), so a refresh or a
+  // direct link opens on the map with no landing-view flash. This component only ever renders on
+  // the client (page.tsx shows a loading state until the data is in), so reading the URL in the
+  // initial state can't mismatch a server render.
+  const wantMap = useSearchParams().get(MAP_VIEW_PARAM) === MAP_VIEW_VALUE;
+  const initialView: HeroView = wantMap && !isMobile() ? 'map' : 'landing';
+  const [view, setView] = useState<HeroView>(initialView);
+  const viewRef = useRef<HeroView>(initialView);
+  // the animated hand-off in flight, if any (see the data-anim rules in hero.css): both frames stay
+  // on screen and overlap for EXPLORE_ANIM_MS while the landing frame fades out over the map frame
+  // (to-map) or back in over it (to-hero)
+  const [anim, setAnim] = useState<HeroAnim | null>(null);
+  const animRef = useRef<HeroAnim | null>(null);
+  // called when a transition finishes, so the input handlers can reset their gesture state
+  const onTransitionEndRef = useRef<(() => void) | null>(null);
+  function showView(next: HeroView) {
+    if (viewRef.current === next) return;
+    viewRef.current = next;
+    setView(next);
+  }
+  // keeps the URL on the frame the visitor has moved to (replace, not push: the two frames are one
+  // page, not separate history entries)
+  function syncUrl(next: HeroView) {
+    const href = next === 'map' ? MAP_HREF : LANDING_HREF;
+    if (window.location.pathname + window.location.search !== href) window.history.replaceState(null, '', href);
+  }
+  // the state search list's hovered / keyboard-active option, highlighted on the map
+  const [searchHighlight, setSearchHighlight] = useState<string | null>(null);
+  const regionNames = useMemo(() => geojson.features.map((f) => f.properties.st_nm), [geojson]);
 
-  // "Explore dashboard": glide to the end of the reveal (the fully arrived, interactive map). The
-  // scroll-driven timeline then plays the street → map hand-off smoothly on the way down. On
-  // mobile there's no pinned stage, so it just scrolls the map into view.
-  function exploreDashboard() {
-    const stage = stageRef.current;
-    if (!stage) return;
-    const behavior: ScrollBehavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+  // The one transition runner both directions share: keeps both frames mounted and overlapping for
+  // EXPLORE_ANIM_MS under data-anim, then settles on `next`. With reduced motion it switches
+  // immediately. It only uses refs and state setters, so the input effect below can safely call the
+  // first render's copy.
+  function runTransition(next: HeroView, dir: HeroAnim) {
+    if (viewRef.current === next || animRef.current) return;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduceMotion) {
+      animRef.current = dir;
+      setAnim(dir);
+      window.setTimeout(() => {
+        animRef.current = null;
+        setAnim(null);
+        onTransitionEndRef.current?.();
+      }, EXPLORE_ANIM_MS);
+    }
+    showView(next);
+    syncUrl(next);
+  }
+  // Landing → map: the Explore button and every downward gesture on the landing view (on mobile,
+  // the button scrolls down to the map instead).
+  function triggerDashboardTransition() {
     if (isMobile()) {
-      stage.querySelector('.hero-map-stage')?.scrollIntoView({ behavior, block: 'start' });
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      mapViewRef.current?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+      syncUrl('map');
       return;
     }
-    const rect = stage.getBoundingClientRect();
-    const top = window.scrollY + rect.top + Math.max(0, rect.height - window.innerHeight);
-    if (behavior === 'auto') window.scrollTo({ top });
-    else glideTo(top, 1700);
+    runTransition('map', 'to-map');
+  }
+  // Map → landing: an upward gesture on the map view (desktop only)
+  function triggerLandingTransition() {
+    if (isMobile()) return;
+    runTransition('landing', 'to-hero');
   }
 
   // outside compare mode, a click jumps straight to that state's full report — no intermediate
   // preview card. In compare mode it instead adds/removes the state from the comparison set.
   function handleStateClick(name: string) {
-    if (!revealedRef.current) return;
     if (!compareMode) {
       onViewFullReport(name);
       return;
@@ -170,199 +158,168 @@ export default function HeroSection({
     onToggleState(name);
   }
 
+  // a pick from the state search list does exactly what a map click does
+  function handleSearchSelect(name: string) {
+    if (!compareMode) onViewFullReport(name);
+    else onToggleState(name);
+  }
+
+  // Arriving on /?view=map (a refresh, or any "back to the map" control — MAP_HREF) opens straight
+  // on the map: on desktop through the initial state above; on mobile, where the frames stack, by
+  // scrolling to it before the first paint. A later switch to /?view=map while this page is
+  // already up (the sidebar's Home clicked on the landing view) plays the normal hand-off.
+  const mountedRef = useRef(false);
+  useLayoutEffect(() => {
+    const first = !mountedRef.current;
+    mountedRef.current = true;
+    if (!wantMap) return;
+    if (first) {
+      if (isMobile()) mapViewRef.current?.scrollIntoView({ behavior: 'instant', block: 'start' });
+    } else {
+      triggerDashboardTransition();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- triggerDashboardTransition only uses refs and setters
+  }, [wantMap]);
+
   useEffect(() => {
     const stage = stageRef.current;
-    const mapInner = mapInnerRef.current;
-    const networkLayer = networkLayerRef.current;
-    const editorial = editorialRef.current;
-    const streetLayer = streetLayerRef.current;
-    const sticky = stage?.querySelector<HTMLDivElement>('.hero-sticky') ?? null;
-    const explore = exploreRef.current;
-    const towerFade = towerFadeRef.current;
-    if (!stage || !mapInner || !networkLayer || !editorial || !streetLayer || !towerFade) return;
-    const chromeEls = [controlCompareRef.current, mapChromeRef.current].filter((el): el is HTMLDivElement => el != null);
-    // apple-design §14: a viewer who asked for reduced motion still gets the scroll-linked reveal
-    // (it only ever moves in direct response to their own scroll input, which reduced-motion
-    // guidance doesn't target), but loses the two effects that don't come from their input —
-    // the map's restrained overshoot-snap on scale, and the auto "finish the scroll for you"
-    // smooth-scroll snap, which for a reduced-motion viewer runs as a plain instant jump instead.
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!stage) return;
 
-    function measure() {
-      const rect = stage!.getBoundingClientRect();
-      const scrollRange = Math.max(1, rect.height - window.innerHeight);
-      const scrolled = Math.max(0, -rect.top);
-      const p = Math.max(0, Math.min(1, scrolled / scrollRange));
-      return { rect, scrollRange, p };
+    // The input handlers only ever start a transition — never change the view themselves: a
+    // deliberate downward gesture on the landing view calls triggerDashboardTransition(), and a
+    // deliberate upward gesture on the map view calls triggerLandingTransition(). Upward on the
+    // landing view and downward on the map view do nothing. They read the view and transition
+    // state from refs, so they never act on a stale render.
+    //
+    // Wheel / trackpad: WHEEL_TRIGGER_PX of accumulated delta in the navigating direction (a pause
+    // of WHEEL_IDLE_RESET_MS or a change of direction resets it). On the map view, a wheel over a
+    // scrollable list that can still scroll up is left to the list. Every navigation, and every
+    // gesture a list used up, locks the wheel until the input goes quiet for GESTURE_GAP_MS.
+    let wheelAccum = 0;
+    let lastWheel = 0;
+    let gestureLocked = false;
+    function lockGesture() {
+      gestureLocked = true;
+      wheelAccum = 0;
     }
-
-    function applyStyles(p: number) {
-      // animated street (the landing background): fully visible on the cover, then the "camera"
-      // pulls up and back (scales down, drifts up) while it fades out over 12–42%, handing off to
-      // the map. Its power-cycle loop pauses once it's gone so nothing animates unseen.
-      const streetT = easeInOutCubic(remap(p, 0.12, 0.42));
-      streetLayer!.style.opacity = String(1 - streetT);
-      streetLayer!.style.transform = reduceMotion ? 'none' : `translateY(${lerp(0, -28, streetT)}px) scale(${lerp(1, 0.93, streetT)})`;
-      streetLayer!.style.pointerEvents = streetT > 0.6 ? 'none' : 'auto';
-      streetCtlRef.current?.setActive(streetT < 0.98);
-      // logo treatment follows whichever backdrop dominates (see .hero-on-street in hero.css)
-      sticky?.classList.toggle('hero-on-street', streetT < 0.5);
-
-      // community photo: the map view's backdrop. It fades in under the street over 15–45% and
-      // settles at a subtle PHOTO_OPACITY so the state colours stay readable, with a slow sideways
-      // drift for depth (as the original landing photo had).
-      const photo = photoImgRef.current;
-      if (photo) {
-        const photoT = easeInOutCubic(remap(p, 0.15, 0.45));
-        photo.style.opacity = String(lerp(0, PHOTO_OPACITY, photoT));
-        photo.style.transform = reduceMotion ? 'scale(1.08)' : `scale(1.08) translateX(${lerp(18, -22, easeInOutCubic(p))}px)`;
-      }
-
-      // phase 1: editorial recedes — fades, lifts left, scales down slightly — over 12–45%.
-      const editorialT = easeInOutCubic(remap(p, 0.12, 0.45));
-      editorial!.style.opacity = String(1 - editorialT);
-      editorial!.style.transform = `translate(${lerp(0, -48, editorialT)}px, -50%) scale(${lerp(1, 0.94, editorialT)})`;
-
-      // the left pylon stays hidden behind the paper-color fade only while the editorial copy
-      // sits on top of it — once that copy has receded there's nothing left to declutter for, so
-      // the fade lifts in lockstep and the full tower art (including the left pylon) shows through.
-      towerFade!.style.opacity = String(1 - editorialT);
-      editorial!.style.pointerEvents = editorialT > 0.85 ? 'none' : 'auto';
-      if (explore) {
-        // the "Explore dashboard" cue leaves a little ahead of the headline
-        const exploreT = easeInOutCubic(remap(p, 0.04, 0.3));
-        explore.style.opacity = String(1 - exploreT);
-        explore.style.transform = `translate(-50%, ${lerp(0, 16, exploreT)}px)`;
-        explore.style.pointerEvents = exploreT > 0.5 ? 'none' : 'auto';
-      }
-
-      // phase 2: the map translates from offset-right to dead center and reaches full scale
-      // over 18–60% — percentage-based translateX so the offset scales with the map's own box,
-      // not a hardcoded pixel amount. Position eases in-out (no wobble); scale gets a restrained
-      // overshoot so it settles into its final size with a confident snap instead of a flat,
-      // mechanical arrival.
-      const mapMoveT = easeInOutCubic(remap(p, 0.18, MAP_SETTLE_END));
-      const mapScaleT = reduceMotion ? mapMoveT : easeOutBack(remap(p, 0.18, MAP_SETTLE_END));
-      // 19% previously left the map's landing position crowding the editorial text with almost no
-      // gap between them — 47% pushes it further right at rest without changing the settled
-      // (scrolled-in, translateX(0)) centered composition at all.
-      mapInner!.style.transform = `translateX(${lerp(47, 0, mapMoveT)}%) scale(${lerp(0.82, 1, mapScaleT)})`;
-      // the map isn't on the landing view any more (the street is); it fades in as the street
-      // fades out, glass outline first
-      mapInner!.style.opacity = String(easeInOutCubic(remap(p, 0.2, 0.42)));
-
-      // glass outline arrives first (as the street hands off), then cross-fades into the real
-      // state map while it settles in the centre, before the legend arrives.
-      const glassT = easeInOutCubic(remap(p, 0.4, 0.6));
-      mapInner!.style.setProperty('--hero-glass', String(1 - glassT));
-
-      // network becomes more visible across roughly the same span the camera is moving in.
-      const networkT = easeInOutCubic(remap(p, 0.18, 0.55));
-      networkLayer!.style.opacity = String(lerp(0.35, 1, networkT));
-
-      // phase 3: chrome (stats, compass, legend, both panels) cascades in around the now-
-      // centered map, 60–97%.
-      const chromeT = easeInOutCubic(remap(p, MAP_SETTLE_END, 0.97));
-      chromeEls.forEach((el) => {
-        el.style.opacity = String(chromeT);
-        el.style.transform = `translateY(${lerp(14, 0, chromeT)}px)`;
-      });
-
-      const revealed = p >= MAP_SETTLE_END;
-      revealedRef.current = revealed;
-      mapInner!.style.pointerEvents = revealed ? 'auto' : 'none';
-    }
-
-    // the raw scroll fraction is only ever used as a *target* — every visual property eases
-    // toward it a little each frame instead of snapping straight to the scrollbar position, so
-    // the whole transition reads as smooth/"scrubbed" rather than mechanically tied to scroll.
-    let smoothP = measure().p;
-    let rafId: number | null = null;
-
-    function loop() {
-      const { p: targetP } = measure();
-      smoothP += (targetP - smoothP) * 0.14;
-      const settled = Math.abs(targetP - smoothP) < 0.0008;
-      if (settled) smoothP = targetP;
-      applyStyles(smoothP);
-      rafId = settled ? null : requestAnimationFrame(loop);
-    }
-    function ensureLoop() {
-      if (rafId == null) rafId = requestAnimationFrame(loop);
-    }
-
-    let endTimer: ReturnType<typeof setTimeout>;
-    function settle() {
-      const { rect, scrollRange, p } = measure();
-      if (p <= 0.02 || p >= 0.98) return; // already at an end state
-      // biased toward completing the reveal, not a 50/50 split: any deliberate scroll down
-      // should commit to the full transformation rather than requiring the user to cross the
-      // exact halfway point before it "counts" — snapping back to landing only if they barely
-      // moved.
-      const targetP = p < 0.12 ? 0 : 1;
-      const targetTop = window.scrollY + rect.top + targetP * scrollRange;
-      if (reduceMotion) window.scrollTo({ top: targetTop, behavior: 'instant' });
-      else if (!cancelGlide) glideTo(targetTop, 1100); // don't restart an explore glide in progress
-    }
-
-    function onScroll() {
+    onTransitionEndRef.current = () => {
+      wheelAccum = 0; // the lock itself stays until the wheel goes quiet
+    };
+    function onWheel(e: WheelEvent) {
       if (isMobile()) return;
-      ensureLoop();
-      clearTimeout(endTimer);
-      endTimer = setTimeout(settle, 140);
+      const now = performance.now();
+      const sinceLast = now - lastWheel;
+      lastWheel = now;
+      if (animRef.current) return; // ignore everything while a transition plays
+      if (gestureLocked) {
+        if (sinceLast < GESTURE_GAP_MS) return; // still the same gesture (or its momentum)
+        gestureLocked = false;
+      }
+      const dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * window.innerHeight : e.deltaY;
+      if (dy === 0) return;
+      const onLanding = viewRef.current === 'landing';
+      const navigating = onLanding ? dy > 0 : dy < 0; // down on the landing view, up on the map
+      if (!navigating) {
+        wheelAccum = 0;
+        return;
+      }
+      if (!onLanding && scrollableCanScroll(e.target, stage!, true)) {
+        lockGesture(); // the list scrolls; the rest of this gesture can't navigate once it hits its top
+        return;
+      }
+      if (sinceLast > WHEEL_IDLE_RESET_MS) wheelAccum = 0;
+      wheelAccum += Math.abs(dy);
+      if (wheelAccum < WHEEL_TRIGGER_PX) return;
+      lockGesture();
+      if (onLanding) triggerDashboardTransition();
+      else triggerLandingTransition();
     }
-    function onResize() {
-      // below the mobile breakpoint the CSS media query takes over completely (every animated
-      // element gets its final opacity/transform via `!important`, overriding whatever inline
-      // style JS last wrote) — so JS simply stops touching these elements rather than trying to
-      // compute a "mobile" version of the same phase math, which would fight the stylesheet.
-      revealedRef.current = isMobile() ? true : revealedRef.current;
-      if (isMobile()) return;
-      ensureLoop();
+    // Keyboard, outside text fields: the "scroll down" keys on the landing view, the "scroll up"
+    // keys on the map view
+    function onKey(e: KeyboardEvent) {
+      if (isMobile() || animRef.current || e.altKey || e.ctrlKey || e.metaKey) return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+      const onButton = t?.tagName === 'BUTTON';
+      if (viewRef.current === 'landing') {
+        if (['ArrowDown', 'PageDown', 'End'].includes(e.key) || (e.key === ' ' && !e.shiftKey && !onButton)) triggerDashboardTransition();
+      } else if (['ArrowUp', 'PageUp', 'Home'].includes(e.key) || (e.key === ' ' && e.shiftKey && !onButton)) {
+        triggerLandingTransition();
+      }
+    }
+    // Touchscreen: a swipe of more than 40px — up on the landing view, down on the map view
+    // (unless it was scrolling a list that can still scroll up)
+    let touchY: number | null = null;
+    function onTouchStart(e: TouchEvent) {
+      touchY = e.touches[0]?.clientY ?? null;
+    }
+    function onTouchEnd(e: TouchEvent) {
+      if (isMobile() || animRef.current || touchY == null) return;
+      const dy = touchY - (e.changedTouches[0]?.clientY ?? touchY);
+      touchY = null;
+      if (viewRef.current === 'landing') {
+        if (dy > 40) triggerDashboardTransition();
+      } else if (dy < -40 && !scrollableCanScroll(e.target, stage!, true)) {
+        triggerLandingTransition();
+      }
     }
 
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onResize);
-    if (isMobile()) {
-      revealedRef.current = true;
-    } else {
-      // Arriving via a "back to the map" link (the Coming Soon page's CTA, see StateDetail.tsx)
-      // should land straight on the fully-revealed, interactive map — not the landing headline —
-      // since that's the actual destination the link promised, not just the top of the page. Jumps
-      // straight to p=1 using the same math `settle()` above uses to snap to an end state, rather
-      // than requiring the visitor to scroll through the whole camera-move animation themselves.
-      if (new URLSearchParams(window.location.search).get('view') === 'map') {
-        const { rect, scrollRange } = measure();
-        window.scrollTo({ top: window.scrollY + rect.top + scrollRange, behavior: 'instant' });
-        smoothP = 1;
-        window.history.replaceState(null, '', window.location.pathname);
-      }
-      applyStyles(smoothP); // paint the initial state immediately, with no lag
-    }
+    window.addEventListener('wheel', onWheel, { passive: true });
+    window.addEventListener('keydown', onKey);
+    stage.addEventListener('touchstart', onTouchStart, { passive: true });
+    stage.addEventListener('touchend', onTouchEnd, { passive: true });
     return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onResize);
-      clearTimeout(endTimer);
-      if (rafId != null) cancelAnimationFrame(rafId);
+      onTransitionEndRef.current = null;
+      window.removeEventListener('wheel', onWheel);
+      window.removeEventListener('keydown', onKey);
+      stage.removeEventListener('touchstart', onTouchStart);
+      stage.removeEventListener('touchend', onTouchEnd);
     };
   }, []);
 
+  // While the landing view is the frame on screen, the sidebar (outside this section) matches the
+  // sunset and hides the theme toggle — see :root[data-hero-landing] in layout.css; while the map
+  // view is, it takes that view's warm surface family instead (:root[data-hero-map]). Desktop only,
+  // like the init script in app/layout.tsx that sets them before first paint.
+  useEffect(() => {
+    const root = document.documentElement;
+    const sync = () => {
+      const on = view === 'landing' && !isMobile();
+      const mapOn = view !== 'landing' && !isMobile();
+      if (root.hasAttribute('data-hero-landing') === on && root.hasAttribute('data-hero-map') === mapOn) return;
+      if (animRef.current) {
+        // an animated hand-off: the sidebar crossfades in step with the frames (layout.css)
+        root.setAttribute('data-hero-anim', animRef.current);
+        root.toggleAttribute('data-hero-landing', on);
+        root.toggleAttribute('data-hero-map', mapOn);
+        window.setTimeout(() => root.removeAttribute('data-hero-anim'), EXPLORE_ANIM_MS);
+        return;
+      }
+      root.setAttribute('data-hero-switching', '');
+      root.toggleAttribute('data-hero-landing', on);
+      root.toggleAttribute('data-hero-map', mapOn);
+      requestAnimationFrame(() => requestAnimationFrame(() => root.removeAttribute('data-hero-switching')));
+    };
+    sync();
+    window.addEventListener('resize', sync);
+    return () => window.removeEventListener('resize', sync);
+  }, [view]);
+  useEffect(
+    () => () => {
+      // leaving the home page
+      document.documentElement.removeAttribute('data-hero-landing');
+      document.documentElement.removeAttribute('data-hero-map');
+      document.documentElement.removeAttribute('data-hero-anim');
+    },
+    [],
+  );
+
   return (
-    <section className="hero-stage" ref={stageRef}>
-      <div className="hero-sticky">
-        {/* not aria-hidden as a whole: the street's pause button lives in here (its SVG is hidden) */}
+    <section className="hero-stage" ref={stageRef} data-view={view} data-anim={anim ?? undefined}>
+      <div className="hero-landing hero-on-street">
         <div className="hero-bg-fabric">
-          {/* the community photo is the map view's backdrop: it sits under the street and fades in
-              as the street hands off (see applyStyles) */}
-          <div className="tower-photo-layer" aria-hidden="true">
-            {/* eslint-disable-next-line @next/next/no-img-element -- static export has no Image Optimization API */}
-            <img src="/hero-community.png" alt="" className="tower-photo-img" ref={photoImgRef} />
-          </div>
-          <StreetHero controllerRef={streetCtlRef} layerRef={streetLayerRef} />
-          <div className="tower-photo-fade" ref={towerFadeRef} aria-hidden="true" />
+          <div className="street-layer hero-photo-layer" aria-hidden="true" />
         </div>
-        <div className="hero-ambient-glow" aria-hidden="true" />
-        <div className="hero-logo-fade" aria-hidden="true" />
 
         <div className="hero-coverage-badge">
           {/* eslint-disable-next-line @next/next/no-img-element -- static export has no Image Optimization API */}
@@ -371,25 +328,62 @@ export default function HeroSection({
           <img src="/acpet-logo-white.png" alt="ACPET" width={208} height={69} className="hero-logo hero-logo-dark" />
         </div>
 
-        <div className="hero-editorial" ref={editorialRef}>
-          <h1>India Power Supply and Service Quality Dashboard</h1>
+        <div className="hero-editorial">
+          <h1>India Power Supply, Service Quality and Safety Dashboard</h1>
           <p className="lede">
-            Bringing together Standards of Performance and reported data on electricity supply quality, reliability and consumer services across
-            India&apos;s states, union territories and DISCOMs. A systematic, transparent resource to enable comparison, support improvements in
-            service delivery, and inform quality-linked tariff design.
+            Bringing together Standards of Performance and reported data on electricity supply quality, reliability, service delivery and
+            safety across India&rsquo;s states, union territories and DISCOMs.
+            <br />
+            A systematic, transparent resource to enable comparison, support improvements in
+            electricity distribution services, and inform quality-linked tariff design.
           </p>
-          <div className="hero-cta">Scroll to expand the map ↓</div>
         </div>
 
-        <button type="button" className="hero-explore" ref={exploreRef} onClick={exploreDashboard}>
+        {/* the introduction's call to action, centred at the bottom of the landing view */}
+        <button type="button" className="hero-explore" onClick={triggerDashboardTransition}>
           <span>Explore dashboard</span>
           <svg className="hero-explore-arrow" viewBox="0 0 16 16" aria-hidden="true">
             <path d="M8 2.5v10M3.5 8.5 8 13l4.5-4.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
+      </div>
+
+      <div className="hero-sticky" ref={mapViewRef}>
+        <div className="hero-logo-fade" aria-hidden="true" />
+        <div className="hero-coverage-badge">
+          {/* eslint-disable-next-line @next/next/no-img-element -- static export has no Image Optimization API */}
+          <img src="/acpet-logo.png" alt="ACPET" width={208} height={69} className="hero-logo hero-logo-light" />
+          {/* eslint-disable-next-line @next/next/no-img-element -- static export has no Image Optimization API */}
+          <img src="/acpet-logo-white.png" alt="ACPET" width={208} height={69} className="hero-logo hero-logo-dark" />
+        </div>
+
+        {/* before the map stage in the DOM so that on mobile (a static column) it sits above the map */}
+        <div className="overlay-compare">
+          <ComparePanel
+            renderSearch={(hintId) => (
+              <StateSearch
+                names={regionNames}
+                discoms={discoms}
+                stateSpecific={stateSpecific}
+                compareMode={compareMode}
+                compareSet={compareSet}
+                onSelect={handleSearchSelect}
+                onHighlight={setSearchHighlight}
+                describedBy={hintId}
+              />
+            )}
+            colorOf={(name) => compareColor(compareSet, name)}
+            compareSet={compareSet}
+            onRemove={onRemove}
+            onCompare={onCompare}
+            onClearAll={onClearAll}
+            compareMode={compareMode}
+            onCompareModeChange={onCompareModeChange}
+          />
+        </div>
 
         <div className="hero-map-stage">
-          <div className="hero-map-inner" ref={mapInnerRef}>
+          <div className="hero-map-inner">
             <HeroMap
               discoms={discoms}
               stateSpecific={stateSpecific}
@@ -397,38 +391,27 @@ export default function HeroSection({
               compareColorOf={(name) => compareColor(compareSet, name)}
               onStateClick={handleStateClick}
               compareMode={compareMode}
+              highlighted={searchHighlight}
             />
-            <div className="hero-network-layer" ref={networkLayerRef} />
+            <div className="hero-network-layer" />
           </div>
         </div>
 
-        <div className="map-chrome" ref={mapChromeRef}>
+        <div className="map-chrome">
           <div className="map-legend" aria-hidden="true">
             <div className="map-legend-row">
               <span className="map-legend-dot map-legend-dot--tracked" />
-              Tracked
+              {MAP_STATUS_LABEL.tracked}
             </div>
             <div className="map-legend-row">
               <span className="map-legend-dot map-legend-dot--no-data" />
-              Tracked—Data Not Reported
+              {MAP_STATUS_LABEL['no-data']}
             </div>
             <div className="map-legend-row">
               <span className="map-legend-dot map-legend-dot--none" />
-              Coming soon
+              {MAP_STATUS_LABEL.idle}
             </div>
           </div>
-        </div>
-
-        <div className="overlay-compare" ref={controlCompareRef}>
-          <ComparePanel
-            stateHue={stateHue}
-            compareSet={compareSet}
-            onRemove={onRemove}
-            onCompare={onCompare}
-            onClearAll={onClearAll}
-            compareMode={compareMode}
-            onToggleCompareMode={onToggleCompareMode}
-          />
         </div>
       </div>
     </section>

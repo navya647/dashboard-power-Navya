@@ -32,3 +32,19 @@ export function fyLabel(year: string): string {
   const end = year.split('-')[1] ?? year;
   return 'FY' + end.slice(-2);
 }
+
+/** "FY22–FY24, FY26" — years compressed into runs along `yearsAsc` (oldest first), so a gap
+ * year is never hidden inside a single range. Empty string for no years. */
+export function fyRunsLabel(years: string[], yearsAsc: string[]): string {
+  const idx = Array.from(new Set(years))
+    .map((y) => yearsAsc.indexOf(y))
+    .filter((i) => i >= 0)
+    .sort((a, b) => a - b);
+  const runs: [number, number][] = [];
+  for (const i of idx) {
+    const last = runs[runs.length - 1];
+    if (last && i === last[1] + 1) last[1] = i;
+    else runs.push([i, i]);
+  }
+  return runs.map(([a, b]) => (a === b ? fyLabel(yearsAsc[a]) : `${fyLabel(yearsAsc[a])}–${fyLabel(yearsAsc[b])}`)).join(', ');
+}

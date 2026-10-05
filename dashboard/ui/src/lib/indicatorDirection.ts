@@ -38,6 +38,10 @@ function normalizeMeaning(text: string | null | undefined): string | null {
 const MEANING_DIRECTION: Record<string, Direction> = {
   // --- reliability dataset (discoms2.json) ---
   'total minutes of supply interruption for an average consumer over the year': 'lower_is_better',
+  'total minutes of supply interruption for an average consumer over the year (derived from quarterly averages)': 'lower_is_better',
+  'total minutes of supply interruption for an average consumer over the year (derived)': 'lower_is_better',
+  'total number of sustained interruptions for an average consumer over the year (derived from quarterly averages)': 'lower_is_better',
+  'total number of sustained interruptions for an average consumer over the year (derived)': 'lower_is_better',
   'total minutes of supply interruption for an average consumer over two quarters': 'lower_is_better',
   'average hours of supply interruption for an average consumer per quarter': 'lower_is_better',
   'total hours of supply interruption for an average consumer over the year': 'lower_is_better',
@@ -82,6 +86,7 @@ const MEANING_DIRECTION: Record<string, Direction> = {
   'no. of faulty bills prepared as a percentage of total no. of bills issued': 'lower_is_better',
   'no. of faulty/defective meters as a percentage of total no. of existing meters': 'lower_is_better',
   'no. of faulty meters pending at year-end': 'lower_is_better',
+  'total no. of faulty meters pending at year-end': 'lower_is_better',
   'no. of accident cases': 'lower_is_better',
   'number of accidents': 'lower_is_better',
   '% atc loss': 'lower_is_better',
@@ -113,6 +118,9 @@ export interface BasisSignature {
 export function basisSignature(reportedMeaning: string | null | undefined): BasisSignature {
   const norm = normalizeMeaning(reportedMeaning) ?? '';
   const unit = norm.includes('minute') ? 'min' : norm.includes('hour') ? 'hr' : 'na';
-  const period = norm.includes('quarter') ? 'quarter' : norm.includes('year') ? 'year' : 'na';
+  // period ignores parenthetical method notes — "over the year (derived from quarterly averages)" is
+  // an annual figure, and its "quarterly" must not read as a quarterly basis
+  const p = norm.replace(/\([^)]*\)/g, '');
+  const period = p.includes('quarter') ? 'quarter' : p.includes('year') ? 'year' : 'na';
   return { unit, period };
 }

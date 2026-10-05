@@ -1,25 +1,150 @@
-/* ---------- hero: a scroll-driven cinematic reveal — an editorial cover (headline + a large,
-   already-substantial map offset toward the right) that transforms, as the user scrolls, into
-   the interactive map view (map centered/full-scale, control chrome cascading in around it).
-   .hero-stage is the tall scroll track; .hero-sticky is what actually pins and holds every layer
-   — editorial text, map, and every overlay panel are all direct children positioned absolutely
-   within it, so the "camera move" (see HeroSection's applyStyles) can freely translate/scale the
-   map independent of anything else. ---------- */
+/* ---------- hero: the home page as two full-screen frames — the sunset landing view
+   (.hero-landing: headline + "Explore dashboard") and the interactive map view (.hero-sticky:
+   compare panel — map — legend). On desktop only one is shown at a time and the page never
+   scrolls (see the min-width block below and HeroSection); on mobile they stack in a normal
+   scrolling column. Every child of each screen is positioned absolutely within it. ---------- */
 .hero-stage {
   position: relative;
-  /* enough scroll track for the 0-97% animated timeline (see HeroSection's applyStyles) to read
-     as a smooth scrub, without much left over once it's done settling — a taller track here was
-     found to leave a stretch of scroll where the view had already fully arrived and nothing was
-     left to animate, which read as dead/blank scroll space before the section released. */
-  /* 250vh (was 190vh): the landing view now opens on the animated street, so the street → map
-     hand-off needs a longer, more gradual scrub to feel smooth */
-  height: 250vh;
-  /* Bottom margin cancels main.app-main's own 56px bottom padding, same as the top/side values
-     already cancel its top/side padding — this is the only content on the page (HeroSection is
-     #page-overview's sole child), so without this, once the sticky pin finally releases at the
-     very end of the track, the reveal is immediately followed by a plain blank strip of
-     that padding with nothing in it before the page truly ends. */
+  /* cancels main.app-main's own padding on the top, sides and bottom, so both screens sit flush
+     with the viewport edges and nothing but them is on the page */
   margin: -72px -44px -56px;
+}
+.hero-landing {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--hero-ground, var(--paper));
+  --hero-gutter: 48px;
+}
+/* desktop: the two screens are frames of one fixed, full-viewport stage rather than a scrolling
+   column. HeroSection switches data-view on a scroll gesture or the Explore button, and the
+   inactive frame is hidden outright (visibility, not display, so the map keeps its measured size
+   and layout while the landing frame is up; it also drops out of the tab order and the
+   accessibility tree). There is no transition: the switch is a straight cut. */
+@media (min-width: 981px) {
+  .hero-stage {
+    height: 100vh;
+    overflow: hidden;
+  }
+  .hero-landing,
+  .hero-sticky {
+    position: absolute;
+    inset: 0;
+    height: auto;
+  }
+  /* the stage reaches under the sidebar so the landing frame can fill the whole window (the
+     sidebar is hidden on it, layout.css); the map frame still starts beside the sidebar. Always
+     on, not just on the landing view, so nothing moves on the hand-off between them. */
+  .hero-stage {
+    margin-left: calc(-44px - var(--sb-w));
+  }
+  /* a margin, not `left`: the base .hero-sticky rule below makes it position: relative, where
+     `left` would only slide the full-width frame right (off the window) instead of narrowing it */
+  .hero-sticky {
+    margin-left: var(--sb-w);
+  }
+  .hero-stage[data-view="map"] .hero-landing,
+  .hero-stage[data-view="landing"] .hero-sticky {
+    visibility: hidden;
+  }
+}
+
+/* ---------- the landing → map hand-off (data-anim="to-map", set by HeroSection for ~680ms when
+   the Explore button is clicked or the landing view is scrolled down). Both frames stay on screen and overlap: the
+   landing frame sits on top and fades out over the map frame, whose opaque page-colour background
+   is already underneath, so it crossfades with no blank or white frame. Overlapping timeline:
+     0–350ms    headline + button fade and lift 12px
+     0–400ms    the photo darkens slightly
+     150–550ms  the whole landing frame fades out (background crossfade into the dashboard)
+     250–650ms  the map frame's content fades in and rises 12px into place
+   The rises use the individual `translate` property, which composes with each element's own
+   `transform` (e.g. the map stage's centring nudge) instead of replacing it. All with
+   cubic-bezier(0.22, 1, 0.36, 1). Reduced motion never gets here: the button switches instantly. */
+@media (min-width: 981px) {
+  .hero-stage[data-anim="to-map"] .hero-landing {
+    visibility: visible;
+    z-index: 2;
+    pointer-events: none;
+    animation: hero-frame-out 400ms cubic-bezier(0.22, 1, 0.36, 1) 150ms both;
+  }
+  .hero-stage[data-anim="to-map"] .hero-landing::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: #140802;
+    pointer-events: none;
+    animation: hero-darken 400ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .hero-stage[data-anim="to-map"] .hero-editorial,
+  .hero-stage[data-anim="to-map"] .hero-explore {
+    animation: hero-copy-out 350ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .hero-stage[data-anim="to-map"] .hero-sticky > :not(.hero-logo-fade) {
+    animation: hero-content-in 400ms cubic-bezier(0.22, 1, 0.36, 1) 250ms both;
+  }
+}
+@keyframes hero-frame-out {
+  to { opacity: 0; }
+}
+@keyframes hero-darken {
+  from { opacity: 0; }
+  to { opacity: 0.22; }
+}
+@keyframes hero-copy-out {
+  to { opacity: 0; translate: 0 -12px; }
+}
+@keyframes hero-content-in {
+  from { opacity: 0; translate: 0 12px; }
+}
+
+/* ---------- the mirror image: map → landing (data-anim="to-hero", a deliberate scroll up on the
+   map view). Same architecture, length and easing as to-map above, with every phase reversed in
+   time; the map frame stays on screen underneath while the landing frame fades back in over it.
+     0–350ms    the map frame's content fades out and sinks 12px
+     150–550ms  the whole landing frame fades back in over it (background crossfade)
+     250–650ms  the photo's slight darkening lifts
+     300–650ms  headline + button fade back in, settling down 12px to rest
+   ---------- */
+@media (min-width: 981px) {
+  .hero-stage[data-anim="to-hero"] .hero-sticky {
+    visibility: visible;
+    pointer-events: none;
+  }
+  .hero-stage[data-anim="to-hero"] .hero-landing {
+    z-index: 2;
+    pointer-events: none;
+    animation: hero-frame-in 400ms cubic-bezier(0.22, 1, 0.36, 1) 150ms both;
+  }
+  .hero-stage[data-anim="to-hero"] .hero-landing::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: #140802;
+    pointer-events: none;
+    animation: hero-lighten 400ms cubic-bezier(0.22, 1, 0.36, 1) 250ms both;
+  }
+  .hero-stage[data-anim="to-hero"] .hero-editorial,
+  .hero-stage[data-anim="to-hero"] .hero-explore {
+    animation: hero-copy-in 350ms cubic-bezier(0.22, 1, 0.36, 1) 300ms both;
+  }
+  .hero-stage[data-anim="to-hero"] .hero-sticky > :not(.hero-logo-fade) {
+    animation: hero-content-out 350ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+@keyframes hero-frame-in {
+  from { opacity: 0; }
+}
+@keyframes hero-lighten {
+  from { opacity: 0.22; }
+  to { opacity: 0; }
+}
+@keyframes hero-copy-in {
+  from { opacity: 0; translate: 0 -12px; }
+}
+@keyframes hero-content-out {
+  to { opacity: 0; translate: 0 12px; }
 }
 /* no padding here: every child is position:absolute (there's no in-flow content at all), and a
    padding box only ever constrains in-flow content or gets used as the containing block for
@@ -30,11 +155,40 @@
    gutter, ignoring it entirely). The gutter is baked directly into each child's own inset value
    instead — see --hero-gutter below. */
 .hero-sticky {
-  position: sticky;
-  top: 0;
+  position: relative;
   height: 100vh;
   overflow: hidden;
-  background-color: var(--paper);
+  /* the map view's background (see the ::before rule below): a warm neutral veil laid uniformly
+     over the photo at this strength — ivory at 15% in the light theme (was 75%, then 40% — both washed the photo out toward white), a warm
+     charcoal at 50% in the dark one (below), so the photo shows clearly behind the map */
+  --hero-veil: 246 241 233;
+  --hero-veil-strength: 0.15;
+  /* this view's palette, re-pointing the shared tokens so every surface in here (Explore card,
+     legend, search list, map tooltip) follows it: off-white panels, warm charcoal text, and a deep
+     burnt-brown accent for the active segment, buttons, focus and links. Other pages keep theirs. */
+  --panel: #faf7f2;
+  /* light-mode text tiers (contrast on the panels): primary/headings, body, secondary/helper and
+     icons, placeholder — all one warm charcoal family, none pure black */
+  --ink: #1a1512; /* primary */
+  --text-body: #221c18; /* body */
+  --muted: #2f2824; /* secondary, helper text and icons */
+  --text-supporting: #2f2824;
+  --faint: #4a413b; /* placeholders, the lightest text allowed */
+  --control-text: #221c18; /* the unselected View/Compare segment */
+  /* the disabled Compare button: unavailable through a muted neutral fill, not faded text */
+  --btn-disabled-bg: #e8e1d7;
+  --btn-disabled-border: #dbd2c6;
+  --btn-disabled-text: #2f2824;
+  --control-track: #f1ece4;
+  --accent: #8a4b2a; /* white text on it: 6.9:1 */
+  --accent-hover: #74391c;
+  --accent-active: #63311a;
+  --accent-light: #74391c;
+  --accent-text: #8a4b2a; /* 6.4:1 on the panels */
+  /* the dots over "Coming soon" regions (HeroMap) and their legend swatch */
+  --map-idle-dot: #7d6c58;
+  background-color: rgb(var(--hero-veil));
+  isolation: isolate;
   box-sizing: border-box;
   --hero-gutter: 48px;
   /* the settled 3-column layout: Compare panel (left) — map — legend (right). Panel and legend
@@ -43,156 +197,137 @@
      legend's actual content fills its whole column. */
   --hero-side-gutter: 32px;
   --hero-side-box: 258px;
+  /* the "Explore the data" card's width. It floats over the map stage's bottom-left corner rather
+     than taking layout space from the map, whose box is still computed from --hero-side-box */
+  --hero-left-box: 315px;
   --hero-map-gap: 22px;
 }
+/* dark: the photo itself goes dark (a deep charcoal veil), so the whole view is a dark
+   composition rather than a light background under dark panels */
+:root[data-theme='dark'] .hero-sticky {
+  --hero-veil: 34 28 24;
+  --hero-veil-strength: 0.5;
+  --panel: #1f1b18;
+  --ink: #ffffff;
+  --muted: #f2ece4;
+  --text-body: initial;
+  --text-supporting: initial;
+  --faint: initial;
+  --control-text: initial;
+  --control-track: initial;
+  --accent: #8a4b2a; /* white text on it: 6.9:1 */
+  --accent-hover: #9c5733;
+  --accent-active: #7a4225;
+  --accent-light: #c98a62;
+  --accent-text: #e0a77f; /* 8.3:1 on the panels */
+}
+/* the floating surfaces (Explore card, legend, the search list and map tooltip inside them) read
+   the shared --panel/--shadow-float, which are this view's surface family (--mv-* in tokens.css)
+   everywhere */
+/* the Explore card and legend at one strength, so they read as the same surface */
+.hero-sticky .control-panel,
+.hero-sticky .map-legend {
+  background: color-mix(in srgb, var(--panel) 96%, transparent);
+  border-color: var(--mv-line);
+}
+/* the logo's page-coloured glow would only show as a patch over the photo */
+.hero-sticky .hero-logo-fade {
+  display: none;
+}
+
+/* ---------- map view background: one photograph under one uniform veil ----------
+   The dusk sunset-road photo, untouched, with a single even layer of the veil colour above it
+   (same strength everywhere) so it sits quietly behind the dashboard. Both are background layers
+   of this one pseudo-element, which sits below every child (positioned or not — mobile stacks them
+   in normal flow); .hero-sticky's isolation keeps it above the frame's own background colour.
+   One extra, very soft fade of the same veil colour over the lower part of the frame quiets the
+   photo's dark road there, where the tiny offshore islands (Lakshadweep, Andaman & Nicobar) sit. */
 .hero-sticky::before {
   content: '';
   position: absolute;
-  top: 18px;
-  left: 18px;
-  width: 260px;
-  height: 200px;
-  z-index: 0;
+  /* pushed past the frame (clipped by .hero-sticky's overflow: hidden) so the blur's soft edge
+     never shows as a pale rim around the view */
+  inset: -60px;
+  z-index: -1;
   pointer-events: none;
-  background-image: radial-gradient(rgba(110, 108, 100, 0.22) 0.75px, transparent 0.8px);
-  background-size: 14px 14px;
-  mask-image: linear-gradient(to right, #000 0%, transparent 85%), linear-gradient(to bottom, #000 0%, transparent 80%);
-  mask-composite: intersect;
-  -webkit-mask-image: linear-gradient(to right, #000 0%, transparent 85%), linear-gradient(to bottom, #000 0%, transparent 80%);
-  -webkit-mask-composite: source-in;
+  /* light blur: the photo stays clearly recognisable, just softened behind the map */
+  filter: blur(4px);
+  background:
+    linear-gradient(to bottom, rgb(var(--hero-veil) / 0) 55%, rgb(var(--hero-veil) / 0.35) 100%),
+    linear-gradient(rgb(var(--hero-veil) / var(--hero-veil-strength)), rgb(var(--hero-veil) / var(--hero-veil-strength))),
+    url('/map-sunset-road.jpg') 50% 62% / cover no-repeat;
 }
-
-/* ---------- ambient glow: two large, very soft blurred blobs that drift slowly — always on,
-   including on landing, unlike the fabric/tower-photo below it (which stays hidden until
-   scroll). Just enough motion that the landing view doesn't read as a static image. ---------- */
-.hero-ambient-glow {
-  display: none;
-}
-.hero-ambient-glow::before,
-.hero-ambient-glow::after {
-  content: '';
-  position: absolute;
-  width: 60vw;
-  height: 60vw;
-  border-radius: 50%;
-  filter: blur(50px);
-}
-.hero-ambient-glow::before {
-  top: -6%;
-  left: 2%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.9), transparent 70%);
-  animation: ambient-drift-a 32s ease-in-out infinite;
-}
-.hero-ambient-glow::after {
-  bottom: -10%;
-  right: 4%;
-  background: radial-gradient(circle, rgba(124, 147, 234, 0.4), transparent 70%);
-  animation: ambient-drift-b 38s ease-in-out infinite;
-}
-@keyframes ambient-drift-a {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(6%, 5%) scale(1.1);
-  }
-}
-@keyframes ambient-drift-b {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(-5%, -6%) scale(1.08);
-  }
-}
-
-/* ---------- hero-bg-fabric: the backdrop stack below the map/editorial layers: the community
-   photo (map view), the animated street (cover, StreetHero), and the editorial-text declutter
-   fade. ---------- */
+/* ---------- hero-bg-fabric: the landing view's backdrop (the sunset photo layer, street.css) ---------- */
 .hero-bg-fabric {
   position: absolute;
   inset: 0;
   z-index: 0;
   pointer-events: none;
 }
-/* the community photo: the map view's backdrop (HeroSection fades it in as the street leaves) */
-.tower-photo-layer {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
+/* desktop readability shade: a left-to-right darkening over the photo layer, deepest behind the
+   headline and paragraph and gone by ~65% across, so the sun and the pole stay vivid. (Mobile
+   already dims the photo under the copy — see street.css.) */
+@media (min-width: 981px) {
+  .hero-bg-fabric::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to right,
+      rgba(20, 10, 5, 0.55) 0%,
+      rgba(20, 10, 5, 0.42) 25%,
+      rgba(20, 10, 5, 0.2) 47%,
+      rgba(20, 10, 5, 0) 65%
+    );
+  }
 }
-.tower-photo-img {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-  object-position: 50% 42%;
-  opacity: 0; /* hidden on the cover (the street is there); HeroSection fades it in behind the map */
-  transform: scale(1.08);
-}
-/* fades from paper-color cover on the left to transparent, decluttering the area behind the
-   editorial copy while it's on top — in lockstep with the editorial copy's own fade-out (see
-   HeroSection's applyStyles), so once the copy has receded this fades away too. */
-.tower-photo-fade {
-  position: absolute;
-  inset: 0;
-  /* sized to the headline block, not the viewport (a 28% → 60% fade read as a long fog on wide
-     screens), but with a long, eased falloff (~580px) so it still flows: solid behind the text,
-     then the paper colour drops off quickly at first and feathers out softly, like a vignette,
-     rather than fading at a constant rate. */
-  background: linear-gradient(
-    to right,
-    var(--paper) 0,
-    var(--paper) calc(var(--hero-gutter) + 440px),
-    color-mix(in srgb, var(--paper) 88%, transparent) calc(var(--hero-gutter) + 540px),
-    color-mix(in srgb, var(--paper) 66%, transparent) calc(var(--hero-gutter) + 650px),
-    color-mix(in srgb, var(--paper) 40%, transparent) calc(var(--hero-gutter) + 770px),
-    color-mix(in srgb, var(--paper) 18%, transparent) calc(var(--hero-gutter) + 890px),
-    color-mix(in srgb, var(--paper) 5%, transparent) calc(var(--hero-gutter) + 980px),
-    transparent calc(var(--hero-gutter) + 1020px)
-  );
-}
-
-/* "Explore dashboard" cue: a glass pill centred near the bottom of the landing view, with a softly
-   bobbing arrow. Clicking it glides to the end of the reveal (HeroSection's exploreDashboard). Its
-   opacity/offset are scroll-driven inline; it fades out a little ahead of the headline. */
+/* "Explore dashboard": the introduction's call to action, centred near the bottom of the landing
+   view (desktop; on narrow screens it sits in the stacked flow under the headline, centred). A wide, low pill of warm frosted glass with white text, so it
+   reads clearly without glaring over the photo; hover brightens the glass and lifts it slightly. The
+   arrow sits beside the label. Clicking it plays the hand-off to the map view (HeroSection's
+   triggerDashboardTransition). */
 .hero-explore {
   position: absolute;
-  z-index: 4;
-  left: 50%;
+  z-index: 3;
+  /* centred with auto margins, not transform: the global press rule (base.css) sets transform:
+     scale(0.97) on :active, which would wipe a translateX(-50%) and jump the button out from under
+     the pointer mid-click */
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: fit-content;
   bottom: 40px;
-  transform: translate(-50%, 0);
   display: inline-flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 6px;
-  padding: 11px 22px 9px;
+  justify-content: center;
+  gap: 12px;
+  min-width: 300px;
+  padding: 11px 40px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  background: rgba(14, 20, 38, 0.42);
+  border: 1px solid rgba(255, 240, 225, 0.5);
+  background: rgba(255, 236, 214, 0.16);
   backdrop-filter: blur(12px) saturate(1.2);
   -webkit-backdrop-filter: blur(12px) saturate(1.2);
-  box-shadow: 0 10px 30px rgba(4, 8, 20, 0.35);
-  color: #f6f1e8;
+  box-shadow: 0 8px 22px rgba(20, 10, 5, 0.22);
+  color: #ffffff;
   font-family: inherit;
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   cursor: pointer;
-  will-change: opacity, transform;
-  transition: background 220ms var(--ease), border-color 220ms var(--ease), box-shadow 220ms var(--ease);
+  transition: background-color 200ms var(--ease), border-color 200ms var(--ease), box-shadow 200ms var(--ease), translate 200ms var(--ease);
 }
 .hero-explore:hover {
-  background: rgba(24, 32, 56, 0.6);
-  border-color: rgba(255, 255, 255, 0.36);
-  box-shadow: 0 14px 36px rgba(4, 8, 20, 0.45);
+  background: rgba(255, 236, 214, 0.28);
+  border-color: rgba(255, 240, 225, 0.75);
+  box-shadow: 0 12px 28px rgba(20, 10, 5, 0.3);
+  translate: 0 -1px;
 }
 .hero-explore:focus-visible {
-  outline: 2px solid #ffd66b;
-  outline-offset: 4px;
+  outline: 2px solid #ffffff;
+  outline-offset: 3px;
 }
 .hero-explore-arrow {
   width: 16px;
@@ -207,10 +342,8 @@
   .hero-explore-arrow { animation: none; }
 }
 
-/* top-right counterpart to .tower-photo-fade's left-edge fade — same paper-color-to-transparent
-   treatment, just radiating from the top-right corner instead of sweeping in from the left edge,
-   so the ACPET logo sits on a legible backdrop that fades into the photo rather than a hard-edged
-   panel. Static (not scroll-driven) like .hero-coverage-badge itself, which it sits behind. */
+/* a paper-colour-to-transparent glow radiating from the map view's top-right corner, so the ACPET
+   logo sits on a legible backdrop rather than a hard-edged panel */
 .hero-logo-fade {
   position: absolute;
   z-index: 1;
@@ -219,53 +352,46 @@
   width: 420px;
   max-width: 60%;
   height: 220px;
-  background: radial-gradient(ellipse at top right, var(--paper) 0%, var(--paper) 28%, transparent 65%);
+  background: radial-gradient(ellipse at top right, var(--hero-ground, var(--paper)) 0%, var(--hero-ground, var(--paper)) 28%, transparent 65%);
   pointer-events: none;
   transition: opacity 400ms var(--ease);
 }
-/* While the animated street is the backdrop (.hero-on-street, toggled by HeroSection), the logo
-   sits on a dark scene in both themes: use the white logo and drop the paper-coloured glow behind
-   it, which otherwise shows as a light blob over the street. */
+/* .hero-on-street (the landing view, which sits on the sunset photo in both themes): no
+   paper-coloured glow behind the logo, which would show as a light blob over the photo. */
 .hero-on-street .hero-logo-fade {
   opacity: 0;
 }
-/* light theme keeps its coloured logo on the street too, but its navy text needs a light surface:
-   a small frosted panel sized to the logo (instead of the old large paper glow). The dark theme's
-   white logo reads on the street as-is. */
-.hero-coverage-badge {
-  transition: background 400ms var(--ease), box-shadow 400ms var(--ease);
+/* the logo follows the theme (colour in light, white in dark) everywhere except here: the colour
+   logo's red and navy don't hold enough contrast on the orange sunset, so the landing view keeps
+   the white one in the light theme too */
+:root:not([data-theme='dark']) .hero-on-street .hero-logo-light {
+  display: none;
 }
-:root:not([data-theme='dark']) .hero-on-street .hero-coverage-badge {
-  top: 12px;
-  right: 12px;
-  padding: 6px 10px;
-  border-radius: 12px;
-  background: rgba(238, 241, 247, 0.86);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 6px 20px rgba(4, 8, 20, 0.25);
+:root:not([data-theme='dark']) .hero-on-street .hero-logo-dark {
+  display: block;
 }
 
-/* top-right badge — sits above the tower photo/ambient glow but stays static (not part of the
-   scroll-driven reveal) since it's page-level context, not part of the "camera move" narrative. */
+/* top-right badge — one on each screen */
 .hero-coverage-badge {
   position: absolute;
   z-index: 2;
-  top: 0;
-  right: 0;
+  /* The logo PNGs carry ~13px of transparent margin above the artwork and ~30px to its right (at
+     the 230px display width, identical in both the colour and white versions). These offsets put
+     the visible artwork 32px from the top and right edges — the same --hero-side-gutter the legend
+     and Explore card keep from theirs — in every theme and scroll position. */
+  top: 19px;
+  right: 2px;
 }
 .hero-coverage-badge .hero-logo {
   margin-bottom: 0;
 }
 
-/* ---------- editorial cover: headline block, anchored left. Recedes (fades, lifts left, scales
-   down) as the camera moves in — see HeroSection's applyStyles — rather than staying static, so
-   it genuinely "leaves the main visual field" instead of just sitting beside the map forever. ---------- */
+/* ---------- editorial cover: the landing view's headline block, anchored left ---------- */
 .hero-editorial {
   position: absolute;
   z-index: 2;
   left: var(--hero-gutter);
-  top: 49%;
+  top: 50%;
   transform: translateY(-50%);
   width: 560px;
   max-width: calc(44% - var(--hero-gutter));
@@ -308,30 +434,30 @@
 }
 .scope-pill--a {
   background: rgba(27, 175, 122, 0.12);
-  color: #12855c;
+  color: #0b6b49;
 }
 .scope-pill--b {
   background: rgba(235, 104, 52, 0.12);
-  color: #b0491f;
+  color: #8f3a17;
 }
 .scope-pill--c {
   background: rgba(74, 58, 167, 0.1);
-  color: #4a3aa7;
+  color: #3a2d8a;
 }
 /* the light-mode colors above are tuned for a light tint over a white panel — over a dark panel
    that same low-alpha tint reads as barely-there and the dark saturated text loses contrast, so
    dark mode gets its own brighter text + slightly more opaque tint rather than inheriting these. */
 :root[data-theme='dark'] .scope-pill--a {
   background: rgba(27, 175, 122, 0.22);
-  color: #6ee7b7;
+  color: #a7f3d0;
 }
 :root[data-theme='dark'] .scope-pill--b {
   background: rgba(235, 104, 52, 0.22);
-  color: #ffab7a;
+  color: #ffc9a6;
 }
 :root[data-theme='dark'] .scope-pill--c {
   background: rgba(74, 58, 167, 0.28);
-  color: #b8a6ff;
+  color: #d6ccff;
 }
 .hero-editorial p.lede {
   margin: 24px 0 0;
@@ -350,25 +476,11 @@
      self-capping narrower, combined with a slightly smaller font, keeps it to about 4 lines. */
   max-width: 100%;
 }
-:root[data-theme='dark'] .hero-editorial p.lede {
-  color: #c3c9d4;
-}
-.hero-cta {
-  margin-top: 26px;
-  font-size: 12px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  font-weight: 600;
-  color: var(--accent-text);
-}
 
 /* ---------- the map stage: a fixed-size box, centered via auto margins so it's perfectly
    centered on any viewport without hardcoded pixel math. No card background/border/radius — the
    brief is explicit that the map should float naturally on the page rather than being boxed, so
-   it sits directly on the same paper tone as everything else. .hero-map-inner is what actually
-   carries the "camera move" transform (translateX from offset-right to centered, scale up) — see
-   HeroSection's applyStyles — kept as a separate inner layer so the stage's own box (used for the
-   stable, untransformed click-position math in handleStateClick) never itself moves. ---------- */
+   it sits directly on the same paper tone as everything else. ---------- */
 .hero-map-stage {
   position: absolute;
   top: 0;
@@ -385,15 +497,14 @@
   left: calc(var(--hero-side-gutter) + var(--hero-side-box) + var(--hero-map-gap));
   right: calc(var(--hero-side-gutter) + var(--hero-side-box) + var(--hero-map-gap));
   z-index: 1;
-  /* small rightward nudge off the otherwise-even midpoint between the panel and legend columns. */
-  transform: translateX(40px);
+  /* one fixed, hand-tuned horizontal offset, the same in View and Compare mode — no measuring or
+     centring. translateY: a small drop so the top of the map (J&K) clears the logo band instead of
+     sitting level with the very top of the page. */
+  transform: translate(63px, 6px);
 }
 .hero-map-inner {
   position: absolute;
   inset: 0;
-  transform-origin: 50% 50%;
-  pointer-events: none;
-  will-change: transform;
 }
 .hero-network-layer {
   position: absolute;
@@ -411,37 +522,6 @@
 .hero-map-svg {
   display: block;
 }
-/* glass landing skin over the map — --hero-glass is scroll-driven from HeroSection (1 on the
- * landing view, 0 once the map has settled). The real state map cross-fades in as it goes. The
- * skin is never interactive, so hover/click always fall through to the state paths beneath. */
-.hero-map-states {
-  opacity: calc(1 - var(--hero-glass, 1));
-}
-.hero-map-glass {
-  opacity: var(--hero-glass, 1);
-  pointer-events: none;
-}
-.hero-glass-fill {
-  filter: drop-shadow(0 0 18px rgba(200, 215, 235, 0.25));
-}
-.hero-glass-edge {
-  stroke: rgba(235, 240, 248, 0.85);
-  stroke-width: 1.2;
-  stroke-linejoin: round;
-  filter: drop-shadow(0 0 3px rgba(225, 235, 250, 0.9)) drop-shadow(0 0 10px rgba(190, 210, 240, 0.5));
-}
-.hero-glass-trail {
-  stroke: #ffffff;
-  stroke-width: 2.4;
-  stroke-linecap: round;
-  stroke-dasharray: 60 940;
-  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.9));
-}
-@media (prefers-reduced-motion: reduce) {
-  .hero-glass-motion {
-    display: none;
-  }
-}
 .hero-state-path {
   transition: fill 260ms var(--ease), stroke 220ms var(--ease), filter 200ms var(--ease);
 }
@@ -456,7 +536,12 @@
 }
 .hero-state-path.disabled-for-compare {
   cursor: not-allowed;
-  filter: saturate(0.35);
+}
+.hero-map-idle-dots {
+  pointer-events: none;
+}
+.hero-map-idle-dot {
+  fill: var(--map-idle-dot);
 }
 
 /* small, clean hover tooltip — state name plus a one-line cue, not the full stats popup (that's
@@ -493,43 +578,307 @@
   font-weight: 500;
 }
 .hero-map-tip span.hero-map-tip-population {
-  color: #1d4f8c;
+  color: var(--accent-text);
   font-weight: 700;
-}
-/* light-mode's dark navy is tuned for the light panel tint above — over the dark panel it's
-   near-invisible, same issue as the scope pills and lede text nearby, fixed the same way. */
-:root[data-theme='dark'] .hero-map-tip span.hero-map-tip-population {
-  color: #8fc0ff;
 }
 
 /* ---------- overlay chrome: compare tool (left) and legend (right) each float in their own
-   reserved column beside the map — see .hero-map-stage/.overlay-compare/.map-chrome. Every one
-   starts faded/lowered and cascades in together off the same chrome progress value (see chromeEls
-   in HeroSection.tsx's applyStyles) once the map has finished centering. No CSS transition: the
-   rAF loop's own per-frame easing already provides the smoothing. ---------- */
+   reserved column beside the map — see .hero-map-stage/.overlay-compare/.map-chrome. ---------- */
 .overlay-compare,
 .map-chrome {
   position: absolute;
   z-index: 3;
-  opacity: 0;
-  transform: translateY(14px);
 }
 /* Anchored to the sticky viewport's own bottom edge, not a percentage-of-height `top` — a `top`
  * anchor left the panel's bottom (the Compare/Clear buttons) at the mercy of however tall its
  * content happened to be (selecting enough jurisdictions to wrap the chip list to extra rows, or
  * simply a shorter browser window) and `.hero-sticky`'s own `overflow: hidden` clipped anything
  * past 100vh rather than letting the page scroll to reveal it — the buttons could end up
- * unreachable. Anchoring the bottom instead means the panel only ever grows *upward*, and the chip
- * list's own tighter scroll cap (see `.multiselect-chips`) keeps the overall card short enough to
- * never approach the viewport height at all. No `overflow`/`max-height` on this element itself —
+ * unreachable. Anchoring the bottom instead means the panel only ever grows *upward*, so the
+ * selected-state chips can wrap onto as many rows as they need (see `.explore-chips`) without
+ * pushing the buttons off-screen. No `overflow`/`max-height` on this element itself —
  * either one clips `.control-panel`'s box-shadow flush to this box's edges (a real bug: any
  * `overflow` value other than `visible` clips an element's own shadow, not just its content),
  * which read as a stray hard-edged rectangle poking out past the card's rounded corners. */
 .overlay-compare {
-  bottom: 32px;
+  bottom: 20px;
   left: var(--hero-side-gutter);
-  width: var(--hero-side-box);
+  width: var(--hero-left-box);
   transition: left 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---------- "Explore the data" card (ComparePanel.tsx): heading, View/Compare segmented control,
+ * the state search combobox (StateSearch.tsx), one hint line, and a Compare-mode-only footer. ---------- */
+/* doubled class: beats the shared .control-panel rule (gap/padding), which comes later in this file */
+.control-panel.explore-panel {
+  gap: 0;
+  padding: 24px;
+}
+.explore-title {
+  margin-bottom: 16px;
+  font-family: var(--font-display);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.2;
+  font-weight: 600;
+}
+/* segmented control: native radios (arrow keys move between them for free), visually replaced
+   by two pill segments; the checked one is a raised "thumb" */
+.explore-mode {
+  margin-bottom: 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 9px;
+  background: var(--control-track, color-mix(in srgb, var(--ink) 7%, transparent));
+  border: 1px solid color-mix(in srgb, var(--ink) 10%, transparent);
+}
+.explore-mode-option {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 38px; /* + the track's 2px padding and 1px border = 44px control */
+  border-radius: 7px;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--control-text, var(--muted));
+  cursor: pointer;
+  transition: background 160ms var(--ease), color 160ms var(--ease), box-shadow 160ms var(--ease);
+}
+.explore-mode-option:hover {
+  color: var(--ink);
+}
+/* the selected segment uses the same accent blue as the Compare button */
+.explore-mode-option[data-checked='true'] {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+}
+.explore-mode-input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.explore-mode-option:has(.explore-mode-input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.explore-panel .state-search-field {
+  margin-bottom: 12px;
+}
+.explore-hint {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+/* Compare-mode footer: collapses to zero height in View mode via the same grid-template-rows
+   0fr→1fr technique Collapsible.tsx uses (height:auto can't be transitioned directly). The card
+   is bottom-anchored, so this grows it upward. */
+.explore-footer-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  margin-top: 0;
+  transition: grid-template-rows 200ms var(--ease), opacity 160ms var(--ease), margin-top 200ms var(--ease);
+}
+.explore-footer-wrap[data-open='true'] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  margin-top: 20px;
+}
+.explore-footer {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  /* room for the button's focus ring, which overflow:hidden would otherwise clip */
+  padding: 3px;
+  margin: -3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .explore-footer-wrap,
+  .explore-mode-option {
+    transition: none;
+  }
+}
+/* doubled class: beats the shared .multiselect-chips cap (92px, overflow-y: auto), defined later
+   in this file. Here every selection stays visible: the chips wrap onto as many rows as they need
+   (the shared 6px gap spaces the rows too) and the card, being bottom-anchored, grows upward to
+   fit them, with the Compare/Clear row always below the full list. */
+.multiselect-chips.explore-chips {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: none;
+  overflow: visible;
+}
+.multiselect-chip button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.explore-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.explore-actions .control-compare-btn {
+  flex: 1 1 auto;
+  display: grid;
+  place-items: center;
+  min-height: 44px;
+  padding: 6px 14px;
+  font-size: 13px;
+}
+/* the disabled label is a sentence ("Select at least 2 to compare"), too long for the button in
+   the uppercase/tracked button style — sentence case keeps it to one line on most widths */
+.explore-actions .control-compare-btn:disabled {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 12.5px;
+}
+.control-compare-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.explore-clear {
+  all: unset;
+  cursor: pointer;
+  font-size: 12.5px;
+  color: var(--accent-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  border-radius: 3px;
+}
+.explore-clear:hover {
+  color: var(--ink);
+}
+.explore-clear:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.state-search-field {
+  position: relative;
+  /* lifts the open listbox above the hint line below it, which would otherwise paint on top */
+  z-index: 1;
+}
+.state-search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+}
+.state-search-input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 36px;
+  padding: 0 34px 0 31px;
+  border-radius: 9px;
+  border: 1px solid color-mix(in srgb, var(--ink) 16%, transparent);
+  background: var(--input-bg, color-mix(in srgb, var(--panel) 92%, transparent));
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  transition: border-color 160ms var(--ease), box-shadow 160ms var(--ease);
+}
+.state-search-input::placeholder {
+  color: var(--faint, color-mix(in srgb, var(--muted) 85%, transparent));
+}
+.state-search-input:hover {
+  border-color: color-mix(in srgb, var(--ink) 28%, transparent);
+}
+.state-search-input:focus-visible,
+.state-search-input[aria-expanded='true'] {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+.state-search-toggle {
+  all: unset;
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  color: var(--muted);
+  cursor: pointer;
+}
+.state-search-toggle svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 200ms var(--ease);
+}
+.state-search-toggle svg[data-open='true'] {
+  transform: rotate(180deg);
+}
+/* the card is anchored to the bottom of the viewport, so the list opens upward into the empty
+   column above it rather than running off-screen (mobile, a normal flowing page, opens downward) */
+.state-search-list {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  max-height: min(300px, 40vh); /* fits above the card down to ~600px-tall windows */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: 10px;
+  background: var(--panel);
+  border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent);
+  box-shadow: var(--shadow-float);
+}
+.state-search-list[hidden] {
+  display: none;
+}
+.state-search-option {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 9px;
+  border-radius: 7px;
+  font-size: 13px;
+  color: var(--ink);
+  cursor: pointer;
+}
+/* the keyboard-active option doubles as its visible focus indicator (focus stays in the input,
+   per the aria-activedescendant pattern), so it gets an accent edge, not just a tint */
+.state-search-option.active {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+.state-search-option.disabled {
+  cursor: not-allowed;
+  opacity: var(--disabled-opacity);
+}
+.state-search-name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.state-search-check {
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  color: var(--accent-text);
+}
+.state-search-empty {
+  padding: 8px 9px;
+  font-size: 12.5px;
+  color: var(--muted);
 }
 
 /* ---------- map chrome: legend — a sibling of .overlay-compare (not nested inside
@@ -539,7 +888,7 @@
  * values) always has an identical gap to the panel on one side and the legend on the other,
  * whether or not the legend's own content fills its whole reserved column. ---------- */
 .map-chrome {
-  bottom: 32px;
+  bottom: 20px;
   right: var(--hero-side-gutter);
   width: var(--hero-side-box);
   display: flex;
@@ -567,11 +916,14 @@
   color: var(--ink);
   white-space: nowrap;
 }
+/* square swatches drawn with exactly the map's own solid fill per status (see MAP_STATUS in
+   colors.ts) — also reused by the state search list and the Methodology page */
 .map-legend-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex: 0 0 8px;
+  width: 11px;
+  height: 11px;
+  border-radius: 2px;
+  flex: 0 0 11px;
+  box-shadow: inset 0 0 0 1px rgba(74, 51, 32, 0.45); /* MAP_BORDER, so the pale fills still read */
 }
 .map-legend-dot--tracked {
   background: var(--map-tracked);
@@ -579,8 +931,13 @@
 .map-legend-dot--no-data {
   background: var(--map-no-data);
 }
-.map-legend-dot--none {
-  background: var(--map-idle);
+/* "Coming soon": the same greige with a fine dot grid, matching the dots HeroMap draws over those
+   states, so it can't be mistaken for the plain off-white "Data Not Reported" (this view only — the
+   search list's swatches included) */
+.hero-sticky .map-legend-dot--none {
+  background:
+    radial-gradient(circle, var(--map-idle-dot) 0.9px, transparent 1.3px) 0.5px 0.5px / 3.5px 3.5px,
+    var(--map-idle);
 }
 
 .control-panel {
@@ -601,64 +958,6 @@
   background: color-mix(in srgb, var(--panel) 94%, transparent);
   border-color: color-mix(in srgb, var(--ink) 18%, transparent);
 }
-.control-panel-head {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.control-panel-eyebrow {
-  font-size: 11px;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  color: var(--accent-text);
-}
-.control-panel-head h3 {
-  color: var(--ink);
-  font-size: 18px;
-  line-height: 1.2;
-  font-weight: 600;
-}
-.toggle-row {
-  all: unset;
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  color: var(--ink);
-  font-size: 13px;
-}
-.toggle-switch {
-  position: relative;
-  flex: 0 0 auto;
-  width: 30px;
-  height: 17px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--ink) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
-  transition: background 160ms var(--ease), border-color 160ms var(--ease);
-}
-.toggle-switch[data-on='true'] {
-  background: var(--accent);
-  border-color: var(--accent);
-}
-.toggle-row:active .toggle-switch {
-  border-color: var(--accent-light);
-}
-.toggle-thumb {
-  position: absolute;
-  top: 1px;
-  left: 1px;
-  width: 13px;
-  height: 13px;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  transition: transform 160ms var(--ease);
-}
-.toggle-switch[data-on='true'] .toggle-thumb {
-  transform: translateX(13px);
-}
 
 .control-field {
   display: flex;
@@ -676,7 +975,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: color-mix(in srgb, var(--ink) 3%, transparent);
+  background: var(--input-bg, color-mix(in srgb, var(--ink) 3%, transparent));
   border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent);
   border-radius: 3px;
   padding: 10px 12px;
@@ -827,71 +1126,41 @@
   transition: background 160ms var(--ease), border-color 160ms var(--ease), transform 120ms var(--ease);
 }
 .control-compare-btn:hover:not(:disabled) {
-  background: #2f4bb1;
-  border-color: #2f4bb1;
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 .control-compare-btn:active:not(:disabled) {
-  background: #24398a;
-  border-color: #24398a;
+  background: var(--accent-active);
+  border-color: var(--accent-active);
   transform: scale(0.97);
 }
 .control-compare-btn:disabled {
   opacity: var(--disabled-opacity);
   cursor: not-allowed;
 }
-.control-ghost-btn {
-  all: unset;
-  box-sizing: border-box;
-  cursor: pointer;
-  padding: 9px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--accent);
-  color: var(--accent-text);
-  font-family: var(--font-condensed);
-  font-weight: 600;
-  font-size: 14px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  text-align: center;
-  transition: background 160ms var(--ease), color 160ms var(--ease), transform 120ms var(--ease);
-}
-.control-ghost-btn:hover:not(:disabled) {
-  background: rgba(59, 95, 224, 0.08);
-  color: var(--accent-text);
-}
-.control-ghost-btn:active:not(:disabled) {
-  background: rgba(59, 95, 224, 0.16);
-  transform: scale(0.97);
-}
-/* previously had no disabled treatment at all — an unclickable "Clear" (nothing selected yet)
-   looked identical to an active one in both themes; matches .control-compare-btn's own dimming. */
-.control-ghost-btn:disabled {
-  opacity: var(--disabled-opacity);
-  cursor: not-allowed;
-}
 
 .control-hint {
   font-size: 12.5px;
-  color: var(--muted);
+  color: var(--text-body, var(--muted));
   line-height: 1.4;
 }
+/* light map view: icons at full strength (the shared rule fades the search icon to 0.7), and the
+   disabled Compare button marked by a muted fill instead of the shared reduced opacity, so its
+   label stays readable */
+:root:not([data-theme='dark']) .hero-sticky .state-search-icon {
+  opacity: 1;
+}
+:root:not([data-theme='dark']) .hero-sticky .control-compare-btn:disabled {
+  opacity: 1;
+  background: var(--btn-disabled-bg);
+  border-color: var(--btn-disabled-border);
+  color: var(--btn-disabled-text);
+}
 
-/* below this width the scroll rig disables itself entirely (see isMobile() in HeroSection.tsx) —
-   JS never calls applyStyles, so it never writes an inline opacity/transform to fight with here.
-   The `!important` overrides below are still needed for one case: a page that loads at desktop
-   width (where JS has already written inline styles reflecting wherever the user had scrolled to)
-   and is then resized narrower — those stale inline styles must lose to this stylesheet, which
-   only a stylesheet-level `!important` can guarantee over a plain inline style. Everything ends
-   up fully visible/interactive and laid out as a normal static stack instead of the desktop
-   cinematic composition, which doesn't suit a narrow viewport. */
+/* below this width both screens become a plain stacked column: headline, then the compare panel
+   and the map, instead of the desktop's full-height composition, which doesn't suit a narrow
+   viewport. */
 @media (max-width: 980px) {
-  /* mobile skips the scroll reveal and shows the final map, so no glass skin */
-  .hero-map-glass {
-    display: none;
-  }
-  .hero-map-states {
-    opacity: 1;
-  }
   .hero-stage {
     height: auto;
     /* horizontal offset matches main.app-main's mobile padding (20px, see layout.css) — left at
@@ -899,65 +1168,42 @@
        unwanted horizontal scrollbar. */
     margin: -72px -20px 0;
   }
-  /* the scroll-driven reveal is disabled below this width (see isMobile() in HeroSection.tsx),
-     so there's nothing for this CTA to be inviting the user to scroll toward. */
-  .hero-cta {
-    display: none;
-  }
-  /* no pinned stage on mobile: the cue sits in the flow under the headline and jumps to the map */
   .hero-explore {
-    position: relative;
-    left: auto;
-    bottom: auto;
-    display: flex;
-    order: 1; /* same as .hero-editorial, and later in the DOM, so it sits right under the headline */
-    margin: 4px auto 8px;
-    opacity: 1 !important;
-    transform: none !important;
-    pointer-events: auto !important;
-  }
-  .hero-sticky {
     position: static;
+    min-width: min(300px, 100%);
+    align-self: center;
+    margin-top: 16px;
+  }
+  .hero-landing {
     height: auto;
-    overflow: visible;
     display: flex;
     flex-direction: column;
     gap: 16px;
     /* the hero bleeds past main.app-main's own top padding (see .hero-stage's negative margin
        above) to sit flush with the viewport edge — this restores clearance so the headline
        doesn't start right at the very top edge of the viewport. */
-    padding-top: 64px;
+    padding: 112px 0 8px; /* clears the logo (artwork 32px from the top, box bottom at 96px) */
   }
-  .hero-editorial,
-  .hero-map-inner,
-  .hero-network-layer,
-  .overlay-compare {
-    opacity: 1 !important;
-    transform: none !important;
-    filter: none !important;
+  .hero-sticky {
+    height: auto;
+    overflow: visible;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-top: 16px;
   }
-  /* pointer-events handled separately from the block above: .hero-network-layer must stay
-   * pointer-events:none (see its own rule) even here — it's an empty wrapper div sitting on top
-   * of the map in paint order, and would otherwise swallow every hover/click on mobile too. */
-  .hero-editorial,
-  .hero-map-inner,
-  .overlay-compare {
-    pointer-events: auto !important;
-  }
-  /* mobile has no scroll hand-off: the animated street is the one backdrop behind the stack */
-  .tower-photo-img {
+  /* one logo at the top of the stacked page is enough */
+  .hero-sticky .hero-coverage-badge,
+  .hero-sticky .hero-logo-fade {
     display: none;
   }
-  /* editorial and map are stacked, not overlapping, on mobile — there's nothing to declutter for,
-     and the scroll-driven JS that normally toggles this doesn't run below the breakpoint. */
-  .tower-photo-fade {
-    opacity: 0 !important;
-  }
   .hero-editorial {
-    position: static;
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
     width: auto;
     max-width: none;
-    order: 1;
   }
   .hero-map-stage {
     position: relative;
@@ -969,10 +1215,19 @@
     order: 2;
     transform: none;
   }
+  .state-search-list {
+    top: calc(100% + 6px);
+    bottom: auto;
+  }
+  /* 16px+ stops iOS Safari zooming the page in when the input takes focus */
+  .state-search-input {
+    font-size: 16px;
+    height: 42px;
+  }
   .overlay-compare {
     position: static;
     width: auto;
-    order: 3;
+    order: 2; /* same as the map stage but earlier in the DOM, so it sits full width above the map */
   }
   .map-chrome {
     display: none;
@@ -980,10 +1235,88 @@
 }
 
 @media (max-width: 720px) {
+  .hero-landing {
+    padding: 112px 24px 8px;
+  }
   .hero-sticky {
-    padding: 64px 24px 40px;
+    padding: 16px 24px 40px;
   }
   .hero-editorial h1 {
     font-size: 30px;
+  }
+}
+
+/* light mode: the photo dimmed a step (its bright haze otherwise reads as glare behind the map) */
+:root:not([data-theme='dark']) .hero-sticky::before {
+  filter: blur(4px) brightness(0.84);
+}
+/* light mode: the Explore card and legend as warm frosted glass over the photo (more of the scene
+   tinting through, edges lit like glass) so they sit in it, matching the sidebar's photo wash */
+:root:not([data-theme='dark']) .hero-sticky .control-panel,
+:root:not([data-theme='dark']) .hero-sticky .map-legend {
+  background: rgba(240, 231, 218, 0.84);
+  border-color: rgba(255, 255, 255, 0.55);
+  /* a heavier blur than dark mode's: with this much of the photo showing through, it turns the
+     scene behind the text into smooth colour rather than shapes */
+  backdrop-filter: blur(28px) saturate(1.25);
+  -webkit-backdrop-filter: blur(28px) saturate(1.25);
+}
+/* light mode: the boxes' small text in the deepest warm charcoal, so it holds up over the
+   translucent glass (sizes and weights are shared by both themes, below) */
+:root:not([data-theme='dark']) .hero-sticky .explore-hint,
+:root:not([data-theme='dark']) .hero-sticky .control-hint,
+:root:not([data-theme='dark']) .hero-sticky .map-legend-row {
+  color: #1a1512;
+}
+:root:not([data-theme='dark']) .hero-sticky .state-search-input::placeholder {
+  color: #2a221d;
+}
+/* dark mode: the same frosted glass, in a deep warm charcoal that lets the dimmed scene tint through */
+:root[data-theme='dark'] .hero-sticky .control-panel,
+:root[data-theme='dark'] .hero-sticky .map-legend {
+  background: rgba(30, 25, 21, 0.93);
+  border-color: rgba(255, 236, 214, 0.14);
+  backdrop-filter: blur(18px) saturate(1.25);
+  -webkit-backdrop-filter: blur(18px) saturate(1.25);
+}
+
+/* readability (both themes): the Explore card and legend text a half-size up and at full primary-text
+   strength — the boxes above are near-solid so the photo no longer competes with it */
+.hero-sticky .explore-title {
+  font-size: 17.5px;
+}
+.hero-sticky .explore-mode-option {
+  font-size: 13px;
+}
+.hero-sticky .explore-mode-option:not([data-checked='true']) {
+  color: var(--ink);
+}
+.hero-sticky .state-search-input {
+  height: 38px;
+  font-size: 13.5px;
+  font-weight: 500;
+}
+.hero-sticky .state-search-input::placeholder {
+  color: var(--muted);
+}
+.hero-sticky .state-search-icon {
+  color: var(--ink);
+}
+/* medium weight, which reads larger, so a half-step smaller than 13px */
+.hero-sticky .explore-hint,
+.hero-sticky .control-hint {
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--ink);
+}
+/* the legend keeps its original size (12.5px, 6px rows, 10px 14px padding); only a touch firmer */
+.hero-sticky .map-legend-row {
+  font-weight: 500;
+}
+@media (max-width: 980px) {
+  /* 16px+ stops iOS Safari zooming the page in when the input takes focus */
+  .hero-sticky .state-search-input {
+    font-size: 16px;
   }
 }

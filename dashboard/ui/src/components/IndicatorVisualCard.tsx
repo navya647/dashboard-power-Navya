@@ -19,6 +19,8 @@ export interface CardPoint {
   standardMet: boolean | null;
   reasonNotComparable: string | null;
   regulation: string | null;
+  /** extraction-time standardisation note (e.g. a figure converted onto its series' annual basis) */
+  note?: string | null;
 }
 
 export interface CardSeries {
@@ -290,8 +292,9 @@ export default function IndicatorVisualCard({ title, typeLabel, meaning, measure
   const [hoverYear, setHoverYear] = useState<string | null>(null);
   useThemeTick();
   const gridColor = cssVar('--chart-grid', 'rgba(18,23,42,0.05)');
-  const axisTitleColor = cssVar('--chart-axis-title', '#4d5461');
+  const axisTitleColor = cssVar('--chart-axis-title', '#666662');
   const tooltipBg = cssVar('--chart-tooltip-bg', '#1c2127');
+  const accent = cssVar('--accent', '#28546f');
 
   const hasNumeric = series.some((s) => s.points.some((p) => p.value != null));
   // the same fallback EvidenceRail uses per row (hoverYear, else the page's Focus Year) — lifted
@@ -351,7 +354,7 @@ export default function IndicatorVisualCard({ title, typeLabel, meaning, measure
 
   // point/line color sits on the card's own panel background — matching the ring to it (instead of
   // a fixed cream) keeps the "cutout" look correct in both themes rather than a stray light halo.
-  const pointBorder = cssVar('--panel', '#faf8f3');
+  const pointBorder = cssVar('--panel', '#fafaf8');
   const datasets = series.map((s) => ({
     label: s.label,
     data: s.points.map((p) => p.value),
@@ -554,7 +557,11 @@ export default function IndicatorVisualCard({ title, typeLabel, meaning, measure
                   padding: 9,
                   cornerRadius: 7,
                   displayColors: true,
-                  callbacks: { label: (c) => c.dataset.label + ': ' + (c.raw == null ? 'no data' : unitSuffix(c.raw as number)) },
+                  callbacks: {
+                    label: (c) => c.dataset.label + ': ' + (c.raw == null ? 'no data' : unitSuffix(c.raw as number)) + (series[c.datasetIndex]?.points[c.dataIndex]?.note ? ' *' : ''),
+                    afterBody: (items) =>
+                      items.map((c) => series[c.datasetIndex]?.points[c.dataIndex]?.note).filter((n): n is string => !!n).map((n) => `* ${n}`),
+                  },
                 },
                 annotation: {
                   annotations: {
@@ -612,7 +619,7 @@ export default function IndicatorVisualCard({ title, typeLabel, meaning, measure
                             type: 'line' as const,
                             xMin: fyLabel(hoverYear),
                             xMax: fyLabel(hoverYear),
-                            borderColor: 'rgba(59,95,224,0.35)',
+                            borderColor: hexToRgba(accent.startsWith('#') ? accent : '#28546f', 0.35),
                             borderWidth: 1.5,
                             borderDash: [3, 3],
                           },

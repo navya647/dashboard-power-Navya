@@ -19,7 +19,7 @@ Three datasets, all keyed by the same 12-state `state_order`:
 | Dataset | Workbook | Script | Output | Consumed by |
 |---|---|---|---|---|
 | Reliability / power quality | `Common Indicators.xlsx` | `extraction_common.py` | `discoms2.json` | `StateDetail.tsx`, `CompareView.tsx`, `HeroMap.tsx` |
-| Regulatory transparency | `ACCESSIBILITY.xlsx` | `extraction_accessibility.py` | `accessibility.json` | `AccessibilityView.tsx` |
+| Regulatory transparency | `ACCESSIBILITY.xlsx` + `hyperlinks.xlsx` (per-document / per-FY links) | `extraction_accessibility.py` | `accessibility.json` | `AccessibilityView.tsx` |
 | Standards of Performance (consumer service) | `State specific Indicators.xlsx` | `extraction_state_specific.py` | `state_specific.json` | `SopSection.tsx` (rendered inside `StateDetail.tsx`) |
 
 The reliability dataset normalizes ~20 raw indicator names into 8 canonical ones
@@ -66,6 +66,13 @@ to have zero reported figures in any of them.
   `'idle'` (in neither dataset, not clickable, "Coming soon"), `'no-data'` (in scope,
   no reported *figures* anywhere yet, but still clickable — e.g. a SoP framework
   listing), `'tracked'` (has an actual reported figure, clickable).
+- The State page's Indicator dropdown offers an indicator only if the state sets a standard for
+  it (in words — `standard_specified`; a benchmark alone doesn't count) **or** it has reported
+  figures: `withStandardOrFigures()` in `lib/unifiedIndicators.ts`, judged per state (all DISCOMs
+  at once). Empty, "N/A" and the sheets' "Not specified…" wording count as no standard
+  (`statesStandard()`). Figures-but-no-standard indicators are kept, and their `IndicatorModule`
+  box is tinted (`im--no-standard`, accent tint) with a "No standard specified" tag on the label
+  row. Applies to the State page only, not Compare.
 - Do not start the dev server (`npm run dev`) on your own initiative to verify
   changes. Only run it when the user explicitly asks you to run/test the app (`cd
   dashboard/ui && npm run dev -- -p 3001` if port 3000 is occupied by something else).
@@ -97,6 +104,57 @@ to have zero reported figures in any of them.
   `onClick` opens (adds to a `Set`, doesn't force-close others) that DISCOM's own
   `Collapsible` row further down the same section, and the row's own scroll-into-view
   takes it from there.
+- `IndicatorModule.tsx` — the state page's analysis area: one self-contained module per
+  selected indicator (header grid: bucket · category label with a download button on the same
+  row, top right — a placeholder; hover/focus shows "This feature is coming soon", nothing
+  downloads yet — then name + definition button + unit, with DISCOM toggle keys (line colour + name
+  only; the "Latest · FY" figures were removed at the user's request). No "lower/higher is better" on the
+  card — interpretation lives only in the definition pop-up, at the user's request. Body: a ~340px
+  side column with the standard/benchmark in force and the source documents, beside the trend
+  chart — value labels, points filled Met/Missed/No benchmark from the source's own verdict and
+  hollow when there is none, the benchmark as a neutral dotted stepped line (its own
+  `--chart-benchmark` token per theme), y-axis from zero for non-negative data,
+  and a one-line legend listing only the verdicts present). Redesigned 5 Oct 2026 at the user's request. Standards/benchmarks are state-level, never
+  per DISCOM. Where the workbooks' own text dates a regulation change (`lib/regulationTimeline.ts`
+  — Gujarat 6 Dec 2023, Maharashtra 5 Jul 2024, Rajasthan in force 15 Apr 2021), the panel has
+  one column per regulation with its dates and the x-axis marks the split year with a footnote;
+  otherwise one column per distinct standard as recorded, labelled by years. The benchmark line
+  (`lib/benchmarkLine.ts`) draws only numbers the source marked comparable for figures in the
+  plotted unit, plus explicitly restated text benchmarks (Rajasthan SAIDI/SAIFI per quarter → per
+  year, the user-approved ×4 method). Source documents are presented exactly as on the Accessibility page's state card — the
+  shared `SourceDocuments.tsx` (`ReportedDataTable`: per-DISCOM year links from `data_links`,
+  merged into one cell when every DISCOM shares them; `RegulationDocs`: `regulation_documents`
+  titled via `lib/regulationTitles`), styled by the acm-* rules — change both together. Clicking the name opens
+  `IndicatorDefinition.tsx`, a pop-up with only: definition with the reporting period stripped,
+  bucket, category, interpretation. Display units come from `lib/indicatorUnits.ts`, an
+  explicit table keyed on each record's `reported_meaning` text (same pattern as
+  `lib/indicatorDirection.ts`) — add any new wording there rather than truncating text. One
+  chart per module: when units differ it plots the unit most figures use and leaves the rest
+  off the chart (noted in one line; the state and compare pages no longer have a Data Table) — never converted,
+  never one axis. Per-point detail (status, movement vs previous year from `lib/yearMovement.ts`,
+  standardisation `note`) lives in the chart tooltip — one figure per tooltip (custom
+  `imNearestFigure` hover mode: the nearest reported point, never several DISCOMs at once, never
+  the benchmark line): "DISCOM · FY", the figure, "status · movement" on one line, the note as
+  wrapped small print. Regulation citations are sheet-level (the
+  extractors attach a sheet's header citations to its first year block only).
+- `GlanceView.tsx` (`/glance`, sidebar "At a glance", page title "Quick Comparison Across DISCOMs",
+  data from `lib/glance.ts`) — one reliability indicator × one year, every DISCOM's figure. The chart
+  is ONE CSS grid (state | DISCOM | figure | plot, rows via `gridTemplateRows`), so the axis,
+  gridlines, bars and each state's benchmark line share the plot column and align by construction —
+  don't reintroduce floating value labels or calc()-offset overlays. A state's DISCOMs form one block
+  (state written once, spacer row between states); its benchmark is one line through the block
+  (value from `benchmarkLine`, shown on hover only). Figures share a chart only when they share
+  display unit **and** direction (Transformer Failure splits into % of cases / % failure rate / % of
+  DTRs); when there's more than one, only one chart shows at a time, picked from a "Reported as"
+  switcher (most-used first, with DISCOM counts). Chart heading = the short display unit; the
+  source's full wording is on hover only (the user found it too long on screen); no per-DISCOM
+  "Reported as…" line in the card (removed at the user's request). Bar colour only from `standard_met`. Legend (Met /
+  Not met / No verdict / Benchmark) is one quiet line under the chart, not in the header. No ranking
+  score — just sorted by value. Desktop: no page scroll — `useNoScrollbar` plus rows sized to the
+  window (`useFitRowHeight`, 20–28px). The DISCOM card sits beside the chart.
+- One-screen pages (About, Accessibility) size themselves to the window on desktop (measure, then
+  trim whatever  still overflows) and never draw a scrollbar —
+   hides the window's bar, inner panels use .
 - Each DISCOM gets a fixed-order categorical hue from `CATEGORICAL` in `lib/colors.ts`
   (`cols[i]` pattern, sliced to however many DISCOMs a state has) — reused consistently
   across scorecard border, chart line, and `Collapsible`'s badge color for that DISCOM.
@@ -105,5 +163,7 @@ to have zero reported figures in any of them.
 
 - Type-check: `cd dashboard/ui && npx tsc --noEmit`
 - Re-run one extraction: `cd dashboard && python3 extraction_<name>.py` (needs
-  `openpyxl`; `pip3 install --break-system-packages openpyxl` if missing)
+  `openpyxl`; `pip3 install --break-system-packages openpyxl` if missing). Run
+  `extraction_common.py` first — the other two take each DISCOM's canonical full name from its
+  `data/discoms2.json` — then copy `data/discoms2.json` to `ui/public/data/` (no sync step).
 - Dev server: `cd dashboard/ui && npm run dev` (only when explicitly asked)

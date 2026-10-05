@@ -16,51 +16,268 @@
   "states": [
     {
       "state": "Maharashtra",
-      "regulation_available": true
+      "regulation_available": true,
+      "regulation_link": "https://drive.google.com/file/d/13V5IpWC-hweTTiPBLWpNM1tMuRy7BTrI/view?usp=drive_link",
+      "regulation_label": "MAHARASHTA REG 2021",
+      "amendment_link": "https://drive.google.com/file/d/1MWfvcn_lxDj3_5-i9T2Qpv55w_-a0oic/view?usp=drive_link",
+      "amendment_label": "MAHARASHTRA 1ST AMEND 2024",
+      "regulation_documents": [
+        {
+          "title": "Regulation",
+          "year": "2021",
+          "url": "https://drive.google.com/file/d/13V5IpWC-hweTTiPBLWpNM1tMuRy7BTrI/view?usp=drivesdk"
+        },
+        {
+          "title": "1st Amendment",
+          "year": "2024",
+          "url": "https://drive.google.com/file/d/1MWfvcn_lxDj3_5-i9T2Qpv55w_-a0oic/view?usp=drivesdk"
+        }
+      ]
     },
     {
       "state": "Gujarat",
-      "regulation_available": true
+      "regulation_available": true,
+      "regulation_link": "https://drive.google.com/file/d/1SVwyfIE8cKw1W8B9l2HHkCXMnP5Oy_s9/view?usp=drive_link",
+      "regulation_label": "Gujarat Principal Regulation 2005 Gujarat Principal Regulation 2023",
+      "amendment_link": null,
+      "amendment_label": null,
+      "regulation_documents": [
+        {
+          "title": "Principal Regulation",
+          "year": "2005",
+          "url": "https://drive.google.com/file/d/1ihPO3C_pmgiPhdW_k_6Ifb4gBKH5a7xs/view?usp=drivesdk"
+        },
+        {
+          "title": "Principal Regulation",
+          "year": "2023",
+          "url": "https://drive.google.com/file/d/1SVwyfIE8cKw1W8B9l2HHkCXMnP5Oy_s9/view?usp=drivesdk"
+        }
+      ]
     },
     {
       "state": "Rajasthan",
-      "regulation_available": true
+      "regulation_available": true,
+      "regulation_link": "https://drive.google.com/file/d/1NAcAjDNFdWrYbCshxL_FCds2OpGv-I_Z/view?usp=drive_link",
+      "regulation_label": "Rajasthan Principal Regulation 2021",
+      "amendment_link": null,
+      "amendment_label": null,
+      "regulation_documents": [
+        {
+          "title": "Principal Regulation",
+          "year": "2021",
+          "url": "https://drive.google.com/file/d/1NAcAjDNFdWrYbCshxL_FCds2OpGv-I_Z/view?usp=drivesdk"
+        }
+      ]
     },
     {
       "state": "Madhya Pradesh",
-      "regulation_available": true
+      "regulation_available": true,
+      "regulation_link": "https://drive.google.com/file/d/1plw-GuaVImlE-JJuEU6kXJ_V-VjCvHDK/view?usp=drive_link",
+      "regulation_label": "Madhya Pradesh Principal Regulation 2004",
+      "amendment_link": "https://drive.google.com/file/d/15SgdN7tmZ3utVOOqLHC0BLjMF7sxCK2O/view?usp=drive_link",
+      "amendment_label": "MP-RevisedVersion-2012 MADHYA PRADESH FIRST AMENDMENT REVISION 2 2021",
+      "regulation_documents": [
+        {
+          "title": "Principal Regulation",
+          "year": "2004",
+          "url": "https://drive.google.com/file/d/1plw-GuaVImlE-JJuEU6kXJ_V-VjCvHDK/view?usp=drivesdk"
+        },
+        {
+          "title": "Revision 2",
+          "year": "2012",
+          "url": "https://drive.google.com/file/d/1UtQS9ijDtz-wKaq8KojEGrFNjAEYp6e8/view?usp=drivesdk"
+        },
+        {
+          "title": "First Amendment, Revision 2",
+          "year": "2021",
+          "url": "https://drive.google.com/file/d/15SgdN7tmZ3utVOOqLHC0BLjMF7sxCK2O/view?usp=drivesdk"
+        }
+      ]
     },
     {
       "state": "Odisha",
-      "regulation_available": true
+      "regulation_available": true,
+      "regulation_link": "https://drive.google.com/file/d/1LpMYPqcS5z57BanWI87gS2pT-E9j0cfq/view?usp=drive_link",
+      "regulation_label": "Odisha Principal Regulation 2004",
+      "amendment_link": "https://drive.google.com/file/d/1yEO6sWPmlXCbfOJ6ZqK-Cm2NhRvXmzVD/view?usp=drive_link",
+      "amendment_label": "Odisha 1st Amendment 2010",
+      "regulation_documents": [
+        {
+          "title": "Principal Regulation",
+          "year": "2004",
+          "url": "https://drive.google.com/file/d/1LpMYPqcS5z57BanWI87gS2pT-E9j0cfq/view?usp=drivesdk"
+        },
+        {
+          "title": "1st Amendment",
+          "year": "2010",
+          "url": "https://drive.google.com/file/d/1yEO6sWPmlXCbfOJ6ZqK-Cm2NhRvXmzVD/view?usp=drivesdk"
+        }
+      ]
     },
     {
       "state": "Telangana",
-      "regulation_available": true
+      "regulation_available": true,
+      "regulation_link": "https://drive.google.com/file/d/1l8af6i-dHWdzquTumG0JUaSjZHdUNigy/view?usp=drive_link",
+      "regulation_label": "Telangana Principal Regulation 2016",
+      "amendment_link": null,
+      "amendment_label": null,
+      "regulation_documents": [
+        {
+          "title": "Principal Regulation",
+          "year": "2016",
+          "url": "https://drive.google.com/file/d/1l8af6i-dHWdzquTumG0JUaSjZHdUNigy/view?usp=drivesdk"
+        }
+      ]
     },
     {
       "state": "Karnataka",
-      "regulation_available": true
+      "regulation_available": true,
+      "regulation_link": "https://drive.google.com/file/d/1RReCu569Oxtl4DI4x6fcGnK1GU68Bcbl/view?usp=drive_link",
+      "regulation_label": "Karnataka Regulation 2004 karnataka Regulation 2022",
+      "amendment_link": null,
+      "amendment_label": null,
+      "regulation_documents": [
+        {
+          "title": "Regulation",
+          "year": "2004",
+          "url": "https://drive.google.com/file/d/1RReCu569Oxtl4DI4x6fcGnK1GU68Bcbl/view?usp=drivesdk"
+        },
+        {
+          "title": "Regulation",
+          "year": "2022",
+          "url": "https://drive.google.com/file/d/1Mz6QyIKp213e9Eje4qjOFonj0A7FTNLZ/view?usp=drivesdk"
+        }
+      ]
     },
     {
       "state": "Tamil Nadu",
-      "regulation_available": true
+      "regulation_available": true,
+      "regulation_link": "https://drive.google.com/file/d/14YHvcrlWWnHuH20HWc01FeDcu2dudOfQ/view?usp=drive_link",
+      "regulation_label": "Tamil Nadu Regulation As amended upto 31-03-2024",
+      "amendment_link": null,
+      "amendment_label": null,
+      "regulation_documents": [
+        {
+          "title": "Regulation as amended up to 31-03-2024",
+          "year": "2024",
+          "url": "https://drive.google.com/file/d/14YHvcrlWWnHuH20HWc01FeDcu2dudOfQ/view?usp=drivesdk"
+        }
+      ]
     },
     {
       "state": "Bihar",
-      "regulation_available": true
+      "regulation_available": true,
+      "regulation_link": "https://drive.google.com/file/d/10La_Zk6t_UYS5EXPplGRaKF8qV-upkOO/view?usp=drive_link",
+      "regulation_label": "Bihar Principal Regulation 2006",
+      "amendment_link": "https://drive.google.com/file/d/1g6EwsadejzeQC5_6kGz7kBC1bvLKZxv1/view?usp=drive_link",
+      "amendment_label": "Bihar 1st Amendment 2012 Bihar 2nd Amendment 2017",
+      "regulation_documents": [
+        {
+          "title": "Principal Regulation",
+          "year": "2006",
+          "url": "https://drive.google.com/file/d/10La_Zk6t_UYS5EXPplGRaKF8qV-upkOO/view?usp=drivesdk"
+        },
+        {
+          "title": "1st Amendment",
+          "year": "2012",
+          "url": "https://drive.google.com/file/d/1g6EwsadejzeQC5_6kGz7kBC1bvLKZxv1/view?usp=drivesdk"
+        },
+        {
+          "title": "2nd Amendment",
+          "year": "2017",
+          "url": "https://drive.google.com/file/d/1MFdVWsuCgqpAwVNNsa67cz9biSuXVjoU/view?usp=drivesdk"
+        }
+      ]
     },
     {
       "state": "West Bengal",
-      "regulation_available": true
+      "regulation_available": true,
+      "regulation_link": "https://drive.google.com/file/d/1Y-E6qQzG-zvmoKPZ1EXyUrdUrpvOgTIv/view?usp=drive_link",
+      "regulation_label": "West Bengal Principal Regulation 2010",
+      "amendment_link": "https://drive.google.com/file/d/1Ki_TOvZMCBhaRQhs6Up2fHHqNC2y7R4o/view?usp=drive_link",
+      "amendment_label": "WestBengal-2013-SOP WEST BENGAL 2014 SOP Relating to Consumer Service Second Amendment WEST BENGAL 2019 SOP Relating to Consumer Service Third Amendment WB SOP AMENDMENT 2020",
+      "regulation_documents": [
+        {
+          "title": "Principal Regulation",
+          "year": "2010",
+          "url": "https://drive.google.com/file/d/1Y-E6qQzG-zvmoKPZ1EXyUrdUrpvOgTIv/view?usp=drivesdk"
+        },
+        {
+          "title": "1st Amendment",
+          "year": "2013",
+          "url": "https://drive.google.com/file/d/1WhsZiYvM3ekABNgZHrmDaJ_BRtulkUTc/view?usp=drivesdk"
+        },
+        {
+          "title": "2nd Amendment",
+          "year": "2014",
+          "url": "https://drive.google.com/file/d/1Ki_TOvZMCBhaRQhs6Up2fHHqNC2y7R4o/view?usp=drivesdk"
+        },
+        {
+          "title": "3rd Amendment",
+          "year": "2019",
+          "url": "https://drive.google.com/file/d/11dYZKVDA1RHFGH0WjmIZSd83Uz8-P0Bu/view?usp=drivesdk"
+        },
+        {
+          "title": "SOP Amendment",
+          "year": "2020",
+          "url": "https://drive.google.com/file/d/19lo03628GMebj5REpFIPOs9ZUweN4LBf/view?usp=drivesdk"
+        }
+      ]
     },
     {
       "state": "Uttar Pradesh",
-      "regulation_available": true
+      "regulation_available": true,
+      "regulation_link": "https://drive.google.com/file/d/1De4WdIZwU-DWkkJjv7ZZJw_psZcIlYOq/view?usp=drive_link",
+      "regulation_label": "Uttar Pradesh Principal Regulation 2019",
+      "amendment_link": null,
+      "amendment_label": null,
+      "regulation_documents": [
+        {
+          "title": "Principal Regulation",
+          "year": "2019",
+          "url": "https://drive.google.com/file/d/1De4WdIZwU-DWkkJjv7ZZJw_psZcIlYOq/view?usp=drivesdk"
+        }
+      ]
     },
     {
       "state": "Andhra Pradesh",
-      "regulation_available": true
+      "regulation_available": true,
+      "regulation_link": "https://drive.google.com/file/d/1mREmfPWPYJGFtegsuKECPxfCcFyrIrAP/view?usp=drive_link",
+      "regulation_label": "Andhra Pradesh Principal Regulation",
+      "amendment_link": "https://drive.google.com/file/d/1PTeJZITBWD9YXzNYpgiMZSH8iRhjBCx8/view?usp=drive_link",
+      "amendment_label": "andhra consolidates 2004 andhra 2021 amend andhra 2023 amend andhra amend 2024 andhra 2025 amend",
+      "regulation_documents": [
+        {
+          "title": "Andhra consolidated regulation",
+          "year": "2004",
+          "url": "https://drive.google.com/file/d/1PTeJZITBWD9YXzNYpgiMZSH8iRhjBCx8/view?usp=drivesdk"
+        },
+        {
+          "title": "Principal Regulation",
+          "year": null,
+          "url": "https://drive.google.com/file/d/1mREmfPWPYJGFtegsuKECPxfCcFyrIrAP/view?usp=drivesdk"
+        },
+        {
+          "title": "Amendment",
+          "year": "2021",
+          "url": "https://drive.google.com/file/d/1EkAtgVYxiW1jQ1-ipqWxi9EgjrejCC_h/view?usp=drivesdk"
+        },
+        {
+          "title": "Amendment",
+          "year": "2023",
+          "url": "https://drive.google.com/file/d/1__JR4kdPg9V4lAFLKJP6kl_43_U3-Xlj/view?usp=drivesdk"
+        },
+        {
+          "title": "Amendment",
+          "year": "2024",
+          "url": "https://drive.google.com/file/d/1odMu6cbURHYLr0Rv4_aUVJtOSaAN0F-B/view?usp=drivesdk"
+        },
+        {
+          "title": "Amendment",
+          "year": "2025",
+          "url": "https://drive.google.com/file/d/1UPQDtVBqTAgHLvJfs2ZcM_vCXEVSTQJe/view?usp=drivesdk"
+        }
+      ]
     }
   ],
   "discoms": [
@@ -70,7 +287,40 @@
       "state": "Maharashtra",
       "available_on_serc": true,
       "machine_readable": false,
-      "drive_link": "https://drive.google.com/drive/folders/1ZquaWdYa4367rYvUukdRYAjpkqBUc_ff?usp=sharing"
+      "drive_link": "https://drive.google.com/drive/folders/1P0W7DDc9S4LS_Jmr76uyr7nQsDSCzCyT?usp=drive_link",
+      "serc_link": "https://merc.gov.in/sop-data/",
+      "data_links": [
+        {
+          "year": "2021-22",
+          "url": "https://drive.google.com/drive/folders/1P0W7DDc9S4LS_Jmr76uyr7nQsDSCzCyT",
+          "kind": "folder",
+          "scope": "discom"
+        },
+        {
+          "year": "2022-23",
+          "url": "https://drive.google.com/drive/folders/1RI_zDXUnSTRsbaeDvJRAd-DIOcDXm4W9",
+          "kind": "folder",
+          "scope": "discom"
+        },
+        {
+          "year": "2023-24",
+          "url": "https://drive.google.com/drive/folders/1u-A5sfpfEkMdW_eygT9A--tvC5XYzkfu",
+          "kind": "folder",
+          "scope": "discom"
+        },
+        {
+          "year": "2024-25",
+          "url": "https://drive.google.com/drive/folders/1lubDDTaxFVbkTWj9zeWnzW4K8rjbbmTI",
+          "kind": "folder",
+          "scope": "discom"
+        },
+        {
+          "year": "2025-26",
+          "url": "https://drive.google.com/drive/folders/1xCifLUhske0nYiXvbFNHWGOd4iyiGDk5",
+          "kind": "folder",
+          "scope": "discom"
+        }
+      ]
     },
     {
       "discom": "Dakshin Gujarat Vij Company Limited",
@@ -78,7 +328,40 @@
       "state": "Gujarat",
       "available_on_serc": true,
       "machine_readable": true,
-      "drive_link": null
+      "drive_link": "https://drive.google.com/file/d/1BGHmUbzrKizERzjI2gHo8JLvtjxVl0Sw/view?usp=drive_link",
+      "serc_link": "https://www.gercin.org/sop/standard_of_performance",
+      "data_links": [
+        {
+          "year": "2021-22",
+          "url": "https://drive.google.com/file/d/1BGHmUbzrKizERzjI2gHo8JLvtjxVl0Sw/view?usp=drivesdk",
+          "kind": "file",
+          "scope": "discom"
+        },
+        {
+          "year": "2022-23",
+          "url": "https://drive.google.com/file/d/1A26NPyrg4fB5lguSVY1_Epc2yFMhnijx/view?usp=drivesdk",
+          "kind": "file",
+          "scope": "discom"
+        },
+        {
+          "year": "2023-24",
+          "url": "https://drive.google.com/file/d/1zw935DilaV2WRNHbn-t4vMI6y7inEfJa/view?usp=drivesdk",
+          "kind": "file",
+          "scope": "discom"
+        },
+        {
+          "year": "2024-25",
+          "url": "https://drive.google.com/file/d/1MhbcGLEAAAwTC_piGi3DhCARnxUUK0Zh/view?usp=drivesdk",
+          "kind": "file",
+          "scope": "discom"
+        },
+        {
+          "year": "2025-26",
+          "url": "https://drive.google.com/file/d/18gjWBpBSgb35b5VL1uYgsjkfO-6UoLO5/view?usp=drivesdk",
+          "kind": "file",
+          "scope": "discom"
+        }
+      ]
     },
     {
       "discom": "Madhya Gujarat Vij Company Limited",
@@ -86,15 +369,81 @@
       "state": "Gujarat",
       "available_on_serc": true,
       "machine_readable": true,
-      "drive_link": null
+      "drive_link": "https://drive.google.com/file/d/1B0SHc-huTug00VuYPcyVLz6VwhrEthah/view?usp=drive_link",
+      "serc_link": "https://www.gercin.org/sop/standard_of_performance",
+      "data_links": [
+        {
+          "year": "2021-22",
+          "url": "https://drive.google.com/file/d/1B0SHc-huTug00VuYPcyVLz6VwhrEthah/view?usp=drivesdk",
+          "kind": "file",
+          "scope": "discom"
+        },
+        {
+          "year": "2022-23",
+          "url": "https://drive.google.com/file/d/132lRoA5Wnh6s_qKSm3upITOo9ZHCQB2U/view?usp=drivesdk",
+          "kind": "file",
+          "scope": "discom"
+        },
+        {
+          "year": "2023-24",
+          "url": "https://drive.google.com/file/d/1dZV5YPkxokw1lZBIWytzqGxKsxF3iB_O/view?usp=drivesdk",
+          "kind": "file",
+          "scope": "discom"
+        },
+        {
+          "year": "2024-25",
+          "url": "https://drive.google.com/file/d/1dVzTmkhyU9sT1jFTwZUYNo3eUC0urrq7/view?usp=drivesdk",
+          "kind": "file",
+          "scope": "discom"
+        },
+        {
+          "year": "2025-26",
+          "url": "https://drive.google.com/file/d/1TB44rRIOLsFTmGMEBmbxX0KDi9Vc3bPn/view?usp=drivesdk",
+          "kind": "file",
+          "scope": "discom"
+        }
+      ]
     },
     {
-      "discom": "Poorva Gujarat Vij Company Limited",
+      "discom": "Paschim Gujarat Vij Company Limited",
       "abbreviation": "PGVCL",
       "state": "Gujarat",
       "available_on_serc": true,
       "machine_readable": true,
-      "drive_link": null
+      "drive_link": "https://drive.google.com/file/d/1_e8ThfrdMsqk1CXBZ1Toio8L6zrSCDSZ/view?usp=drive_link",
+      "serc_link": "https://www.gercin.org/sop/standard_of_performance",
+      "data_links": [
+        {
+          "year": "2021-22",
+          "url": "https://drive.google.com/file/d/1_e8ThfrdMsqk1CXBZ1Toio8L6zrSCDSZ/view?usp=drivesdk",
+          "kind": "file",
+          "scope": "discom"
+        },
+        {
+          "year": "2022-23",
+          "url": "https://drive.google.com/file/d/1p5uqVrCN5WkJ78nkpDv8dMGqUXhfeNju/view?usp=drivesdk",
+          "kind": "file",
+          "scope": "discom"
+        },
+        {
+          "year": "2023-24",
+          "url": "https://drive.google.com/file/d/1eGtrVvusSc8AwCsezx7qQy5BNe1nxpVc/view?usp=drivesdk",
+          "kind": "file",
+          "scope": "discom"
+        },
+        {
+          "year": "2024-25",
+          "url": "https://drive.google.com/file/d/1M8TXgVN0DXjd7PTKYQEdh8Iyp1tHV5aC/view?usp=drivesdk",
+          "kind": "file",
+          "scope": "discom"
+        },
+        {
+          "year": "2025-26",
+          "url": "https://drive.google.com/file/d/19-YqfWdXSoR51xJGfDmEL2Z_-XGgKxpr/view?usp=drivesdk",
+          "kind": "file",
+          "scope": "discom"
+        }
+      ]
     },
     {
       "discom": "Uttar Gujarat Vij Company Limited",
@@ -102,15 +451,81 @@
       "state": "Gujarat",
       "available_on_serc": true,
       "machine_readable": true,
-      "drive_link": null
+      "drive_link": "https://drive.google.com/file/d/1Nlrjhx2efFtO8MU8lR9k2frbjJ68y48h/view?usp=drive_link",
+      "serc_link": "https://www.gercin.org/sop/standard_of_performance",
+      "data_links": [
+        {
+          "year": "2021-22",
+          "url": "https://drive.google.com/file/d/1Nlrjhx2efFtO8MU8lR9k2frbjJ68y48h/view?usp=drivesdk",
+          "kind": "file",
+          "scope": "discom"
+        },
+        {
+          "year": "2022-23",
+          "url": "https://drive.google.com/file/d/1ml4eu0EFT40p7aGSD2Q8WfyHLBqOtR_W/view?usp=drivesdk",
+          "kind": "file",
+          "scope": "discom"
+        },
+        {
+          "year": "2023-24",
+          "url": "https://drive.google.com/file/d/1CFKka2CNkoGOfo-CupCshL0ttiwxBtRx/view?usp=drivesdk",
+          "kind": "file",
+          "scope": "discom"
+        },
+        {
+          "year": "2024-25",
+          "url": "https://drive.google.com/file/d/1IzSBxPPO41eU0BULuv-PEUefIvE4ZmUl/view?usp=drivesdk",
+          "kind": "file",
+          "scope": "discom"
+        },
+        {
+          "year": "2025-26",
+          "url": "https://drive.google.com/file/d/1i8SNiQZ36_mNN8SBUAKZ2NLwaVcc7vPu/view?usp=drivesdk",
+          "kind": "file",
+          "scope": "discom"
+        }
+      ]
     },
     {
       "discom": "Ajmer Vidyut Vitran Nigam Limited",
-      "abbreviation": "AVNNL",
+      "abbreviation": "AVVNL",
       "state": "Rajasthan",
       "available_on_serc": true,
       "machine_readable": false,
-      "drive_link": null
+      "drive_link": "https://drive.google.com/drive/folders/1rtBpyX2_pu22hjBQa9U5N4bG_YO5L2SL?usp=drive_link",
+      "serc_link": "https://rerc.rajasthan.gov.in/rerc-user-files/standard-of-performance",
+      "data_links": [
+        {
+          "year": "2021-22",
+          "url": "https://drive.google.com/drive/folders/1rtBpyX2_pu22hjBQa9U5N4bG_YO5L2SL",
+          "kind": "folder",
+          "scope": "discom"
+        },
+        {
+          "year": "2022-23",
+          "url": "https://drive.google.com/drive/folders/1jCsNR7oQMVAzqFVyBvjehuqtHYpq9sO_",
+          "kind": "folder",
+          "scope": "discom"
+        },
+        {
+          "year": "2023-24",
+          "url": "https://drive.google.com/drive/folders/1VHlLBPFFDD85NEaKA3NRFYt7mRMyb3-5",
+          "kind": "folder",
+          "scope": "discom"
+        },
+        {
+          "year": "2024-25",
+          "url": "https://drive.google.com/drive/folders/1dQlPb4Nl2HIeVZQ4oUXGRW2UbaD51SYL",
+          "kind": "folder",
+          "scope": "discom"
+        },
+        {
+          "year": "2025-26",
+          "url": "https://drive.google.com/drive/folders/1pNfHeqvGk2VS4hnQYNz_s4qu1xvxj5U0",
+          "kind": "folder",
+          "scope": "discom"
+        }
+      ]
     },
     {
       "discom": "Jaipur Vidyut Vitran Nigam Limited",
@@ -118,7 +533,40 @@
       "state": "Rajasthan",
       "available_on_serc": true,
       "machine_readable": false,
-      "drive_link": null
+      "drive_link": "https://drive.google.com/drive/folders/1TAoWayXcPw-hBkZlLYa656w-P6En9bon?usp=drive_link",
+      "serc_link": "https://rerc.rajasthan.gov.in/rerc-user-files/standard-of-performance",
+      "data_links": [
+        {
+          "year": "2021-22",
+          "url": "https://drive.google.com/drive/folders/16VRHqawGBywpytjTZAAMfN0jihecB5EQ",
+          "kind": "folder",
+          "scope": "discom"
+        },
+        {
+          "year": "2022-23",
+          "url": "https://drive.google.com/drive/folders/1TAoWayXcPw-hBkZlLYa656w-P6En9bon",
+          "kind": "folder",
+          "scope": "discom"
+        },
+        {
+          "year": "2023-24",
+          "url": "https://drive.google.com/drive/folders/1JoaQuSzS5EEaG6fBZA4jnlr5XTJu2zzN",
+          "kind": "folder",
+          "scope": "discom"
+        },
+        {
+          "year": "2024-25",
+          "url": "https://drive.google.com/drive/folders/1GDqfB-h1TTHIWPuSPZjsAm0zJz941OrM",
+          "kind": "folder",
+          "scope": "discom"
+        },
+        {
+          "year": "2025-26",
+          "url": "https://drive.google.com/drive/folders/1SbvxAKdTe9Fwtj2Rpq38CODauuQAwkt4",
+          "kind": "folder",
+          "scope": "discom"
+        }
+      ]
     },
     {
       "discom": "Jodhpur Vidyut Vitran Nigam Limited",
@@ -126,7 +574,40 @@
       "state": "Rajasthan",
       "available_on_serc": true,
       "machine_readable": false,
-      "drive_link": null
+      "drive_link": "https://drive.google.com/drive/folders/1_clf86VLyHdSQ75VRcM1-onUwJhyD39s?usp=drive_link",
+      "serc_link": "https://rerc.rajasthan.gov.in/rerc-user-files/standard-of-performance",
+      "data_links": [
+        {
+          "year": "2021-22",
+          "url": "https://drive.google.com/drive/folders/1_clf86VLyHdSQ75VRcM1-onUwJhyD39s",
+          "kind": "folder",
+          "scope": "discom"
+        },
+        {
+          "year": "2022-23",
+          "url": "https://drive.google.com/drive/folders/1PFP9DB8rMlD1eReirLb72Ze475E456FR",
+          "kind": "folder",
+          "scope": "discom"
+        },
+        {
+          "year": "2023-24",
+          "url": "https://drive.google.com/drive/folders/179l_HtxsR1fsSrIsLFoAaS2IBEh4fyj1",
+          "kind": "folder",
+          "scope": "discom"
+        },
+        {
+          "year": "2024-25",
+          "url": "https://drive.google.com/drive/folders/1KxYm_E0v6th9Qp1a4ctJNQ7dCc6soU00",
+          "kind": "folder",
+          "scope": "discom"
+        },
+        {
+          "year": "2025-26",
+          "url": "https://drive.google.com/drive/folders/1eIShSRsOFeiwW7O82r1QL5nGdJgKctIE",
+          "kind": "folder",
+          "scope": "discom"
+        }
+      ]
     },
     {
       "discom": "Madhya Pradesh Madhya Kshetra Vidyut Vitaran Company Limited",
@@ -134,15 +615,57 @@
       "state": "Madhya Pradesh",
       "available_on_serc": true,
       "machine_readable": true,
-      "drive_link": null
+      "drive_link": "https://drive.google.com/file/d/1YpmJunZtm0f3vkGwnXnyuAvGl0hNAAil/view?usp=drive_link",
+      "serc_link": "https://mperc.in/page/publication-of-achievements-of-distribution-performance-standards",
+      "data_links": [
+        {
+          "year": "2021-22",
+          "url": "https://drive.google.com/drive/folders/1OrbjEohpNQ7nhA9uprzYrrjmdr93dGWC",
+          "kind": "folder",
+          "scope": "state"
+        },
+        {
+          "year": "2022-23",
+          "url": "https://drive.google.com/drive/folders/1esJ4KzUXicew-EmEQZIQVcqn5mmjstNU",
+          "kind": "folder",
+          "scope": "state"
+        },
+        {
+          "year": "2023-24",
+          "url": "https://drive.google.com/drive/folders/1AvlRxM7IUBpkqIWPfD4GL_wL368DOAWm",
+          "kind": "folder",
+          "scope": "state"
+        }
+      ]
     },
     {
       "discom": "Madhya Pradesh Paschim Kshetra Vidyut Vitaran Company Limited",
-      "abbreviation": "MPWX",
+      "abbreviation": "MPWZ",
       "state": "Madhya Pradesh",
       "available_on_serc": true,
       "machine_readable": true,
-      "drive_link": null
+      "drive_link": "https://drive.google.com/file/d/1YpmJunZtm0f3vkGwnXnyuAvGl0hNAAil/view?usp=drive_link",
+      "serc_link": "https://mperc.in/page/publication-of-achievements-of-distribution-performance-standards",
+      "data_links": [
+        {
+          "year": "2021-22",
+          "url": "https://drive.google.com/drive/folders/1OrbjEohpNQ7nhA9uprzYrrjmdr93dGWC",
+          "kind": "folder",
+          "scope": "state"
+        },
+        {
+          "year": "2022-23",
+          "url": "https://drive.google.com/drive/folders/1esJ4KzUXicew-EmEQZIQVcqn5mmjstNU",
+          "kind": "folder",
+          "scope": "state"
+        },
+        {
+          "year": "2023-24",
+          "url": "https://drive.google.com/drive/folders/1AvlRxM7IUBpkqIWPfD4GL_wL368DOAWm",
+          "kind": "folder",
+          "scope": "state"
+        }
+      ]
     },
     {
       "discom": "Madhya Pradesh Poorv Kshetra Vidyut Vitaran Company Limited",
@@ -150,7 +673,28 @@
       "state": "Madhya Pradesh",
       "available_on_serc": true,
       "machine_readable": true,
-      "drive_link": null
+      "drive_link": "https://drive.google.com/file/d/1YpmJunZtm0f3vkGwnXnyuAvGl0hNAAil/view?usp=drive_link",
+      "serc_link": "https://mperc.in/page/publication-of-achievements-of-distribution-performance-standards",
+      "data_links": [
+        {
+          "year": "2021-22",
+          "url": "https://drive.google.com/drive/folders/1OrbjEohpNQ7nhA9uprzYrrjmdr93dGWC",
+          "kind": "folder",
+          "scope": "state"
+        },
+        {
+          "year": "2022-23",
+          "url": "https://drive.google.com/drive/folders/1esJ4KzUXicew-EmEQZIQVcqn5mmjstNU",
+          "kind": "folder",
+          "scope": "state"
+        },
+        {
+          "year": "2023-24",
+          "url": "https://drive.google.com/drive/folders/1AvlRxM7IUBpkqIWPfD4GL_wL368DOAWm",
+          "kind": "folder",
+          "scope": "state"
+        }
+      ]
     },
     {
       "discom": "Tata Power Central Odisha Distribution Limited",
@@ -158,7 +702,34 @@
       "state": "Odisha",
       "available_on_serc": true,
       "machine_readable": true,
-      "drive_link": null
+      "drive_link": "https://drive.google.com/file/d/1CBMOXZaiH4nVBY4S1hdZ6ghe7JNazmSx/view?usp=drive_link",
+      "serc_link": "https://www.orierc.org/Performance_of_Discoms.aspx",
+      "data_links": [
+        {
+          "year": "2021-22",
+          "url": "https://drive.google.com/drive/folders/1qXSa20BsH6kAaE7HEVQPQ7pqe3xgtrl8",
+          "kind": "folder",
+          "scope": "state"
+        },
+        {
+          "year": "2022-23",
+          "url": "https://drive.google.com/drive/folders/1FKnEp0g7Vjw5s34yivn8UUQ8gg5WVBsf",
+          "kind": "folder",
+          "scope": "state"
+        },
+        {
+          "year": "2023-24",
+          "url": "https://drive.google.com/drive/folders/1uIq8rfZfzx9Hax_aYtofbfAb3wHW9tcq",
+          "kind": "folder",
+          "scope": "state"
+        },
+        {
+          "year": "2024-25",
+          "url": "https://drive.google.com/drive/folders/1GHTwYrEZgFz8KZMsAQqJnuR8ZDZ9ERiY",
+          "kind": "folder",
+          "scope": "state"
+        }
+      ]
     },
     {
       "discom": "Tata Power North Odisha Distribution Limited",
@@ -166,7 +737,34 @@
       "state": "Odisha",
       "available_on_serc": true,
       "machine_readable": true,
-      "drive_link": null
+      "drive_link": "https://drive.google.com/file/d/1CBMOXZaiH4nVBY4S1hdZ6ghe7JNazmSx/view?usp=drive_link",
+      "serc_link": "https://www.orierc.org/Performance_of_Discoms.aspx",
+      "data_links": [
+        {
+          "year": "2021-22",
+          "url": "https://drive.google.com/drive/folders/1qXSa20BsH6kAaE7HEVQPQ7pqe3xgtrl8",
+          "kind": "folder",
+          "scope": "state"
+        },
+        {
+          "year": "2022-23",
+          "url": "https://drive.google.com/drive/folders/1FKnEp0g7Vjw5s34yivn8UUQ8gg5WVBsf",
+          "kind": "folder",
+          "scope": "state"
+        },
+        {
+          "year": "2023-24",
+          "url": "https://drive.google.com/drive/folders/1uIq8rfZfzx9Hax_aYtofbfAb3wHW9tcq",
+          "kind": "folder",
+          "scope": "state"
+        },
+        {
+          "year": "2024-25",
+          "url": "https://drive.google.com/drive/folders/1GHTwYrEZgFz8KZMsAQqJnuR8ZDZ9ERiY",
+          "kind": "folder",
+          "scope": "state"
+        }
+      ]
     },
     {
       "discom": "Tata Power South Odisha Distribution Limited",
@@ -174,7 +772,34 @@
       "state": "Odisha",
       "available_on_serc": true,
       "machine_readable": true,
-      "drive_link": null
+      "drive_link": "https://drive.google.com/file/d/1CBMOXZaiH4nVBY4S1hdZ6ghe7JNazmSx/view?usp=drive_link",
+      "serc_link": "https://www.orierc.org/Performance_of_Discoms.aspx",
+      "data_links": [
+        {
+          "year": "2021-22",
+          "url": "https://drive.google.com/drive/folders/1qXSa20BsH6kAaE7HEVQPQ7pqe3xgtrl8",
+          "kind": "folder",
+          "scope": "state"
+        },
+        {
+          "year": "2022-23",
+          "url": "https://drive.google.com/drive/folders/1FKnEp0g7Vjw5s34yivn8UUQ8gg5WVBsf",
+          "kind": "folder",
+          "scope": "state"
+        },
+        {
+          "year": "2023-24",
+          "url": "https://drive.google.com/drive/folders/1uIq8rfZfzx9Hax_aYtofbfAb3wHW9tcq",
+          "kind": "folder",
+          "scope": "state"
+        },
+        {
+          "year": "2024-25",
+          "url": "https://drive.google.com/drive/folders/1GHTwYrEZgFz8KZMsAQqJnuR8ZDZ9ERiY",
+          "kind": "folder",
+          "scope": "state"
+        }
+      ]
     },
     {
       "discom": "Tata Power West Odisha Distribution Limited",
@@ -182,7 +807,34 @@
       "state": "Odisha",
       "available_on_serc": true,
       "machine_readable": true,
-      "drive_link": null
+      "drive_link": "https://drive.google.com/file/d/1CBMOXZaiH4nVBY4S1hdZ6ghe7JNazmSx/view?usp=drive_link",
+      "serc_link": "https://www.orierc.org/Performance_of_Discoms.aspx",
+      "data_links": [
+        {
+          "year": "2021-22",
+          "url": "https://drive.google.com/drive/folders/1qXSa20BsH6kAaE7HEVQPQ7pqe3xgtrl8",
+          "kind": "folder",
+          "scope": "state"
+        },
+        {
+          "year": "2022-23",
+          "url": "https://drive.google.com/drive/folders/1FKnEp0g7Vjw5s34yivn8UUQ8gg5WVBsf",
+          "kind": "folder",
+          "scope": "state"
+        },
+        {
+          "year": "2023-24",
+          "url": "https://drive.google.com/drive/folders/1uIq8rfZfzx9Hax_aYtofbfAb3wHW9tcq",
+          "kind": "folder",
+          "scope": "state"
+        },
+        {
+          "year": "2024-25",
+          "url": "https://drive.google.com/drive/folders/1GHTwYrEZgFz8KZMsAQqJnuR8ZDZ9ERiY",
+          "kind": "folder",
+          "scope": "state"
+        }
+      ]
     },
     {
       "discom": "Northern Power Distribution Company of Telangana Limited",
@@ -190,7 +842,40 @@
       "state": "Telangana",
       "available_on_serc": true,
       "machine_readable": false,
-      "drive_link": null
+      "drive_link": "https://drive.google.com/file/d/1nXtTX1RokbldXNY48Oe_xccXb5JrcR5b/view?usp=drive_link",
+      "serc_link": "https://www.tgerc.telangana.gov.in/SoP%20Analysis.php",
+      "data_links": [
+        {
+          "year": "2021-22",
+          "url": "https://drive.google.com/file/d/1nXtTX1RokbldXNY48Oe_xccXb5JrcR5b/view?usp=drivesdk",
+          "kind": "file",
+          "scope": "discom"
+        },
+        {
+          "year": "2022-23",
+          "url": "https://drive.google.com/file/d/1CB91ReZZOt6HFCzHTKuRKAB80XtdwvKR/view?usp=drivesdk",
+          "kind": "file",
+          "scope": "discom"
+        },
+        {
+          "year": "2023-24",
+          "url": "https://drive.google.com/file/d/1Y0E1GACADlaYT4YGXoG8X_km0J2_g2qV/view?usp=drivesdk",
+          "kind": "file",
+          "scope": "discom"
+        },
+        {
+          "year": "2024-25",
+          "url": "https://drive.google.com/file/d/1BccIVqfQ3G7ArHCCt9SQ4vxtk0-nfJ_S/view?usp=drivesdk",
+          "kind": "file",
+          "scope": "discom"
+        },
+        {
+          "year": "2025-26",
+          "url": "https://drive.google.com/file/d/1QMudFgbAONFtvErDGOv-_VRnvpFdlO-e/view?usp=drivesdk",
+          "kind": "file",
+          "scope": "discom"
+        }
+      ]
     },
     {
       "discom": "Southern Power Distribution Company of Telangana Limited",
@@ -198,7 +883,40 @@
       "state": "Telangana",
       "available_on_serc": true,
       "machine_readable": false,
-      "drive_link": null
+      "drive_link": "https://drive.google.com/file/d/1oSAojWo18T4kyxtok6F6NVBztxZU6vWV/view?usp=drive_link",
+      "serc_link": "https://www.tgerc.telangana.gov.in/SoP%20Analysis.php",
+      "data_links": [
+        {
+          "year": "2021-22",
+          "url": "https://drive.google.com/file/d/1oSAojWo18T4kyxtok6F6NVBztxZU6vWV/view?usp=drivesdk",
+          "kind": "file",
+          "scope": "discom"
+        },
+        {
+          "year": "2022-23",
+          "url": "https://drive.google.com/file/d/1ycJ9rIxXdDJnwEYiiS-5TIpOCVXqIpTv/view?usp=drivesdk",
+          "kind": "file",
+          "scope": "discom"
+        },
+        {
+          "year": "2023-24",
+          "url": "https://drive.google.com/file/d/1r5mSz_atSnvvgzc8z4CeRD3lVe1faVvm/view?usp=drivesdk",
+          "kind": "file",
+          "scope": "discom"
+        },
+        {
+          "year": "2024-25",
+          "url": "https://drive.google.com/file/d/19ueHNUa-93JgfXys68UzyEXwmCGU_ZM3/view?usp=drivesdk",
+          "kind": "file",
+          "scope": "discom"
+        },
+        {
+          "year": "2025-26",
+          "url": "https://drive.google.com/file/d/1V3m0O5ERsjDrAwpdI0sGOxoriDKvpyT6/view?usp=drivesdk",
+          "kind": "file",
+          "scope": "discom"
+        }
+      ]
     },
     {
       "discom": "Bangalore Electricity Supply Company Limited",
@@ -206,7 +924,9 @@
       "state": "Karnataka",
       "available_on_serc": false,
       "machine_readable": null,
-      "drive_link": null
+      "drive_link": null,
+      "serc_link": null,
+      "data_links": []
     },
     {
       "discom": "Chamundeshwari Electricity Supply Corporation Limited",
@@ -214,7 +934,9 @@
       "state": "Karnataka",
       "available_on_serc": false,
       "machine_readable": null,
-      "drive_link": null
+      "drive_link": null,
+      "serc_link": null,
+      "data_links": []
     },
     {
       "discom": "Gulbarga Electricity Supply Company Limited",
@@ -222,7 +944,9 @@
       "state": "Karnataka",
       "available_on_serc": false,
       "machine_readable": null,
-      "drive_link": null
+      "drive_link": null,
+      "serc_link": null,
+      "data_links": []
     },
     {
       "discom": "Hubli Electricity Supply Company Limited",
@@ -230,7 +954,9 @@
       "state": "Karnataka",
       "available_on_serc": false,
       "machine_readable": null,
-      "drive_link": null
+      "drive_link": null,
+      "serc_link": null,
+      "data_links": []
     },
     {
       "discom": "Mangalore Electricity Supply Company Limited",
@@ -238,7 +964,9 @@
       "state": "Karnataka",
       "available_on_serc": false,
       "machine_readable": null,
-      "drive_link": null
+      "drive_link": null,
+      "serc_link": null,
+      "data_links": []
     },
     {
       "discom": "Tamil Nadu Generation and Distribution Corporation Limited",
@@ -246,7 +974,9 @@
       "state": "Tamil Nadu",
       "available_on_serc": false,
       "machine_readable": null,
-      "drive_link": null
+      "drive_link": null,
+      "serc_link": null,
+      "data_links": []
     },
     {
       "discom": "North Bihar Power Distribution Company Limited",
@@ -254,7 +984,9 @@
       "state": "Bihar",
       "available_on_serc": false,
       "machine_readable": null,
-      "drive_link": null
+      "drive_link": null,
+      "serc_link": null,
+      "data_links": []
     },
     {
       "discom": "South Bihar Power Distribution Company Limited",
@@ -262,15 +994,19 @@
       "state": "Bihar",
       "available_on_serc": false,
       "machine_readable": null,
-      "drive_link": null
+      "drive_link": null,
+      "serc_link": null,
+      "data_links": []
     },
     {
-      "discom": "Durgapur Projects Limited",
+      "discom": "The Durgapur Projects Limited",
       "abbreviation": "DPL",
       "state": "West Bengal",
       "available_on_serc": false,
       "machine_readable": null,
-      "drive_link": null
+      "drive_link": null,
+      "serc_link": null,
+      "data_links": []
     },
     {
       "discom": "West Bengal State Electricity Distribution Company Limited",
@@ -278,55 +1014,69 @@
       "state": "West Bengal",
       "available_on_serc": false,
       "machine_readable": null,
-      "drive_link": null
+      "drive_link": null,
+      "serc_link": null,
+      "data_links": []
     },
     {
-      "discom": "Dakshinanchal Vidyut Vitran Nigam Limited",
+      "discom": "Dakshinanchal Vidyut Vitaran Nigam Limited",
       "abbreviation": "DVVNL",
       "state": "Uttar Pradesh",
       "available_on_serc": false,
       "machine_readable": null,
-      "drive_link": null
+      "drive_link": null,
+      "serc_link": null,
+      "data_links": []
     },
     {
-      "discom": "Kanpur Electricity Supply Company",
+      "discom": "Kanpur Electricity Supply Company Limited",
       "abbreviation": "KESCO",
       "state": "Uttar Pradesh",
       "available_on_serc": false,
       "machine_readable": null,
-      "drive_link": null
+      "drive_link": null,
+      "serc_link": null,
+      "data_links": []
     },
     {
-      "discom": "Madhyanchal Vidyut Vitran Nigam Limited",
+      "discom": "Madhyanchal Vidyut Vitaran Nigam Limited",
       "abbreviation": "MVVNL",
       "state": "Uttar Pradesh",
       "available_on_serc": false,
       "machine_readable": null,
-      "drive_link": null
+      "drive_link": null,
+      "serc_link": null,
+      "data_links": []
     },
     {
-      "discom": "Paschimanchal Vidyut Vitran Nigam Limited",
+      "discom": "Pashchimanchal Vidyut Vitaran Nigam Limited",
       "abbreviation": "PVVNL",
       "state": "Uttar Pradesh",
       "available_on_serc": false,
       "machine_readable": null,
-      "drive_link": null
+      "drive_link": null,
+      "serc_link": null,
+      "data_links": []
     },
     {
-      "discom": "Poorvanchal Vidyut Vitran Nigam Limited",
+      "discom": "Purvanchal Vidyut Vitaran Nigam Limited",
       "abbreviation": "PuVVNL",
       "state": "Uttar Pradesh",
       "available_on_serc": false,
       "machine_readable": null,
-      "drive_link": null
+      "drive_link": null,
+      "serc_link": null,
+      "data_links": []
     },
     {
-      "discom": "Central Power Distribution Company of Andhra Pradesh Limited",
+      "discom": "Andhra Pradesh Central Power Distribution Corporation Limited",
       "abbreviation": "APCPDCL",
       "state": "Andhra Pradesh",
       "available_on_serc": true,
       "machine_readable": true,
-      "drive_link": null
+      "drive_link": null,
+      "serc_link": null,
+      "data_links": []
     },
     {
       "discom": "Eastern Power Distribution Company of Andhra Pradesh Limited",
@@ -334,7 +1084,9 @@
       "state": "Andhra Pradesh",
       "available_on_serc": true,
       "machine_readable": true,
-      "drive_link": null
+      "drive_link": null,
+      "serc_link": null,
+      "data_links": []
     },
     {
       "discom": "Southern Power Distribution Company of Andhra Pradesh Limited",
@@ -342,7 +1094,9 @@
       "state": "Andhra Pradesh",
       "available_on_serc": true,
       "machine_readable": true,
-      "drive_link": null
+      "drive_link": null,
+      "serc_link": null,
+      "data_links": []
     }
   ],
   "summary": {

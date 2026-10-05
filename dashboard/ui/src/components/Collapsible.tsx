@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { hexToRgba } from '@/lib/colors';
+import { animateScrollTo } from '@/lib/scroll';
 
 interface Props {
   label: ReactNode;
@@ -18,24 +19,6 @@ interface Props {
    * self-contained accordion row that only ever responds to its own header click. */
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
-}
-
-const easeInOutQuad = (t: number) => (t < 0.5 ? 2 * t * t : 1 - ((-2 * t + 2) ** 2) / 2);
-
-/** Scrolls to `targetY` over a fixed, deliberately unhurried duration — native
- * `scrollIntoView({behavior:'smooth'})` hands timing entirely to the browser, which tends to
- * read as an abrupt snap on a short distance rather than a visible glide. */
-function animateScrollTo(targetY: number, duration = 700) {
-  const startY = window.scrollY;
-  const distance = targetY - startY;
-  if (Math.abs(distance) < 1) return;
-  const start = performance.now();
-  const step = (now: number) => {
-    const t = Math.min(1, (now - start) / duration);
-    window.scrollTo(0, startY + distance * easeInOutQuad(t));
-    if (t < 1) requestAnimationFrame(step);
-  };
-  requestAnimationFrame(step);
 }
 
 /** An accordion row that slides open/closed (native <details> jumps instantly, with no way to

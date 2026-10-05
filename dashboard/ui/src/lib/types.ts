@@ -72,6 +72,14 @@ export type MapStatus = 'full' | 'partial' | 'none' | undefined;
 export interface StateAccessibility {
   state: string;
   regulation_available: boolean | null;
+  /** Google Drive copies of the principal regulation / its amendments (cell hyperlinks). */
+  regulation_link: string | null;
+  /** the link cell's display text (document file names), tidied */
+  regulation_label: string | null;
+  amendment_link: string | null;
+  amendment_label: string | null;
+  /** every regulation document with its own direct link, in the links sheet's order */
+  regulation_documents: RegulationDocument[];
 }
 
 /** Whether a licensee's reported performance data is published on its state SERC's website, and
@@ -86,6 +94,28 @@ export interface DiscomAccessibility {
   available_on_serc: boolean | null;
   machine_readable: boolean | null;
   drive_link: string | null;
+  /** the SERC web page the data was found on (a cell comment in the source workbook) */
+  serc_link: string | null;
+  /** one link per financial year of reported data (data/hyperlinks.xlsx), sorted by year; empty
+   * when none was found. `scope: 'state'` = a state-level year folder shared by every DISCOM in
+   * the state (Madhya Pradesh, Odisha). */
+  data_links: ReportedDataLink[];
+}
+
+export interface ReportedDataLink {
+  /** '2021-22' */
+  year: string;
+  url: string;
+  kind: 'file' | 'folder';
+  scope: 'discom' | 'state';
+}
+
+/** One regulation document (principal regulation, amendment, consolidated version) as listed in
+ * data/hyperlinks.xlsx — `title` and `year` exactly as the sheet gives them. */
+export interface RegulationDocument {
+  title: string;
+  year: string | null;
+  url: string;
 }
 
 export interface AccessibilitySummary {

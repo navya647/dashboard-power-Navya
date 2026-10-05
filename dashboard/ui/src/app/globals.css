@@ -7,8 +7,11 @@
 @import '../styles/state.css';
 @import '../styles/report.css';
 @import '../styles/visual-card.css';
+@import '../styles/state-overview.css';
+@import '../styles/indicator-module.css';
 @import '../styles/accessibility.css';
 @import '../styles/methodology.css';
+@import '../styles/glance.css';
 
 html,
 body {
