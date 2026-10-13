@@ -7,14 +7,14 @@ import { animateScrollTo } from '@/lib/scroll';
 interface Props {
   label: ReactNode;
   meta?: ReactNode;
-  /** The DISCOM's assigned categorical color (same one used on its scorecard/chart line above) —
+  /** The DISCOM's assigned categorical color (same one used on its scorecard/chart line above),
    * turns the plain label into a colored chip so it's immediately clear which DISCOM this row's
    * detail belongs to, rather than reading as generic unlabeled text. */
   color?: string;
   children: ReactNode;
   defaultOpen?: boolean;
   animationDelay?: number;
-  /** Controlled open state — pass this (with onOpenChange) when something outside the row itself
+  /** Controlled open state, pass this (with onOpenChange) when something outside the row itself
    * needs to open it, e.g. clicking that DISCOM's scorecard above. Omit both for a normal
    * self-contained accordion row that only ever responds to its own header click. */
   open?: boolean;
@@ -38,9 +38,9 @@ export default function Collapsible({ label, meta, color, children, defaultOpen 
     onOpenChange?.(next);
   };
 
-  // fires on every transition into the open state, however it was triggered — a click on this
+  // fires on every transition into the open state, however it was triggered, a click on this
   // row's own header, or `open` flipping true because a parent set it (e.g. that DISCOM's
-  // scorecard was clicked) — so the "scroll to reveal it" behavior isn't tied to one input path.
+  // scorecard was clicked), so the "scroll to reveal it" behavior isn't tied to one input path.
   useEffect(() => {
     if (open && !wasOpen.current) {
       const container = containerRef.current;

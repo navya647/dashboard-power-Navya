@@ -15,6 +15,11 @@ body {
   line-height: 1.5;
   transition: background-color 200ms var(--ease), color 200ms var(--ease);
 }
+/* light theme: Montserrat 400 is hairline-thin for 12–14px copy on a pale ground, so body text
+   runs one step heavier (500). Elements that set their own weight are unaffected. */
+:root:not([data-theme='dark']) body {
+  font-weight: 500;
+}
 @media (prefers-reduced-motion: reduce) {
   body {
     transition: none;
@@ -96,21 +101,21 @@ h3 {
 }
 
 /* Response (apple-design §1): every tappable control gets instant, visible feedback on press,
-   not just on :hover — :hover alone is silent on touch, where nothing else marks a tap landed.
+   not just on :hover, :hover alone is silent on touch, where nothing else marks a tap landed.
    Low-specificity :where() so any component's own :active rule (e.g. .back-btn's translateX)
    overrides this without a fight. */
 :where(button, a, [role='button'], [role='switch']):not(:disabled):active {
   transform: scale(0.97);
 }
 
-/* Reduced motion (apple-design §14): keep feedback, drop the large/spatial motion — cross-fade
+/* Reduced motion (apple-design §14): keep feedback, drop the large/spatial motion, cross-fade
    instead of slide, no cascade stagger, no elastic overshoot. Color/opacity changes that aid
    comprehension (hover states, the sidebar's own translateX) are left alone. */
 /* Theme toggle sweep (apple-design §7 spatial consistency, §12 materialize): the View Transitions
    API snapshots the page before/after the data-theme flip; we replace its default cross-fade with
    a hard left-to-right wipe so the incoming theme reads as sweeping across, not dissolving in.
    ::view-transition-new(root) paints above ::view-transition-old(root) by default, so animating
-   only the new layer's clip-path from fully-hidden to fully-shown is enough — the old layer just
+   only the new layer's clip-path from fully-hidden to fully-shown is enough, the old layer just
    sits static underneath until it's covered. Skipped entirely (ThemeToggle.tsx) when the API is
    unsupported or the user prefers reduced motion, falling back to the plain attribute flip, which
    still gets the existing 200ms color cross-fade on body above. */
@@ -135,7 +140,7 @@ h3 {
 
 /* Theme toggle icon flip: the sun/moon glyph gets its own coin-flip morph, independent of the
    page-wide sweep above. Named as its own view-transition group so it animates on its own
-   keyframes instead of inheriting the root's clip-path — a click is a discrete, non-gestural
+   keyframes instead of inheriting the root's clip-path, a click is a discrete, non-gestural
    action, so the small overshoot here (theme-icon-in's 60% keyframe) is a deliberate one-off
    flourish, not the momentum-only bounce apple-design reserves for dragged/flicked elements. */
 @media (prefers-reduced-motion: no-preference) {
@@ -189,11 +194,6 @@ h3 {
     animation: none;
     opacity: 1;
   }
-  .tour-slide--forward,
-  .tour-slide--back {
-    animation-name: fadeIn;
-    animation-duration: 180ms;
-  }
   :where(button, a, [role='button'], [role='switch']):not(:disabled):active {
     transform: none;
     opacity: 0.7;
@@ -207,10 +207,6 @@ h3 {
   }
   .sidebar {
     background: var(--sidebar-bg);
-    backdrop-filter: none;
-  }
-  .tour-scrim {
-    background: rgba(15, 17, 23, 0.75);
     backdrop-filter: none;
   }
 }

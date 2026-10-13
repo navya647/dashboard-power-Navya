@@ -3,7 +3,7 @@
  * new regulation or amendment takes effect.
  *
  * Every date here is quoted from the workbooks themselves (the regulation-citation rows or the
- * standard text of the SoP / Common Indicators sheets) — nothing is looked up elsewhere:
+ * standard text of the SoP / Common Indicators sheets), nothing is looked up elsewhere:
  *   - Gujarat: "2005 Regulations apply up to 5 Dec 2023 and the 2023 Regulations apply from 6 Dec
  *     2023. FY 2023-24 must therefore be treated as a split-regulation year."
  *   - Maharashtra: "Regulations, 2021 (upto to 4th July 2024)" and "(First Amendment) Regulations,
@@ -11,7 +11,7 @@
  *   - Rajasthan: "Regulations, 2021 came into force on 15 Apr 2021"
  * States not listed have no dated change recorded in the source; their standards are shown per
  * year as recorded. (Karnataka's sheets cite a 2022 regulation above their FY26 rows but give no
- * date — add it here once one is confirmed.) */
+ * date, add it here once one is confirmed.) */
 
 export interface RegulationEra {
   /** full name shown on the regulation panel */
@@ -46,7 +46,7 @@ export const REGULATION_TIMELINE: Record<string, RegulationEra[]> = {
       to: "2024-07-04",
     },
     {
-      name: "MERC Regulations, 2021 — First Amendment, 2024",
+      name: "MERC Regulations, 2021, First Amendment, 2024",
       short: "2024 amdt",
       from: "2024-07-05",
       to: null,

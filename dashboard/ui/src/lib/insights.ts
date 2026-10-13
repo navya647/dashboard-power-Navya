@@ -4,7 +4,7 @@ import { assessYearOverYear } from './trend';
 import type { CardSeries, IndicatorContext } from './indicatorContext';
 
 /** Plain, deterministic observations for the "What this shows" panel. Every sentence restates
- * something already on screen — which years have a reported value, each DISCOM's first and last
+ * something already on screen, which years have a reported value, each DISCOM's first and last
  * reported figure (and any lower/higher point in between), the count of year-on-year changes the
  * values strip already colours as improved/declined, and the comparability / standard-met status
  * recorded in the source. No score, ranking, cause or adjective of magnitude is ever produced. */
@@ -44,7 +44,7 @@ export function buildInsights(series: CardSeries[], ctx: IndicatorContext, years
     const first = present[0];
     const last = present[present.length - 1];
     let sentence = `${s.label} reported ${unitSuffix(first.value)} in ${fyLabel(first.year)} and ${unitSuffix(last.value)} in ${fyLabel(last.year)}`;
-    // an interior low/high (a turning point between the two ends) — stated, not characterised
+    // an interior low/high (a turning point between the two ends), stated, not characterised
     const interior = present.slice(1, -1);
     if (interior.length) {
       const lo = interior.reduce((a, b) => (b.value < a.value ? b : a));
@@ -75,7 +75,7 @@ export function buildInsights(series: CardSeries[], ctx: IndicatorContext, years
   if (ctx.sharedVerdict === 'not-comparable') {
     const reason = ctx.sharedAdvisory?.constantReason;
     const scope = ctx.sharedAdvisory && ctx.sharedAdvisory.head !== 'Not comparable across all years shown' ? ctx.sharedAdvisory.head.replace(/^Not comparable/, '') : ''; // e.g. " in 2 of 5 years"
-    out.push(`Direct comparison with the regulatory standard is unavailable${scope}${reason ? ` — ${reason.replace(/\.$/, '')}` : ''}.`);
+    out.push(`Direct comparison with the regulatory standard is unavailable${scope}${reason ? `, ${reason.replace(/\.$/, '')}` : ''}.`);
   } else if (ctx.sharedVerdict === 'unavailable') {
     out.push('The source data does not record whether these figures can be compared with the regulatory standard.');
   } else if (ctx.sharedVerdict == null && series.length > 1) {

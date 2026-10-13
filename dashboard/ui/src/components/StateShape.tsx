@@ -12,7 +12,7 @@ interface Props {
 }
 
 /** An isolated silhouette of a single state, cropped to its own bounds rather than its
- * position within India — used where a state needs to read as its own small icon (e.g. a
+ * position within India, used where a state needs to read as its own small icon (e.g. a
  * comparison header) rather than as a piece of the full map. */
 export default function StateShape({ geojson, name, size = 72, color }: Props) {
   const shape = useMemo(() => {
@@ -29,7 +29,7 @@ export default function StateShape({ geojson, name, size = 72, color }: Props) {
     const path = geoPath(proj);
     const d = path(feature as never);
     if (!d) return null;
-    // fitExtent above fits the shape into a fixed *square* box, preserving its aspect ratio —
+    // fitExtent above fits the shape into a fixed *square* box, preserving its aspect ratio,
     // for a wide/short (or tall/narrow) state, that leaves the unfilled axis as dead canvas space
     // (e.g. Madhya Pradesh's wide-short outline reads small, framed by empty space above/below).
     // Re-crop the actual <svg> to the shape's own bounding box instead of the full square, so the

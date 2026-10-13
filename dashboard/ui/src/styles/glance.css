@@ -1,9 +1,9 @@
 /* ---- At a glance page (GlanceView.tsx): one indicator, one year, every DISCOM's figure.
    Shared page header (kicker + .method-hero-title); one line of indicator tabs with the year switch
-   at its far end; then one chart — where an indicator is reported in more than one unit/direction, a
+   at its far end; then one chart, where an indicator is reported in more than one unit/direction, a
    "Reported as" switcher picks which one is shown. Rows size themselves (GlanceView useFitRowHeight)
-   so the chart fits the window on desktop; the legend sits in one quiet line under it. Each chart is a single CSS grid —
-   state | DISCOM | figure | plot — so the axis, gridlines, bars and each state's benchmark line all
+   so the chart fits the window on desktop; the legend sits in one quiet line under it. Each chart is a single CSS grid,
+   state | DISCOM | figure | plot, so the axis, gridlines, bars and each state's benchmark line all
    sit in the same plot column and line up by construction. Bar colour is the source's own verdict
    and nothing else. ---- */
 
@@ -36,18 +36,26 @@
   --tone: color-mix(in srgb, var(--ink) 40%, transparent);
 }
 
+/* the year switch: its own line under the indicator tabs, at the left where the eye already is,
+   well clear of the logo in the top-right corner */
+.glc-yearrow {
+  margin-top: 16px;
+}
+
 /* ---- controls: indicator tabs on one line, years at the far end ---- */
 .glc-bar {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: flex-end;
   justify-content: space-between;
   gap: 10px 24px;
   margin-top: 22px;
   border-bottom: 1px solid var(--glc-line);
 }
+/* every indicator on one line, never scrolled out of sight (the years sit in the chart heading) */
 .glc-tabs {
   display: flex;
+  flex: 1 1 auto;
   flex-wrap: nowrap;
   min-width: 0;
 }
@@ -75,7 +83,6 @@
   display: inline-flex;
   flex: none;
   gap: 2px;
-  margin-bottom: 8px;
   padding: 3px;
   border: 1px solid var(--glc-line);
   border-radius: var(--radius-pill);
@@ -307,6 +314,7 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   color: var(--ink);
+  font-size: min(13.5px, calc(var(--glc-row-h) * 0.7));
 }
 
 /* one DISCOM: name | figure | bar, on the chart's own columns (subgrid) */
@@ -330,14 +338,14 @@
 .glc-name {
   padding-left: 10px;
   overflow: hidden;
-  font-size: 13.5px;
+  font-size: min(13.5px, calc(var(--glc-row-h) * 0.7));
   font-weight: 600;
   white-space: nowrap;
   text-overflow: ellipsis;
   color: var(--ink);
 }
 .glc-fig {
-  font-size: 14px;
+  font-size: min(14px, calc(var(--glc-row-h) * 0.72));
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   text-align: right;
@@ -488,30 +496,46 @@
   font-size: 13px;
   color: var(--text-supporting, var(--muted));
 }
-.glc-facts {
+/* the card's facts, plain: the standard, then the benchmark beside whether it was met, then the
+   reason only where that is N/A, separated by hairlines, kept compact so the card fits the window */
+.glc-boxes {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin: 18px 0 0;
-  padding-top: 14px;
+  grid-template-columns: auto 1fr;
+  column-gap: 28px;
+  margin: 14px 0 0;
+}
+.glc-box {
+  min-width: 0;
+  padding: 10px 0 0;
+  margin-top: 10px;
   border-top: 1px solid var(--line);
 }
-.glc-facts dt {
-  margin: 0 0 5px;
+.glc-box--wide {
+  grid-column: 1 / -1;
+}
+.glc-box-label {
+  display: block;
+  margin: 0 0 4px;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+  white-space: nowrap;
   color: var(--muted);
 }
-.glc-facts dd {
+.glc-box p {
   margin: 0;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.glc-box .glc-box-val {
   font-size: 16px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  color: var(--ink);
 }
-.glc-facts .mj-chip {
+.glc-box .mj-chip {
   margin: 0;
 }
 .glc-notes {
@@ -564,9 +588,16 @@
 .glc-card[class*='is-tight'] .glc-card-value b {
   font-size: 30px;
 }
-.glc-card[class*='is-tight'] .glc-facts {
-  margin-top: 12px;
-  padding-top: 10px;
+.glc-card[class*='is-tight'] .glc-boxes {
+  margin-top: 10px;
+}
+.glc-card[class*='is-tight'] .glc-box {
+  padding-top: 7px;
+  margin-top: 7px;
+}
+.glc-card[class*='is-tight'] .glc-box p {
+  font-size: 12px;
+  line-height: 1.35;
 }
 .glc-card[class*='is-tight'] .glc-notes {
   margin-top: 10px;
@@ -583,6 +614,45 @@
   line-height: 1.4;
 }
 
+/* short windows: tighter spacing around the controls so the whole chart still fits without scrolling */
+@media (min-width: 901px) and (max-height: 880px) {
+  .glc-bar {
+    margin-top: 12px;
+  }
+  .glc-yearrow {
+    margin-top: 10px;
+  }
+  .glc-body {
+    margin-top: 10px;
+  }
+  .glc {
+    --glc-axis-h: 22px;
+    --glc-gap-h: 8px;
+  }
+}
+/* very short windows: a smaller page title and tighter controls again */
+@media (min-width: 901px) and (max-height: 800px) {
+  .glc .method-hero-title {
+    font-size: 24px;
+  }
+  .glc-bar {
+    margin-top: 6px;
+  }
+  .glc-tab {
+    padding-top: 7px;
+    padding-bottom: 6px;
+  }
+  .glc-yearrow {
+    margin-top: 6px;
+  }
+  .glc-body {
+    margin-top: 6px;
+  }
+  .glc-chart-head {
+    min-height: 26px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .glc-fill,
   .glc-card {
@@ -596,9 +666,9 @@
     flex-direction: column;
     align-items: stretch;
   }
+  /* tabs wrap rather than scroll; the years sit on their own line, left, clear of the fixed logo */
   .glc-tabs {
-    overflow-x: auto;
-    scrollbar-width: none;
+    flex-wrap: wrap;
   }
   .glc-years {
     align-self: flex-start;

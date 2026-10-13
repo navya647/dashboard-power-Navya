@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import HeroMap from './HeroMap';
 import StateSearch from './StateSearch';
 import ComparePanel from './ComparePanel';
@@ -42,8 +43,8 @@ const EXPLORE_ANIM_MS = 680;
 const WHEEL_TRIGGER_PX = 40;
 const WHEEL_IDLE_RESET_MS = 300;
 /** After a navigation (and after a scrollable list inside the map view has used up a gesture), the
- * wheel stays locked until the input goes quiet for this long, so a trackpad's momentum tail — or
- * the rest of a gesture that just scrolled a list to its top — can never start another navigation:
+ * wheel stays locked until the input goes quiet for this long, so a trackpad's momentum tail, or
+ * the rest of a gesture that just scrolled a list to its top, can never start another navigation:
  * one gesture, at most one transition. */
 const GESTURE_GAP_MS = 250;
 
@@ -61,10 +62,11 @@ function scrollableCanScroll(target: EventTarget | null, stop: Element, up: bool
   return false;
 }
 
-/** The home page: exactly two full-screen frames — the sunset landing view (headline + "Explore
+/** The home page: exactly two full-screen frames, the sunset landing view (headline + "Explore
  * dashboard") and the interactive map view. On desktop the page itself never scrolls (scrollY stays
- * 0): the Explore button or a scroll down on the landing view plays the landing → map transition
- * (triggerDashboardTransition), and a scroll up on the map view plays its mirror image back
+ * 0): the Explore button or a scroll down on the landing view go straight to About
+ * (triggerAboutTransition; the map is reached from there or from MAP_HREF, which plays the
+ * landing → map transition, triggerDashboardTransition), and a scroll up on the map view plays its mirror image back
  * (triggerLandingTransition). Below the mobile breakpoint the two stack in a normal scrolling column
  * instead (the map view is taller than a phone screen). */
 export default function HeroSection({
@@ -80,9 +82,10 @@ export default function HeroSection({
   compareMode,
   onCompareModeChange,
 }: Props) {
+  const router = useRouter();
   const stageRef = useRef<HTMLElement>(null);
   const mapViewRef = useRef<HTMLDivElement>(null);
-  // The URL says which frame is showing (/?view=map — see lib/routes.ts), so a refresh or a
+  // The URL says which frame is showing (/?view=map, see lib/routes.ts), so a refresh or a
   // direct link opens on the map with no landing-view flash. This component only ever renders on
   // the client (page.tsx shows a loading state until the data is in), so reading the URL in the
   // initial state can't mismatch a server render.
@@ -142,13 +145,19 @@ export default function HeroSection({
     }
     runTransition('map', 'to-map');
   }
+  // Landing → About: the Explore button and every downward gesture on the landing view (the map is
+  // reached from the About page, the sidebar's Home, or any MAP_HREF control)
+  function triggerAboutTransition() {
+    if (animRef.current) return;
+    router.push('/about');
+  }
   // Map → landing: an upward gesture on the map view (desktop only)
   function triggerLandingTransition() {
     if (isMobile()) return;
     runTransition('landing', 'to-hero');
   }
 
-  // outside compare mode, a click jumps straight to that state's full report — no intermediate
+  // outside compare mode, a click jumps straight to that state's full report, no intermediate
   // preview card. In compare mode it instead adds/removes the state from the comparison set.
   function handleStateClick(name: string) {
     if (!compareMode) {
@@ -164,7 +173,7 @@ export default function HeroSection({
     else onToggleState(name);
   }
 
-  // Arriving on /?view=map (a refresh, or any "back to the map" control — MAP_HREF) opens straight
+  // Arriving on /?view=map (a refresh, or any "back to the map" control, MAP_HREF) opens straight
   // on the map: on desktop through the initial state above; on mobile, where the frames stack, by
   // scrolling to it before the first paint. A later switch to /?view=map while this page is
   // already up (the sidebar's Home clicked on the landing view) plays the normal hand-off.
@@ -185,7 +194,7 @@ export default function HeroSection({
     const stage = stageRef.current;
     if (!stage) return;
 
-    // The input handlers only ever start a transition — never change the view themselves: a
+    // The input handlers only ever start a transition, never change the view themselves: a
     // deliberate downward gesture on the landing view calls triggerDashboardTransition(), and a
     // deliberate upward gesture on the map view calls triggerLandingTransition(). Upward on the
     // landing view and downward on the map view do nothing. They read the view and transition
@@ -231,7 +240,7 @@ export default function HeroSection({
       wheelAccum += Math.abs(dy);
       if (wheelAccum < WHEEL_TRIGGER_PX) return;
       lockGesture();
-      if (onLanding) triggerDashboardTransition();
+      if (onLanding) triggerAboutTransition();
       else triggerLandingTransition();
     }
     // Keyboard, outside text fields: the "scroll down" keys on the landing view, the "scroll up"
@@ -242,12 +251,12 @@ export default function HeroSection({
       if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
       const onButton = t?.tagName === 'BUTTON';
       if (viewRef.current === 'landing') {
-        if (['ArrowDown', 'PageDown', 'End'].includes(e.key) || (e.key === ' ' && !e.shiftKey && !onButton)) triggerDashboardTransition();
+        if (['ArrowDown', 'PageDown', 'End'].includes(e.key) || (e.key === ' ' && !e.shiftKey && !onButton)) triggerAboutTransition();
       } else if (['ArrowUp', 'PageUp', 'Home'].includes(e.key) || (e.key === ' ' && e.shiftKey && !onButton)) {
         triggerLandingTransition();
       }
     }
-    // Touchscreen: a swipe of more than 40px — up on the landing view, down on the map view
+    // Touchscreen: a swipe of more than 40px, up on the landing view, down on the map view
     // (unless it was scrolling a list that can still scroll up)
     let touchY: number | null = null;
     function onTouchStart(e: TouchEvent) {
@@ -258,7 +267,7 @@ export default function HeroSection({
       const dy = touchY - (e.changedTouches[0]?.clientY ?? touchY);
       touchY = null;
       if (viewRef.current === 'landing') {
-        if (dy > 40) triggerDashboardTransition();
+        if (dy > 40) triggerAboutTransition();
       } else if (dy < -40 && !scrollableCanScroll(e.target, stage!, true)) {
         triggerLandingTransition();
       }
@@ -278,7 +287,7 @@ export default function HeroSection({
   }, []);
 
   // While the landing view is the frame on screen, the sidebar (outside this section) matches the
-  // sunset and hides the theme toggle — see :root[data-hero-landing] in layout.css; while the map
+  // sunset and hides the theme toggle, see :root[data-hero-landing] in layout.css; while the map
   // view is, it takes that view's warm surface family instead (:root[data-hero-map]). Desktop only,
   // like the init script in app/layout.tsx that sets them before first paint.
   useEffect(() => {
@@ -333,19 +342,25 @@ export default function HeroSection({
           <p className="lede">
             Bringing together Standards of Performance and reported data on electricity supply quality, reliability, service delivery and
             safety across India&rsquo;s states, union territories and DISCOMs.
-            <br />
-            A systematic, transparent resource to enable comparison, support improvements in
-            electricity distribution services, and inform quality-linked tariff design.
           </p>
         </div>
 
-        {/* the introduction's call to action, centred at the bottom of the landing view */}
-        <button type="button" className="hero-explore" onClick={triggerDashboardTransition}>
+        {/* the introduction's call to action, centred at the bottom of the landing view: opens the
+            About page, with the same hand-off a scroll down plays */}
+        <Link
+          href="/about"
+          className="hero-explore"
+          onClick={(e) => {
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+            e.preventDefault();
+            triggerAboutTransition();
+          }}
+        >
           <span>Explore dashboard</span>
           <svg className="hero-explore-arrow" viewBox="0 0 16 16" aria-hidden="true">
             <path d="M8 2.5v10M3.5 8.5 8 13l4.5-4.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-        </button>
+        </Link>
       </div>
 
       <div className="hero-sticky" ref={mapViewRef}>

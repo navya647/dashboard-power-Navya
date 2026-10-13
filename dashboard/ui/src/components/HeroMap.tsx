@@ -14,19 +14,19 @@ interface Props {
   compareColorOf: (name: string) => string | null;
   onStateClick: (name: string) => void;
   compareMode?: boolean;
-  /** a region highlighted from outside the map (StateSearch's active option) — shown like a hover */
+  /** a region highlighted from outside the map (StateSearch's active option), shown like a hover */
   highlighted?: string | null;
   onCentroids?: (centroids: Record<string, [number, number]>, size: { width: number; height: number }) => void;
 }
 
-/** India as a flat, editorial SVG map — warm ivory/stone and muted terracotta/clay fills (not a
+/** India as a flat, editorial SVG map, warm ivory/stone and muted terracotta/clay fills (not a
  * saturated choropleth) and a delicate hairline border, so it reads as one illustrated atlas, not
  * a GIS layer. Every state stays visible and clickable at all times: hovering lifts one state
  * forward with a soft gold outline and a small tooltip; selecting it (via the compare set) blends
  * that state's category color into its own fill rather than swapping to a foreign hue, so it
  * stays visually part of India.
  *
- * (An earlier pass added an SVG feTurbulence "paper grain" rect over the whole map — pulled after
+ * (An earlier pass added an SVG feTurbulence "paper grain" rect over the whole map, pulled after
  * it turned out to render as a visible rectangular tint rather than a subtle texture, since the
  * filter never composited back with the map beneath it; a plain <rect> with no explicit fill
  * defaults to opaque black in SVG, and the mix-blend-mode:multiply meant to soften it instead
@@ -39,7 +39,7 @@ export default function HeroMap({ discoms, stateSpecific, geojson, compareColorO
   // a pointer hover wins over a highlight coming from the state search list
   const hovered = pointerHovered ?? highlighted ?? null;
   // touch devices have no hover, so the first tap can't preview a state the way a mouse hover
-  // does — it would otherwise jump straight to that state's report before the user ever saw the
+  // does, it would otherwise jump straight to that state's report before the user ever saw the
   // tooltip. On such devices the first tap on a state just shows the tooltip (acts as "hover");
   // a second tap on the *same*, already-previewed state is what actually navigates.
   const [canHover, setCanHover] = useState(true);
@@ -69,7 +69,7 @@ export default function HeroMap({ discoms, stateSpecific, geojson, compareColorO
   }, [geojson, size.width, size.height]);
 
   // held in a ref rather than the effect's own dependency array: onCentroids is a fresh inline
-  // closure on every parent render, and the parent's callback updates its own state — depending
+  // closure on every parent render, and the parent's callback updates its own state, depending
   // on the callback's identity here would re-fire the effect every time that state updates,
   // which re-calls the callback again, forever. Synced via its own effect (not during render)
   // since writing a ref mid-render is itself not allowed.
@@ -90,10 +90,10 @@ export default function HeroMap({ discoms, stateSpecific, geojson, compareColorO
   const hoveredPath = hovered ? projection?.byName[hovered] : null;
   const hoveredStatus = hovered ? stateMapStatus(discoms, hovered, stateSpecific) : null;
   // In compare-selection mode, a jurisdiction with no captured evidence in either dataset
-  // ('idle') can't be added to a comparison at all — there is nothing to compare — so its tooltip
+  // ('idle') can't be added to a comparison at all, there is nothing to compare, so its tooltip
   // says so explicitly instead of the usual "→" hint appended to the name (see the tooltip's
-  // <strong>): that hint is just inline text, not its own clickable line — the tooltip itself
-  // stays pointer-events:none, with only the underlying state/UT shape actually clickable — a
+  // <strong>): that hint is just inline text, not its own clickable line, the tooltip itself
+  // stays pointer-events:none, with only the underlying state/UT shape actually clickable, a
   // separate "Explore Performance →" line here previously looked like its own link/button when
   // nothing in the tooltip ever was.
   const hoveredDisabledForCompare = !!compareMode && hoveredStatus === 'idle';
@@ -103,8 +103,8 @@ export default function HeroMap({ discoms, stateSpecific, geojson, compareColorO
   function handleClick(name: string, disabledForCompare: boolean) {
     if (disabledForCompare) return;
     // the preview/confirm gate exists only to stop a tap from jumping straight to a state's
-    // full report before its been previewed. Compare mode never navigates — it just toggles the
-    // state in/out of the comparison set, a reversible, in-place action — so it should always
+    // full report before its been previewed. Compare mode never navigates, it just toggles the
+    // state in/out of the comparison set, a reversible, in-place action, so it should always
     // take effect on the first tap, on touch devices too.
     if (canHover || compareMode) {
       onStateClick(name);
@@ -128,7 +128,7 @@ export default function HeroMap({ discoms, stateSpecific, geojson, compareColorO
           height="100%"
           preserveAspectRatio="xMidYMid meet"
           // tapping empty space inside the map (ocean, outside every state path) cancels
-          // whatever's currently previewed — only relevant on touch (see handleClick), but
+          // whatever's currently previewed, only relevant on touch (see handleClick), but
           // harmless to clear on desktop too since a mouseleave would already have done so.
           onClick={(e) => {
             if (e.target === e.currentTarget) setHovered(null);
@@ -187,7 +187,7 @@ export default function HeroMap({ discoms, stateSpecific, geojson, compareColorO
       )}
       {hoveredPath && (
         <div
-          // Normally floats above the hovered point (see .hero-map-tip's upward transform) — for a
+          // Normally floats above the hovered point (see .hero-map-tip's upward transform), for a
           // jurisdiction whose centroid sits close to the map's own top edge (Ladakh, Jammu &
           // Kashmir, ...) that pushes the tooltip's top (the state/UT name) above y=0, where
           // .hero-sticky's overflow:hidden clips it. Flip to open downward instead whenever

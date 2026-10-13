@@ -1,6 +1,6 @@
-/* ---------- hero: the home page as two full-screen frames — the sunset landing view
+/* ---------- hero: the home page as two full-screen frames, the sunset landing view
    (.hero-landing: headline + "Explore dashboard") and the interactive map view (.hero-sticky:
-   compare panel — map — legend). On desktop only one is shown at a time and the page never
+   compare panel, map, legend). On desktop only one is shown at a time and the page never
    scrolls (see the min-width block below and HeroSection); on mobile they stack in a normal
    scrolling column. Every child of each screen is positioned absolutely within it. ---------- */
 .hero-stage {
@@ -148,18 +148,18 @@
 }
 /* no padding here: every child is position:absolute (there's no in-flow content at all), and a
    padding box only ever constrains in-flow content or gets used as the containing block for
-   absolutely-positioned descendants when the browser treats this element as establishing one —
+   absolutely-positioned descendants when the browser treats this element as establishing one,
    in testing, absolutely-positioned children here resolved their left/right/top/bottom against
    this element's full border box, not its padding box, so a padding value here was silently
    inert (the editorial text and every overlay panel sat flush against the true edge with zero
    gutter, ignoring it entirely). The gutter is baked directly into each child's own inset value
-   instead — see --hero-gutter below. */
+   instead, see --hero-gutter below. */
 .hero-sticky {
   position: relative;
   height: 100vh;
   overflow: hidden;
   /* the map view's background (see the ::before rule below): a warm neutral veil laid uniformly
-     over the photo at this strength — ivory at 15% in the light theme (was 75%, then 40% — both washed the photo out toward white), a warm
+     over the photo at this strength, ivory at 15% in the light theme (was 75%, then 40%, both washed the photo out toward white), a warm
      charcoal at 50% in the dark one (below), so the photo shows clearly behind the map */
   --hero-veil: 246 241 233;
   --hero-veil-strength: 0.15;
@@ -168,7 +168,7 @@
      burnt-brown accent for the active segment, buttons, focus and links. Other pages keep theirs. */
   --panel: #faf7f2;
   /* light-mode text tiers (contrast on the panels): primary/headings, body, secondary/helper and
-     icons, placeholder — all one warm charcoal family, none pure black */
+     icons, placeholder, all one warm charcoal family, none pure black */
   --ink: #1a1512; /* primary */
   --text-body: #221c18; /* body */
   --muted: #2f2824; /* secondary, helper text and icons */
@@ -191,7 +191,7 @@
   isolation: isolate;
   box-sizing: border-box;
   --hero-gutter: 48px;
-  /* the settled 3-column layout: Compare panel (left) — map — legend (right). Panel and legend
+  /* the settled 3-column layout: Compare panel (left), map, legend (right). Panel and legend
      each sit in a same-width column the same distance from their own edge, so the map's own box
      (see .hero-map-stage) is bordered by an identical gap on both sides, whether or not the
      legend's actual content fills its whole column. */
@@ -238,7 +238,7 @@
 /* ---------- map view background: one photograph under one uniform veil ----------
    The dusk sunset-road photo, untouched, with a single even layer of the veil colour above it
    (same strength everywhere) so it sits quietly behind the dashboard. Both are background layers
-   of this one pseudo-element, which sits below every child (positioned or not — mobile stacks them
+   of this one pseudo-element, which sits below every child (positioned or not, mobile stacks them
    in normal flow); .hero-sticky's isolation keeps it above the frame's own background colour.
    One extra, very soft fade of the same veil colour over the lower part of the frame quiets the
    photo's dark road there, where the tiny offshore islands (Lakshadweep, Andaman & Nicobar) sit. */
@@ -266,7 +266,7 @@
 }
 /* desktop readability shade: a left-to-right darkening over the photo layer, deepest behind the
    headline and paragraph and gone by ~65% across, so the sun and the pole stay vivid. (Mobile
-   already dims the photo under the copy — see street.css.) */
+   already dims the photo under the copy, see street.css.) */
 @media (min-width: 981px) {
   .hero-bg-fabric::after {
     content: '';
@@ -284,8 +284,8 @@
 /* "Explore dashboard": the introduction's call to action, centred near the bottom of the landing
    view (desktop; on narrow screens it sits in the stacked flow under the headline, centred). A wide, low pill of warm frosted glass with white text, so it
    reads clearly without glaring over the photo; hover brightens the glass and lifts it slightly. The
-   arrow sits beside the label. Clicking it plays the hand-off to the map view (HeroSection's
-   triggerDashboardTransition). */
+   arrow sits beside the label. It's a link to the About page (a scroll down still plays the hand-off
+   to the map view). */
 .hero-explore {
   position: absolute;
   z-index: 3;
@@ -316,13 +316,17 @@
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
+  text-decoration: none;
   cursor: pointer;
   transition: background-color 200ms var(--ease), border-color 200ms var(--ease), box-shadow 200ms var(--ease), translate 200ms var(--ease);
 }
+/* the label stays white on hover: the global a:hover rule (base.css) would otherwise turn it navy
+   on the lightened glass, which read as a muddy tan-and-blue */
 .hero-explore:hover {
-  background: rgba(255, 236, 214, 0.28);
-  border-color: rgba(255, 240, 225, 0.75);
-  box-shadow: 0 12px 28px rgba(20, 10, 5, 0.3);
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.24);
+  border-color: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 12px 28px rgba(20, 10, 5, 0.3), 0 0 0 4px rgba(255, 255, 255, 0.08);
   translate: 0 -1px;
 }
 .hero-explore:focus-visible {
@@ -371,14 +375,14 @@
   display: block;
 }
 
-/* top-right badge — one on each screen */
+/* top-right badge, one on each screen */
 .hero-coverage-badge {
   position: absolute;
   z-index: 2;
   /* The logo PNGs carry ~13px of transparent margin above the artwork and ~30px to its right (at
      the 230px display width, identical in both the colour and white versions). These offsets put
-     the visible artwork 32px from the top and right edges — the same --hero-side-gutter the legend
-     and Explore card keep from theirs — in every theme and scroll position. */
+     the visible artwork 32px from the top and right edges, the same --hero-side-gutter the legend
+     and Explore card keep from theirs, in every theme and scroll position. */
   top: 19px;
   right: 2px;
 }
@@ -393,7 +397,10 @@
   left: var(--hero-gutter);
   top: 50%;
   transform: translateY(-50%);
-  width: 560px;
+  /* the box is centred, but the lede's line-height leaves more empty space under its last line
+     than the title leaves above its first, so the *visible* text sat ~10px low */
+  margin-top: -10px;
+  width: clamp(480px, 38vw, 760px);
   max-width: calc(44% - var(--hero-gutter));
 }
 .hero-logo {
@@ -414,9 +421,23 @@
   color: var(--ink);
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: 34px;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
+  font-size: clamp(34px, 2.6vw, 52px);
+  line-height: 1.18;
+  /* left-aligned: justifying a two-line title stretches its word gaps badly. Sized so
+     "India Power Supply, Service" fits the column with room to spare. */
+  word-spacing: 0.06em;
+  /* two balanced lines: the column is wide enough for "India Power Supply, Service" */
+  letter-spacing: 0.005em;
+  text-wrap: balance;
+  text-shadow: 0 2px 28px rgba(40, 12, 0, 0.35);
+}
+@keyframes hero-copy-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-editorial h1,
+  .hero-editorial p.lede { animation: none !important; }
 }
 .hero-scope {
   display: flex;
@@ -444,7 +465,7 @@
   background: rgba(74, 58, 167, 0.1);
   color: #3a2d8a;
 }
-/* the light-mode colors above are tuned for a light tint over a white panel — over a dark panel
+/* the light-mode colors above are tuned for a light tint over a white panel, over a dark panel
    that same low-alpha tint reads as barely-there and the dark saturated text loses contrast, so
    dark mode gets its own brighter text + slightly more opaque tint rather than inheriting these. */
 :root[data-theme='dark'] .scope-pill--a {
@@ -460,25 +481,30 @@
   color: #d6ccff;
 }
 .hero-editorial p.lede {
-  margin: 24px 0 0;
+  margin: clamp(28px, 2.5vw, 48px) 0 0;
   /* --muted was darkened sitewide (tokens.css) to fix exactly this "too faint at this size"
-     problem, landing almost exactly on the darker one-off value this rule used to need — so it
+     problem, landing almost exactly on the darker one-off value this rule used to need, so it
      now just uses --muted directly instead of its own hardcoded color. */
   color: var(--muted);
-  font-size: 14.5px;
-  line-height: 1.75;
-  /* was `justify` — at this column width it stretched word-spacing unevenly line to line (worse
-     the longer the paragraph got), reading as ragged rather than tidy. Left-aligned avoids that
-     entirely and is the more common choice for a narrow column like this one anyway. */
+  font-size: clamp(15px, 1.35vw, 26px);
+  line-height: 1.7;
+  /* left-aligned (not `justify`): at this column width justifying stretched word-spacing unevenly
+     line to line, and made the gaps look wider than the title's. Left-aligned keeps both at
+     normal word spacing. */
   text-align: left;
-  /* was 42ch — narrower than .hero-editorial's own box, which forced this (now longer) paragraph
+  word-spacing: 0.06em; /* same value as the title (.hero-editorial h1) so the two match */
+  hyphens: auto;
+  text-wrap: pretty;
+  letter-spacing: 0.005em;
+  text-shadow: 0 1px 16px rgba(40, 12, 0, 0.4);
+  /* was 42ch, narrower than .hero-editorial's own box, which forced this (now longer) paragraph
      past 4 lines. Filling the full available width (widened to 560px above) instead of
      self-capping narrower, combined with a slightly smaller font, keeps it to about 4 lines. */
   max-width: 100%;
 }
 
 /* ---------- the map stage: a fixed-size box, centered via auto margins so it's perfectly
-   centered on any viewport without hardcoded pixel math. No card background/border/radius — the
+   centered on any viewport without hardcoded pixel math. No card background/border/radius, the
    brief is explicit that the map should float naturally on the page rather than being boxed, so
    it sits directly on the same paper tone as everything else. ---------- */
 .hero-map-stage {
@@ -488,16 +514,16 @@
   height: 99%;
   margin-top: auto;
   margin-bottom: auto;
-  /* Left/right are no longer a plain percentage centered via margin:auto — the Compare panel and
+  /* Left/right are no longer a plain percentage centered via margin:auto, the Compare panel and
      the legend now each occupy their own reserved column (same width, same gutter from their
-     respective edge — see .overlay-compare/.map-chrome), so the map's own box is whatever's left
-     between them, with the same gap on both sides. This reads as a true 3-column layout (panel —
-     map — legend) rather than the map being centered against the raw viewport while the panel
+     respective edge, see .overlay-compare/.map-chrome), so the map's own box is whatever's left
+     between them, with the same gap on both sides. This reads as a true 3-column layout (panel,
+     map, legend) rather than the map being centered against the raw viewport while the panel
      floats over its left edge. */
   left: calc(var(--hero-side-gutter) + var(--hero-side-box) + var(--hero-map-gap));
   right: calc(var(--hero-side-gutter) + var(--hero-side-box) + var(--hero-map-gap));
   z-index: 1;
-  /* one fixed, hand-tuned horizontal offset, the same in View and Compare mode — no measuring or
+  /* one fixed, hand-tuned horizontal offset, the same in View and Compare mode, no measuring or
      centring. translateY: a small drop so the top of the map (J&K) clears the logo band instead of
      sitting level with the very top of the page. */
   transform: translate(63px, 6px);
@@ -510,7 +536,7 @@
   position: absolute;
   inset: 0;
   /* purely a fade-opacity wrapper around the (already pointer-events:none) TransmissionLayer
-   * SVG — without this, this empty div itself (default pointer-events:auto) would sit on top of
+   * SVG, without this, this empty div itself (default pointer-events:auto) would sit on top of
    * the map in paint order and silently swallow every hover/click before it reaches the state
    * paths underneath. */
   pointer-events: none;
@@ -544,7 +570,7 @@
   fill: var(--map-idle-dot);
 }
 
-/* small, clean hover tooltip — state name plus a one-line cue, not the full stats popup (that's
+/* small, clean hover tooltip, state name plus a one-line cue, not the full stats popup (that's
  * StatePopup.tsx, shown on click) */
 .hero-map-tip {
   position: absolute;
@@ -561,7 +587,7 @@
   flex-direction: column;
   gap: 2px;
 }
-/* opens downward instead of upward — used when the hovered point sits too close to the map's own
+/* opens downward instead of upward, used when the hovered point sits too close to the map's own
    top edge for the usual upward placement to fit (see HeroMap.tsx), which otherwise clipped the
    state/UT name (the tooltip's own first line) against .hero-sticky's overflow:hidden. */
 .hero-map-tip--below {
@@ -583,20 +609,20 @@
 }
 
 /* ---------- overlay chrome: compare tool (left) and legend (right) each float in their own
-   reserved column beside the map — see .hero-map-stage/.overlay-compare/.map-chrome. ---------- */
+   reserved column beside the map, see .hero-map-stage/.overlay-compare/.map-chrome. ---------- */
 .overlay-compare,
 .map-chrome {
   position: absolute;
   z-index: 3;
 }
-/* Anchored to the sticky viewport's own bottom edge, not a percentage-of-height `top` — a `top`
+/* Anchored to the sticky viewport's own bottom edge, not a percentage-of-height `top`, a `top`
  * anchor left the panel's bottom (the Compare/Clear buttons) at the mercy of however tall its
  * content happened to be (selecting enough jurisdictions to wrap the chip list to extra rows, or
  * simply a shorter browser window) and `.hero-sticky`'s own `overflow: hidden` clipped anything
- * past 100vh rather than letting the page scroll to reveal it — the buttons could end up
+ * past 100vh rather than letting the page scroll to reveal it, the buttons could end up
  * unreachable. Anchoring the bottom instead means the panel only ever grows *upward*, so the
  * selected-state chips can wrap onto as many rows as they need (see `.explore-chips`) without
- * pushing the buttons off-screen. No `overflow`/`max-height` on this element itself —
+ * pushing the buttons off-screen. No `overflow`/`max-height` on this element itself,
  * either one clips `.control-panel`'s box-shadow flush to this box's edges (a real bug: any
  * `overflow` value other than `visible` clips an element's own shadow, not just its content),
  * which read as a stray hard-edged rectangle poking out past the card's rounded corners. */
@@ -735,7 +761,7 @@
   font-size: 13px;
 }
 /* the disabled label is a sentence ("Select at least 2 to compare"), too long for the button in
-   the uppercase/tracked button style — sentence case keeps it to one line on most widths */
+   the uppercase/tracked button style, sentence case keeps it to one line on most widths */
 .explore-actions .control-compare-btn:disabled {
   text-transform: none;
   letter-spacing: 0;
@@ -881,9 +907,9 @@
   color: var(--muted);
 }
 
-/* ---------- map chrome: legend — a sibling of .overlay-compare (not nested inside
+/* ---------- map chrome: legend, a sibling of .overlay-compare (not nested inside
  * .hero-map-stage), anchored the same distance from the viewport's right edge as the Compare panel
- * is from its left, in a column of the same width — so the map's own box (see .hero-map-stage,
+ * is from its left, in a column of the same width, so the map's own box (see .hero-map-stage,
  * whose left/right are computed from these same --hero-side-gutter/--hero-side-box/--hero-map-gap
  * values) always has an identical gap to the panel on one side and the legend on the other,
  * whether or not the legend's own content fills its whole reserved column. ---------- */
@@ -917,7 +943,7 @@
   white-space: nowrap;
 }
 /* square swatches drawn with exactly the map's own solid fill per status (see MAP_STATUS in
-   colors.ts) — also reused by the state search list and the Methodology page */
+   colors.ts), also reused by the state search list and the Methodology page */
 .map-legend-dot {
   width: 11px;
   height: 11px;
@@ -932,7 +958,7 @@
   background: var(--map-no-data);
 }
 /* "Coming soon": the same greige with a fine dot grid, matching the dots HeroMap draws over those
-   states, so it can't be mistaken for the plain off-white "Data Not Reported" (this view only — the
+   states, so it can't be mistaken for the plain off-white "Data Not Reported" (this view only, the
    search list's swatches included) */
 .hero-sticky .map-legend-dot--none {
   background:
@@ -952,7 +978,7 @@
   backdrop-filter: blur(18px) saturate(1.2);
 }
 /* --panel and --paper/the photo behind it are close in tone in dark mode, so this card read as
-   barely raised off the backdrop — a touch more opacity and a slightly stronger edge is enough to
+   barely raised off the backdrop, a touch more opacity and a slightly stronger edge is enough to
    separate it without changing its size, shape, or the rest of its (unchanged) light-mode look. */
 :root[data-theme='dark'] .control-panel {
   background: color-mix(in srgb, var(--panel) 94%, transparent);
@@ -1069,7 +1095,7 @@
   gap: 6px;
   margin-top: 8px;
   /* capped and independently scrollable so a large selection can never grow the panel itself
-   * past the sticky hero viewport (which clips with overflow: hidden) — without this, enough
+   * past the sticky hero viewport (which clips with overflow: hidden), without this, enough
    * chips wrapping to extra rows pushed the Compare/Clear buttons below the fold and off-screen. */
   max-height: 92px;
   overflow-y: auto;
@@ -1163,7 +1189,7 @@
 @media (max-width: 980px) {
   .hero-stage {
     height: auto;
-    /* horizontal offset matches main.app-main's mobile padding (20px, see layout.css) — left at
+    /* horizontal offset matches main.app-main's mobile padding (20px, see layout.css), left at
        -44px (the desktop value) it bled past the viewport on both sides and caused an
        unwanted horizontal scrollbar. */
     margin: -72px -20px 0;
@@ -1180,7 +1206,7 @@
     flex-direction: column;
     gap: 16px;
     /* the hero bleeds past main.app-main's own top padding (see .hero-stage's negative margin
-       above) to sit flush with the viewport edge — this restores clearance so the headline
+       above) to sit flush with the viewport edge, this restores clearance so the headline
        doesn't start right at the very top edge of the viewport. */
     padding: 112px 0 8px; /* clears the logo (artwork 32px from the top, box bottom at 96px) */
   }
@@ -1281,7 +1307,7 @@
 }
 
 /* readability (both themes): the Explore card and legend text a half-size up and at full primary-text
-   strength — the boxes above are near-solid so the photo no longer competes with it */
+   strength, the boxes above are near-solid so the photo no longer competes with it */
 .hero-sticky .explore-title {
   font-size: 17.5px;
 }

@@ -9,7 +9,7 @@ interface Props {
   onChange: (y: string) => void;
 }
 
-/** A sliding pill selector for financial years — used anywhere a single-year filter is needed
+/** A sliding pill selector for financial years, used anywhere a single-year filter is needed
  * (SoP section, DISCOM Scorecards). The slider's position/width is measured from the actual
  * active button rather than assumed from index * fixed-width, so it lands exactly under the
  * label regardless of how wide "2025-26" renders vs "2021-22". */

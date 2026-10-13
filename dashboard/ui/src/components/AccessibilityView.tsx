@@ -10,8 +10,8 @@ import { Arrow, RegulationDocs, ReportedDataTable } from './SourceDocuments';
 
 /** The Accessibility page: an India map coloured by whether each state's DISCOMs publish their
  * performance data (machine-readable / published but not / not published), and a card for the
- * clicked state with its year-wise reports and regulation documents — only parts every covered state has. Status is the same
- * for every DISCOM in a state, so it's shown once, per state. Nothing is scored — every figure is a
+ * clicked state with its year-wise reports and regulation documents, only parts every covered state has. Status is the same
+ * for every DISCOM in a state, so it's shown once, per state. Nothing is scored, every figure is a
  * count of the source workbook's own Yes/No cells. */
 
 type Bucket = 'readable' | 'pdf' | 'none';
@@ -71,7 +71,7 @@ function StateCard({ state, discoms, regulation, onClose }: { state: string; dis
         <a className="acm-regulator" href={regulatorUrl} target="_blank" rel="noopener noreferrer" title={regulator.name}>
           {regulator.abbr} website
           <Arrow />
-          <span className="sr-only"> — {regulator.name} (opens in a new tab)</span>
+          <span className="sr-only">, {regulator.name} (opens in a new tab)</span>
         </a>
       )}
     </article>
@@ -92,7 +92,7 @@ export default function AccessibilityView() {
   const map = useMemo(() => (geojson ? buildIndiaPaths(geojson, MAP_W, MAP_H, 0.02) : null), [geojson]);
 
   // The map fills exactly the window height left below the title, legend included, so the page
-  // never scrolls on desktop — measured (like the About page's glossary frame) rather than a fixed
+  // never scrolls on desktop, measured (like the About page's glossary frame) rather than a fixed
   // calc, since the title's height and the legend's line count vary with width and zoom.
   const svgRef = useRef<SVGSVGElement>(null);
   const legendRef = useRef<HTMLElement>(null);
@@ -123,7 +123,7 @@ export default function AccessibilityView() {
   }, [map, accessibility]);
 
   // The selected state's card is taken out of the page flow (absolute, desktop only) so a card
-  // taller than the map — Andhra Pradesh's — can't grow the page and bring back a scrollbar. It's
+  // taller than the map, Andhra Pradesh's, can't grow the page and bring back a scrollbar. It's
   // centred on the map, then nudged up into the free space beside the title if it would otherwise
   // run past the bottom of the window (never above the logo area).
   const sideRef = useRef<HTMLDivElement>(null);
@@ -190,7 +190,7 @@ export default function AccessibilityView() {
         <figure className="acm-map">
           <svg ref={svgRef} viewBox={`0 0 ${MAP_W} ${MAP_H}`} role="group" aria-label="States by whether their DISCOMs publish performance data">
             <defs>
-              {/* "not yet covered": the home map's "Coming soon" look — greige with a fine dot grid */}
+              {/* "not yet covered": the home map's "Coming soon" look, greige with a fine dot grid */}
               <pattern id={dotsId} patternUnits="userSpaceOnUse" width="4" height="4">
                 <circle cx="2" cy="2" r="0.85" className="acm-out-dot" />
               </pattern>

@@ -23,8 +23,8 @@ interface Props {
 /** The year-wise reported values beneath the chart, as a quiet supporting table: one row per
  * DISCOM, one column per fiscal year, each cell the reported value with its year-on-year chip and
  * its standard-met status glyph beside it. Same per-cell logic as before (evidenceStatus,
- * assessYearOverYear — always against the immediately preceding displayed year, the first year
- * getting "—"); hovering a cell drives the chart's guide line via `onHoverYear`. */
+ * assessYearOverYear, always against the immediately preceding displayed year, the first year
+ * getting ", "); hovering a cell drives the chart's guide line via `onHoverYear`. */
 export default function ReportedValuesStrip({ series, yearsAsc, unitSuffix, hoverYear, focusYear, onHoverYear }: Props) {
   const activeYear = hoverYear ?? focusYear;
   return (
@@ -93,7 +93,7 @@ export default function ReportedValuesStrip({ series, yearsAsc, unitSuffix, hove
                           className={`so-yoy ${yoyMeta ? yoyMeta.cls : 'yoy-first-year'}`}
                           title={yoy ? `${yoyMeta!.text} vs ${fyLabel(prev!.year)} · ${YOY_TOOLTIP}` : YOY_TOOLTIP}
                         >
-                          {yoy ? yoy.arrow : '—'}
+                          {yoy ? yoy.arrow : 'N/A'}
                         </span>
                         <span className={`so-ev ${meta.cls}`} aria-label={meta.text}>
                           {meta.short}

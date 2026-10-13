@@ -19,9 +19,9 @@ interface Props {
 }
 
 /** One row of the year-wise values matrix (see IndicatorVisualCard, which owns the shared
- * `<thead>` of fiscal years every row aligns against) — a DISCOM/jurisdiction identity cell
+ * `<thead>` of fiscal years every row aligns against), a DISCOM/jurisdiction identity cell
  * followed by one compact cell per year: reported value, its year-on-year assessment (top-right
- * corner chip — always a distinct signal from compliance status, never merged with it), and its
+ * corner chip, always a distinct signal from compliance status, never merged with it), and its
  * regulatory-compliance status (bottom pill). Hovering/focusing a cell becomes the connective
  * tissue between "this point on the chart" and "this year's regulatory evidence": it drives the
  * chart's enlarged point and vertical guide line via `onHoverYear`, falling back to the page-level
@@ -40,7 +40,7 @@ export default function EvidenceRail({ points, unitSuffix, seriesLabel, color, h
         const meta = STATUS_META[status];
         const isActive = p.year === activeYear;
         // Year-on-year is always against the immediately preceding *displayed* fiscal-year slot,
-        // never an earlier one found by skipping past a missing year — see lib/trend.ts. The
+        // never an earlier one found by skipping past a missing year, see lib/trend.ts. The
         // first displayed year has no preceding slot at all, so it gets a dash, not "Not
         // assessable" (that's reserved for a real but unusable/incomparable prior year).
         const prev = i > 0 ? points[i - 1] : null;
@@ -61,7 +61,7 @@ export default function EvidenceRail({ points, unitSuffix, seriesLabel, color, h
                 className={`matrix-cell-yoy${yoyMeta ? ` ${yoyMeta.cls}` : ' yoy-first-year'}`}
                 title={yoy ? `${yoyMeta!.text} vs FY${fyLabel(points[i - 1].year).slice(2)} · ${YOY_TOOLTIP}` : YOY_TOOLTIP}
               >
-                {yoy ? yoy.arrow : '—'}
+                {yoy ? yoy.arrow : 'N/A'}
               </span>
               <span className="matrix-cell-v">{p.value == null ? '–' : unitSuffix(p.value)}</span>
               <span className="matrix-cell-status">{meta.short}</span>

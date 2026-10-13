@@ -41,7 +41,7 @@ export interface BenchmarkLine {
 }
 
 /** The benchmark to draw as the chart's dotted line, one value per year. Benchmarks are set by the
- * state's regulation, so they're the same for every DISCOM — each year takes the value its DISCOM
+ * state's regulation, so they're the same for every DISCOM, each year takes the value its DISCOM
  * sheets give. A number is drawn only where it's on the plotted figures' scale: the source itself
  * marked it comparable for some figure in that unit ("Comparison possible? = Yes"), or it's one of
  * the restated text benchmarks above. Never a guess at a benchmark's unit. */

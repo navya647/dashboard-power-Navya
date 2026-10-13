@@ -1,5 +1,5 @@
 /** A single connected transmission network for the ambient pylon/flow layer, spanning the
- * whole country — Himachal Pradesh and Jammu & Kashmir/Ladakh in the north, down through the
+ * whole country, Himachal Pradesh and Jammu & Kashmir/Ladakh in the north, down through the
  * centre to Kerala, out to Tripura in the north-east, and along the east coast through
  * Odisha/Andhra Pradesh. Not a literal grid diagram, and intentionally not one node per
  * state: the infrastructure layer is supporting texture for the map, not a focal element, so

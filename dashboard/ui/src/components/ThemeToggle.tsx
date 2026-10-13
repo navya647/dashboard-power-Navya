@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { THEME_LOCK_EVENT, THEME_STORAGE_KEY, isThemeLocked, type Theme } from '@/lib/themeLock';
 
 /** The blocking init script (layout.tsx) already sets data-theme on <html> before first paint, so
- * the page itself never flashes the wrong theme — but this button's own label/icon still has to
+ * the page itself never flashes the wrong theme, but this button's own label/icon still has to
  * start from a fixed value on the server-rendered markup (statically exported, no per-request
  * theme available at build time) and sync to the real value after mount, same as any SSR dark-mode
  * toggle. A lazy initializer here would read the DOM during hydration and risk a text mismatch
@@ -39,7 +39,7 @@ export default function ThemeToggle() {
     try {
       localStorage.setItem(THEME_STORAGE_KEY, next);
     } catch {
-      // ignore — worst case the preference doesn't persist across visits
+      // ignore, worst case the preference doesn't persist across visits
     }
   }
 
@@ -53,7 +53,7 @@ export default function ThemeToggle() {
     }
     if (!document.startViewTransition) {
       // No View Transitions support: the live DOM never leaves the screen (unlike the VT
-      // path), so a plain remount + CSS keyframe animates in full view — no pseudo-element
+      // path), so a plain remount + CSS keyframe animates in full view, no pseudo-element
       // plumbing needed.
       setIconTick((t) => t + 1);
       applyTheme(next);

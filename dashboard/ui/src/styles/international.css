@@ -1,0 +1,451 @@
+/* ---- International comparison (InternationalView.tsx): two log-scale dot plots sharing one row
+   per geography (one grid: geography | SAIDI | SAIFI, rows are subgrids), beside the selected
+   geography's full entry; the methodological notes; India's state-wise references. ---- */
+.ic {
+  max-width: 1320px;
+  --ic-observed: var(--mv-indicator);
+  --ic-grid: color-mix(in srgb, var(--ink) 8%, transparent);
+}
+.ic-purpose {
+  max-width: 1000px;
+  margin: 12px 0 0;
+  font-size: 14.5px;
+  line-height: 1.65;
+  color: var(--text-supporting, var(--muted));
+}
+.ic-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 24px;
+  align-items: start;
+  margin-top: 28px;
+}
+.ic-chart-wrap {
+  padding: 20px 24px 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--panel);
+  box-shadow: var(--shadow-md);
+}
+.ic-chart {
+  display: grid;
+  grid-template-columns: 128px minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: 32px;
+}
+.ic-head {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.ic-head b {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.ic-head > span {
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--text-supporting, var(--muted));
+}
+.ic-row {
+  all: unset;
+  box-sizing: border-box;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  align-items: stretch;
+  height: 54px;
+  border-bottom: 1px dashed var(--line);
+  cursor: pointer;
+  transition: background-color 150ms var(--ease);
+}
+.ic-row--india {
+  border-bottom-style: solid;
+}
+.ic-row:hover {
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
+}
+.ic-row.is-active {
+  background: color-mix(in srgb, var(--accent) 11%, transparent);
+}
+.ic-row:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: -2px;
+}
+.ic-geo {
+  align-self: center;
+  padding-left: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.ic-row.is-active .ic-geo {
+  color: var(--accent-text);
+}
+.ic-plot {
+  position: relative;
+  display: block;
+}
+.ic-gridline {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--ic-grid);
+}
+.ic-dot {
+  position: absolute;
+  top: 50%;
+  width: 13px;
+  height: 13px;
+  border: 2px solid var(--panel);
+  border-radius: 50%;
+  background: var(--ic-observed);
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ic-observed) 40%, transparent);
+}
+.ic-range {
+  position: absolute;
+  top: 50%;
+  height: 13px;
+  border: 1.5px solid var(--accent-text);
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
+  transform: translateY(-50%);
+}
+.ic-val {
+  position: absolute;
+  top: 50%;
+  transform: translate(11px, -50%);
+  font-size: 12.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--ink);
+}
+.ic-val--left {
+  transform: translate(calc(-100% - 11px), -50%);
+}
+.ic-na {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-supporting, var(--muted));
+}
+.ic-axis {
+  position: relative;
+  display: block;
+  height: 26px;
+}
+.ic-axis > span {
+  position: absolute;
+  top: 8px;
+  transform: translateX(-50%);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-supporting, var(--muted));
+}
+.ic-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  margin: 12px 0 0;
+  font-size: 12px;
+  color: var(--text-supporting, var(--muted));
+}
+.ic-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.ic-legend > span:last-child {
+  margin-left: auto;
+}
+.ic-key-range {
+  width: 22px;
+  height: 10px;
+  border: 1.5px solid var(--accent-text);
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
+}
+.ic-key-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--ic-observed);
+}
+
+/* the selected geography's full entry */
+.ic-aside {
+  position: sticky;
+  top: 24px;
+}
+.ic-card {
+  padding: 22px 24px 20px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--panel);
+  box-shadow: var(--shadow-md);
+  animation: ic-in 200ms var(--ease);
+}
+@keyframes ic-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+.ic-card-status {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  line-height: 1.45;
+  text-transform: uppercase;
+  color: var(--accent-text);
+}
+.ic-card-name {
+  margin: 4px 0 0;
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--ink);
+}
+.ic-card-figs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 16px 0 0;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.ic-card-figs > div {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 10px;
+}
+.ic-card-figs dt {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--text-supporting, var(--muted));
+}
+.ic-card-figs dd {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--ink);
+}
+.ic-card-text {
+  margin: 0;
+}
+.ic-card-text dt {
+  margin-top: 14px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-supporting, var(--muted));
+}
+.ic-card-text dd {
+  margin: 4px 0 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+.ic a {
+  color: var(--accent-text);
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent-text) 40%, transparent);
+  text-underline-offset: 3px;
+}
+.ic a:hover {
+  text-decoration-color: currentColor;
+}
+
+/* methodological notes: three columns divided by rules, as the Methodology page's commitments */
+.ic-notes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 48px;
+  border-top: 1px solid var(--line);
+}
+.ic-notes > div {
+  padding: 24px 28px 0;
+  border-left: 1px solid var(--line);
+}
+.ic-notes > div:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+.ic-notes h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 21px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.ic-notes p {
+  margin: 8px 0 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-supporting, var(--muted));
+}
+
+/* India's state-wise references: four across */
+.ic-states {
+  margin-top: 52px;
+  scroll-margin-top: 24px;
+}
+.ic-states-title {
+  margin: 0 0 14px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+}
+.ic-states ul {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+.ic-states li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 22px 18px;
+  border-bottom: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.ic-states li:nth-child(4n + 1) {
+  padding-left: 0;
+  border-left: 0;
+}
+.ic-state-name {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.ic-state-fw {
+  color: var(--ink);
+}
+.ic-state-bm {
+  margin-top: 4px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-supporting, var(--muted));
+}
+.ic-states li.has-benchmark .ic-state-bm {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  font-weight: 700;
+  color: var(--accent-text);
+}
+.ic-states li.has-benchmark .ic-state-bm::before {
+  content: '';
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-text);
+  transform: translateY(-1px);
+}
+.ic-state-note {
+  font-size: 12.5px;
+  color: var(--text-supporting, var(--muted));
+}
+
+/* ---- light mode: firmer supporting text and opaque cards over the pale backdrop ---- */
+:root:not([data-theme='dark']) .ic-purpose,
+:root:not([data-theme='dark']) .ic-notes p,
+:root:not([data-theme='dark']) .ic-state-note,
+:root:not([data-theme='dark']) .ic-state-bm {
+  color: #2b2b2b;
+}
+:root:not([data-theme='dark']) .ic-chart-wrap,
+:root:not([data-theme='dark']) .ic-card {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.14);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ic-card {
+    animation: none;
+  }
+}
+@media (max-width: 1300px) {
+  .ic-states ul {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .ic-states li:nth-child(4n + 1) {
+    padding-left: 22px;
+    border-left: 1px solid var(--line);
+  }
+  .ic-states li:nth-child(3n + 1) {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+@media (max-width: 1100px) {
+  .ic-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ic-aside {
+    position: static;
+  }
+}
+@media (max-width: 760px) {
+  .ic-chart-wrap {
+    padding: 16px 14px 12px;
+  }
+  .ic-chart {
+    grid-template-columns: 84px minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: 14px;
+  }
+  .ic-geo {
+    padding-left: 4px;
+    font-size: 12.5px;
+  }
+  .ic-val {
+    font-size: 11px;
+  }
+  .ic-legend > span:last-child {
+    margin-left: 0;
+  }
+  .ic-notes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ic-notes > div {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .ic-states ul {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ic-states li,
+  .ic-states li:nth-child(4n + 1),
+  .ic-states li:nth-child(3n + 1) {
+    padding-left: 0;
+    border-left: 0;
+  }
+}

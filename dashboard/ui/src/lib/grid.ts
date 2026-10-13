@@ -1,6 +1,6 @@
-/** Transmission network topology for the hero map — one node per state/UT, excluding the
+/** Transmission network topology for the hero map, one node per state/UT, excluding the
  * North-eastern states and Delhi (per the brief), plus a sparse set of connections into a single
- * backbone. Node positions are NOT hardcoded here — `state` names are resolved against the
+ * backbone. Node positions are NOT hardcoded here, `state` names are resolved against the
  * projected state centroids at render time (see geo2d.ts / TransmissionLayer.tsx), so nodes
  * always sit on the actual state they represent, in whatever coordinate space the map is
  * currently projected into. */
@@ -17,14 +17,14 @@ export interface GridConnection {
   from: string;
   to: string;
   status: 'active' | 'idle';
-  /** Mock relative flow strength (0-100) — drives pulse speed/brightness until this is wired to
+  /** Mock relative flow strength (0-100), drives pulse speed/brightness until this is wired to
    * real transmission data. */
   flow: number;
 }
 
 /** States/UTs excluded from getting their own individual pylon: the North-eastern states (incl.
- * Sikkim, part of the North Eastern Council) — which get a single shared pylon instead, see
- * GRID_NODES below — and Delhi, per the brief. */
+ * Sikkim, part of the North Eastern Council), which get a single shared pylon instead, see
+ * GRID_NODES below, and Delhi, per the brief. */
 export const EXCLUDED_STATES = [
   'Arunachal Pradesh',
   'Assam',
@@ -38,11 +38,11 @@ export const EXCLUDED_STATES = [
 ];
 
 /** Andaman & Nicobar gets a standalone pylon (per the brief, it's a state too) but no
- * transmission line — it's genuinely islanded from the mainland grid in reality, and a line
+ * transmission line, it's genuinely islanded from the mainland grid in reality, and a line
  * drawn across the sea to reach it would misread as a real connection. Lakshadweep is left off
  * entirely (no pylon at all). */
 export const GRID_NODES: GridNode[] = [
-  // one shared pylon standing in for the whole North-eastern region, rather than one per state —
+  // one shared pylon standing in for the whole North-eastern region, rather than one per state,
   // positioned on Assam (geographically central to the region) and wired into the mainland
   // backbone via West Bengal, the real grid's actual NE tie-in point
   { id: 'northeast', region: 'northeast', state: 'Assam' },
@@ -78,7 +78,7 @@ export const GRID_NODES: GridNode[] = [
   { id: 'andaman-nicobar', region: 'south', state: 'Andaman & Nicobar' },
 ];
 
-// a light mesh across the mainland states — mostly a spanning backbone with a handful of extra
+// a light mesh across the mainland states, mostly a spanning backbone with a handful of extra
 // edges for redundancy, deliberately excluding the two island nodes above (see their comment)
 export const GRID_CONNECTIONS: GridConnection[] = [
   { id: 'ladakh-jammu-kashmir', from: 'ladakh', to: 'jammu-kashmir', status: 'active', flow: 42 },

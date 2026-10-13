@@ -2,17 +2,17 @@
   min-height: 100vh;
 }
 
-/* Always visible — a permanent part of the layout, not a drawer with an open/closed state. No
+/* Always visible, a permanent part of the layout, not a drawer with an open/closed state. No
    transform/transition needed since there's nothing to slide in or out. */
 /* the sidebar's width, shared by everything that sits beside it (main's margin, the page
-   backdrop, the home page's stage) — wide enough for the bold active label ("Accessibility",
+   backdrop, the home page's stage), wide enough for the bold active label ("Accessibility",
    "Methodology") to sit with room either side */
 :root {
   --sb-w: 112px;
 }
 
 .sidebar {
-  /* sidebar colour tokens — everything below reads these, so a context that needs a different
+  /* sidebar colour tokens, everything below reads these, so a context that needs a different
      surface (the home page landing view, at the end of this file) only re-points the tokens.
      The defaults are the home page map view's sidebar, on every page: a deeper, more structured
      step of the warm neutral behind the map (--mv-* in tokens.css), sharing a family with the
@@ -79,7 +79,7 @@ nav.sidenav {
   --sb-text-strong: #1a1512;
   --muted: #221c18; /* the theme toggle's label and icon */
 }
-/* Icon above label, centered — each item reads as its own small tile rather than a horizontal
+/* Icon above label, centered, each item reads as its own small tile rather than a horizontal
    row, closer to a compact app-rail nav than a list of links. No white-space:nowrap here: at this
    width a longer label ("Accessibility", "Methodology") wraps onto a second line instead of
    overflowing, which this stacked layout accommodates fine (unlike the old side-by-side one). */
@@ -116,7 +116,7 @@ nav.sidenav a:active {
   background: var(--sb-press-bg);
   color: var(--sb-text-strong);
 }
-/* A left accent bar + a subtle wash (not a solid fill), instead of the old full-color pill —
+/* A left accent bar + a subtle wash (not a solid fill), instead of the old full-color pill,
    reads as "this one's selected" without the icon/label needing to switch to white-on-blue. */
 nav.sidenav a.active {
   background: var(--sb-active-bg);
@@ -131,7 +131,7 @@ nav.sidenav a.active {
   padding: 12px 8px 16px;
   border-top: 1px solid var(--sb-divider);
 }
-/* Stacked, matching the nav items above it — a horizontal pill (icon beside "Light"/"Dark") no
+/* Stacked, matching the nav items above it, a horizontal pill (icon beside "Light"/"Dark") no
    longer fits this width without wrapping awkwardly inside a pill shape. */
 .theme-toggle {
   all: unset;
@@ -167,12 +167,12 @@ nav.sidenav a.active {
   height: var(--sb-icon-size);
 }
 
-/* Sidebar has no closed state at all, at any width — content is always pushed over by exactly its
+/* Sidebar has no closed state at all, at any width, content is always pushed over by exactly its
    width. main.app-main has no explicit width, so per the normal CSS box model its width is already
-   computed to fill whatever space is left after margins — margin-left narrows it by exactly the
+   computed to fill whatever space is left after margins, margin-left narrows it by exactly the
    sidebar's width, no JS measurement needed. Deliberately not `transform: scale()`: this page's
    home route hosts HeroSection's scroll-scrubbed map reveal, which measures its own real,
-   untransformed geometry (getBoundingClientRect, window.innerHeight) to drive its animation — a
+   untransformed geometry (getBoundingClientRect, window.innerHeight) to drive its animation, a
    transform on this ancestor would throw that off and visibly clip the map mid-scroll. A
    margin-left reflow only changes width, never height/position, so that measurement is untouched;
    the hero's own layout is already percentage/max-width based (the map stage is 82% width, the
@@ -191,196 +191,6 @@ main.app-main {
   main.app-main {
     padding: 72px 20px 40px;
   }
-}
-
-.tour-scrim {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 17, 23, 0.55);
-  backdrop-filter: blur(2px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  z-index: 20;
-}
-
-.tour-dialog {
-  position: relative;
-  width: 100%;
-  max-width: 460px;
-  height: 520px;
-  display: flex;
-  flex-direction: column;
-  background: var(--panel);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-lg);
-  padding: 44px 28px 24px;
-  overflow: hidden;
-}
-
-/* dots + actions always sit flush with the dialog's bottom edge, regardless of how tall the
-   slide's own visual/title/body is above them — a trimmed slide (e.g. the compact welcome
-   badge) just leaves more open space above instead of pulling the Next button up with it. */
-.tour-bottom {
-  margin-top: auto;
-}
-
-.tour-track {
-  overflow: hidden;
-}
-
-.tour-slide {
-  animation-duration: 320ms;
-  animation-timing-function: var(--ease);
-  animation-fill-mode: both;
-}
-
-.tour-slide--forward {
-  animation-name: tour-slide-in-from-right;
-}
-
-.tour-slide--back {
-  animation-name: tour-slide-in-from-left;
-}
-
-@keyframes tour-slide-in-from-right {
-  from {
-    opacity: 0;
-    transform: translateX(36px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes tour-slide-in-from-left {
-  from {
-    opacity: 0;
-    transform: translateX(-36px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.tour-visual {
-  height: 200px;
-  margin: 0 0 16px;
-  border-radius: var(--radius-sm);
-  background: var(--paper);
-  border: 1px solid var(--line);
-  overflow: hidden;
-}
-
-.tour-visual-img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: top center;
-}
-
-.tour-skip {
-  all: unset;
-  position: absolute;
-  z-index: 1;
-  top: 16px;
-  right: 20px;
-  cursor: pointer;
-  font-size: 12.5px;
-  color: var(--muted);
-  transition: color 180ms var(--ease);
-}
-
-.tour-skip:hover {
-  color: var(--ink);
-}
-
-.tour-step-count {
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 10px;
-}
-
-.tour-dialog h2 {
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--ink);
-  margin: 0 0 10px;
-  padding-right: 60px;
-}
-
-.tour-dialog p {
-  font-size: 14.5px;
-  line-height: 1.55;
-  color: var(--muted);
-  margin: 0 0 22px;
-}
-
-.tour-dots {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 22px;
-}
-
-.tour-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--line);
-  transition: background 180ms var(--ease);
-}
-
-.tour-dot.active {
-  background: var(--accent);
-}
-
-.tour-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-.tour-btn {
-  all: unset;
-  box-sizing: border-box;
-  cursor: pointer;
-  padding: 10px 18px;
-  border-radius: var(--radius-sm);
-  font-size: 14px;
-  font-weight: 600;
-  font-family: inherit;
-  text-align: center;
-  transition: background 180ms var(--ease), opacity 180ms var(--ease);
-}
-
-.tour-btn--ghost {
-  color: var(--muted);
-}
-
-.tour-btn--ghost:hover {
-  color: var(--ink);
-}
-
-.tour-btn--ghost:disabled {
-  opacity: var(--disabled-opacity);
-  cursor: default;
-}
-
-.tour-btn--primary {
-  background: var(--accent);
-  color: #fff;
-  box-shadow: var(--shadow-md);
-}
-
-.tour-btn--primary:hover {
-  background: var(--accent-light);
 }
 
 /* sidebar tint layer (--sb-tint): a context-specific surface painted over the sidebar's own
@@ -404,7 +214,7 @@ main.app-main {
   transition: none !important;
 }
 
-/* (the home page map view's sidebar is the default one above — its own surface rather than a
+/* (the home page map view's sidebar is the default one above, its own surface rather than a
    --sb-tint, so the landing view's sunset tint below still fades away over it during the
    animated hand-off) */
 
@@ -416,7 +226,7 @@ main.app-main {
    this ::before tint) reads as a slight recess, so it's a distinct layer but not a separate card.
    Near-white text and icons (well above 7:1 on every stop), a lighter translucent active panel
    with a warm amber indicator (hover is fainter still, so the active item stays distinct), and
-   no theme toggle (the landing view looks the same in either theme). Only colour tokens change —
+   no theme toggle (the landing view looks the same in either theme). Only colour tokens change,
    type, sizes and spacing are the sidebar's own, shared by every view. */
 :root[data-hero-landing] .sidebar {
   --sb-tint:
@@ -434,7 +244,7 @@ main.app-main {
 }
 /* no seam against the hero. The sidebar is border-box, so its 1px right border sat outside the
    tint layer (::before fills the padding box) and showed the sidebar's own theme surface through
-   it — the light line. With the border gone the tint covers the full width (unchanged), and
+   it, the light line. With the border gone the tint covers the full width (unchanged), and
    it overlaps the hero's edge by 1px so a fractional device-pixel boundary at non-integer zoom
    can't leave a hairline either; it's paint only, so nothing in the layout shifts. */
 :root[data-hero-landing] .sidebar {
@@ -458,7 +268,7 @@ main.app-main {
 /* the home page's animated hand-offs (:root[data-hero-anim="to-map" | "to-hero"], set by
    HeroSection for ~680ms): the sidebar stays mounted and in place, and crossfades between the
    sunset palette and the normal one in step with the hero background (150–550ms, see the data-anim
-   rules in hero.css) — to the normal palette on the way to the map, back to the sunset one on the
+   rules in hero.css), to the normal palette on the way to the map, back to the sunset one on the
    way back. The theme toggle fades in with the map content (250–650ms) on the way there, and out
    with it (0–350ms) on the way back. Outside these windows every one of these switches instantly
    with the frame. */
@@ -523,7 +333,7 @@ main.app-main {
 }
 
 /* ---- page backdrop (every page but home, whose map view draws the photo itself in hero.css as
-   .hero-sticky::before): the map's dusk sunset-road photo, same crop, in both themes — but blurred
+   .hero-sticky::before): the map's dusk sunset-road photo, same crop, in both themes, but blurred
    right out into soft bands of its own colours (teal sky, dusk, warm sunset, the street) so it
    reads as a faint wash behind the content rather than a picture. Faded by blur and its own
    opacity, never an ivory or charcoal veil laid over it. Fixed behind the content area (the sidebar paints its own
@@ -536,7 +346,7 @@ main.app-main {
   pointer-events: none;
   /* light mode: a calm grey-beige ground under the photo, a step below the off-white --paper, so
      inner pages don't read as bright/glaring and the map's status colours stand out */
-  background: #e4e1db;
+  background: #f5f3ee;
 }
 :root[data-theme='dark'] .page-backdrop {
   background: none;
@@ -557,7 +367,10 @@ main.app-main {
   opacity: 0.24;
 }
 :root:not([data-theme='dark']) .page-backdrop::before {
-  filter: blur(90px) saturate(0.55);
+  filter: blur(90px) saturate(0.7);
+  /* only a faint warm hint: any stronger and the photo's dark road greys out the page and the text
+     on it loses contrast */
+  opacity: 0.1;
 }
 :root[data-theme='dark'] .page-backdrop::before {
   opacity: 0.22;

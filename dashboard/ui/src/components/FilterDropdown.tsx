@@ -31,7 +31,7 @@ const EDGE = 8;
 /** The one dropdown shell behind every filter-bar control (DISCOM, Indicator, Year): an underlined
  * trigger plus a menu panel. The panel renders through a portal into <body> with `position: fixed`
  * under the trigger, on the shared `--z-dropdown` layer, so no stacking context on the page (the
- * bar's own, sticky table headers, the Focus Year bar, animated cards) can ever cover it — it
+ * bar's own, sticky table headers, the Focus Year bar, animated cards) can ever cover it, it
  * re-anchors on scroll/resize, flips above the trigger when there's clearly more room there, and is
  * clamped inside the window. Since the panel lives at the end of <body>, focus moves into it on
  * open, and tabbing past either end of it closes it and returns focus to the trigger. */

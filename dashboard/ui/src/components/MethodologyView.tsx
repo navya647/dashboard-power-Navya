@@ -9,18 +9,18 @@ import type { SopIndicator, StateSpecificData } from '@/lib/types';
 
 /** The worked example: one real indicator for one DISCOM, read live off the data so every number
  * on the page is the one the dashboard itself shows. Chosen because its run of years shows the
- * whole method at once — a met year, a missed year (a decline), then a year with no usable figure. */
+ * whole method at once, a met year, a missed year (a decline), then a year with no usable figure. */
 const EXAMPLE = { discom: 'TGSPDCL', indicator: 'Line Breakdowns' };
 
 const STEPS = [
   { title: 'The standard', body: 'Each state regulator sets Standards of Performance. We record every standard and its benchmark exactly as worded.' },
-  { title: 'The reported figure', body: 'What the DISCOM reports for the same indicator, as published — a missing figure is never filled in.' },
+  { title: 'The reported figure', body: 'What the DISCOM reports for the same indicator, as published, a missing figure is never filled in.' },
   { title: 'The comparability check', body: 'A verdict is given only when the figure and the standard measure the same thing, the same way.' },
-  { title: 'The verdict', body: 'Met or Not met against the benchmark — and, separately, how it moved since the year before.' },
+  { title: 'The verdict', body: 'Met or Not met against the benchmark, and, separately, how it moved since the year before.' },
 ];
 
 const COMMITMENTS = [
-  { head: 'Never filled in.', body: 'Missing stays N/A — no zeros, no estimates, no bridged gaps.' },
+  { head: 'Never filled in.', body: 'Missing stays N/A, no zeros, no estimates, no bridged gaps.' },
   { head: 'Never inferred.', body: 'No verdict where the figure and the standard measure different things.' },
   { head: 'Always traceable.', body: 'Every standard and figure links back to the document it came from.' },
 ];
@@ -32,10 +32,10 @@ const LIMITS = [
 ];
 
 const AUTOPLAY_MS = 5000;
-/** keys that scroll the page — pressing one hands control back to the reader */
+/** keys that scroll the page, pressing one hands control back to the reader */
 const SCROLL_KEYS = new Set(['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' ']);
 
-/** Glide so `el` sits comfortably in view — only if it isn't already. */
+/** Glide so `el` sits comfortably in view, only if it isn't already. */
 function reveal(el: HTMLElement | null | undefined) {
   if (!el) return;
   const r = el.getBoundingClientRect();
@@ -76,7 +76,7 @@ function findExample(data: StateSpecificData | null): Example | null {
   return { state: d.state, discom: d.short_name, year: focus.year, rec: focus.rec, series, contrast };
 }
 
-const show = (v: number | null) => (v == null ? 'N/A' : String(v));
+const show = (v: number | null) => (v == null ? 'N/A' : v.toLocaleString(undefined, { maximumFractionDigits: 0 }));
 
 /** The Methodology page: one real figure followed from regulation to verdict (an auto-advancing,
  * clickable walkthrough whose card builds up step by step), then the commitments behind every
@@ -104,7 +104,7 @@ export default function MethodologyView() {
     return () => io.disconnect();
   }, [example]);
 
-  // the reader scrolling themselves takes over from autoplay — it never fights them
+  // the reader scrolling themselves takes over from autoplay, it never fights them
   useEffect(() => {
     if (!auto) return;
     const stop = () => setAuto(false);
@@ -315,7 +315,7 @@ function ExampleCard({ example, step, layerRef }: { example: Example; step: numb
         </p>
         {example.contrast && (
           <p className="mj-aside">
-            Elsewhere, same year: <b>{example.contrast.indicator}</b> — not comparable ({example.contrast.reason_not_comparable?.toLowerCase()}), so no
+            Elsewhere, same year: <b>{example.contrast.indicator}</b>, not comparable ({example.contrast.reason_not_comparable?.toLowerCase()}), so no
             verdict is given.
           </p>
         )}

@@ -12,14 +12,12 @@ interface Group {
   entries: GlossaryEntry[];
 }
 
-/** Bucket → category groups, in the glossary's own (pre-sorted) order. A category can span buckets
- * (indicatorBuckets.ts sets some per type/indicator), so a group is one bucket + category pair. */
+/** Indicator category → its indicators, in the glossary's own (pre-sorted) order. */
 function groupsByBucket(entries: GlossaryEntry[]): [string, Group[]][] {
   const byBucket = new Map<string, Map<string, Group>>();
   for (const e of entries) {
     const groups = byBucket.get(e.bucket) ?? byBucket.set(e.bucket, new Map()).get(e.bucket)!;
-    const id = `${e.bucket}::${e.category}`;
-    const g = groups.get(id) ?? groups.set(id, { id, category: e.category, entries: [] }).get(id)!;
+    const g = groups.get(e.bucket) ?? groups.set(e.bucket, { id: e.bucket, category: e.bucket, entries: [] }).get(e.bucket)!;
     g.entries.push(e);
   }
   return [...byBucket].map(([bucket, groups]) => [bucket, [...groups.values()]]);
@@ -32,17 +30,23 @@ function highlight(text: string, query: string): ReactNode {
   return parts.map((p, i) => (i % 2 === 1 ? <mark key={i}>{p}</mark> : <Fragment key={i}>{p}</Fragment>));
 }
 
-/** one indicator; in find results it also names its bucket and category, since results span them */
+/** one indicator; in find results it also names its indicator category, since results span them */
 function Term({ e, query, showWhere }: { e: GlossaryEntry; query: string; showWhere: boolean }) {
   return (
     <div className="gl-term">
       {showWhere && (
         <div className="gl-term-where">
-          {e.bucket} · {e.category}
+          {e.bucket}
         </div>
       )}
       <dt>{highlight(indicatorLabel(e.indicator), query)}</dt>
       <dd>{e.definition ? highlight(e.definition, query) : "N/A"}</dd>
+      {e.readings.map((r) => (
+        <dd className="gl-reading" key={r.measure}>
+          <span>Reported as</span> {r.measure} <span>{r.direction === "direction_unknown" ? "Interpretation" : r.direction === "higher_is_better" ? "Higher is better" : "Lower is better"}</span>
+          {r.direction === "direction_unknown" ? " Not established." : r.interpretation.replace(/^(Higher|Lower) is better/, "")}
+        </dd>
+      ))}
     </div>
   );
 }
@@ -67,10 +71,9 @@ function paginate(heights: number[], cols: number, rowGap: number, avail: number
   return starts;
 }
 
-/** The glossary on one screen, no page scroll: bucket tabs, that bucket's categories on the left,
- * and the selected category's indicators with their definitions on the right, two columns, paged
+/** The glossary on one screen, no page scroll: indicator-category tabs, then that category's indicators with their definitions, two columns, paged
  * by measured height so each page fits the panel exactly. A find control at the end of the tab row
- * swaps the panel for matching indicators from every category until it's cleared or closed. */
+ * swaps the panel for matching indicators from every indicator category until it's cleared or closed. */
 export default function GlossaryList({ entries }: { entries: GlossaryEntry[] }) {
   const all = useMemo(() => groupsByBucket(entries), [entries]);
   const [bucketIdx, setBucketIdx] = useState(0);
@@ -87,7 +90,7 @@ export default function GlossaryList({ entries }: { entries: GlossaryEntry[] }) 
   const [bucket, groups] = all[Math.min(bucketIdx, all.length - 1)] ?? ["", []];
   const group = groups.find((g) => g.id === groupId) ?? groups[0];
 
-  // find: matches in indicator names and definitions, across every bucket and category
+  // find: matches in indicator names and definitions, across every indicator category
   const q = query.trim();
   const finding = q.length > 0;
   const results = useMemo(() => {
@@ -136,7 +139,7 @@ export default function GlossaryList({ entries }: { entries: GlossaryEntry[] }) 
   }, []);
 
   // pages: every term in the list is laid out in a hidden copy at the same width
-  // (.gl-terms--measure), and pages are cut where the next row would overflow the panel — so no
+  // (.gl-terms--measure), and pages are cut where the next row would overflow the panel, so no
   // page ever needs a scrollbar, however long its definitions. Re-run on resize and font load.
   const listKey = finding ? `find:${q}` : (group?.id ?? "");
   useLayoutEffect(() => {
@@ -239,18 +242,6 @@ export default function GlossaryList({ entries }: { entries: GlossaryEntry[] }) 
       </div>
 
       <div className="gl-body">
-        <nav className="gl-cats" aria-label={`${bucket} categories`}>
-          {groups.map((g) => {
-            const on = g.id === group?.id && !finding;
-            return (
-              <button key={g.id} type="button" className={`gl-cat${on ? " is-active" : ""}`} aria-current={on ? "true" : undefined} onClick={() => chooseGroup(g.id)}>
-                <span>{g.category}</span>
-                <span className="gl-cat-n">{g.entries.length}</span>
-              </button>
-            );
-          })}
-        </nav>
-
         {group && (
           <section className="gl-panel" ref={panelRef} aria-label={finding ? "Find results" : group.category}>
             <header className="gl-panel-head">

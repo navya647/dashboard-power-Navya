@@ -5,7 +5,7 @@ export interface StatePath2D {
   name: string;
   /** SVG path string in the same 0..width / 0..height pixel space as the container. */
   d: string;
-  /** Projected centroid, in the same pixel space — used for pylon placement, hover tooltips,
+  /** Projected centroid, in the same pixel space, used for pylon placement, hover tooltips,
    * and the click-popup anchor point. */
   centroid: [number, number];
 }

@@ -77,10 +77,6 @@ to have zero reported figures in any of them.
   changes. Only run it when the user explicitly asks you to run/test the app (`cd
   dashboard/ui && npm run dev -- -p 3001` if port 3000 is occupied by something else).
   Prefer `npx tsc --noEmit` and reading the diff otherwise.
-- When testing live in the browser (only when asked to), skip the onboarding tour via
-  `sessionStorage.setItem('acpet-tour-completed', '1')` before navigating, or it blocks
-  clicks with a scrim. It's sessionStorage (not localStorage) deliberately — the tour shows
-  once per tab and comes back after the tab is closed and reopened, not just once ever.
 - Routes use slug params (`/state/madhya-pradesh`, via `slugify()` in `lib/slug.ts`),
   not raw state names — `next dev` + `output: export` needs the exact param match.
 - Never push commits to git (e.g. `git push`) unless explicitly asked to do so in that
@@ -137,7 +133,24 @@ to have zero reported figures in any of them.
   the benchmark line): "DISCOM · FY", the figure, "status · movement" on one line, the note as
   wrapped small print. Regulation citations are sheet-level (the
   extractors attach a sheet's header citations to its first year block only).
-- `GlanceView.tsx` (`/glance`, sidebar "At a glance", page title "Quick Comparison Across DISCOMs",
+- About (`/about`, `AboutView.tsx`, styles in `styles/about.css`; International page in `styles/international.css`): text condensed from
+  `Power_Supply_and_Service_Quality_Dashboard_About_Page.docx`, deliberately **not** reusing the Accessibility or
+  Methodology pages' content (the earlier dot panel / 4-step flow / FAQ were removed at the user's request), and with no
+  coverage-figure strip (user: "unnecessary stats"). Redesigned 11 Oct 2026: hero (title, lede, dimension tags) beside
+  `HowToRead` — a schematic, labelled "Illustrative", of the site's own chart language (dotted standard line, filled
+  Met / Not met dots, hollow dots where there is no benchmark; nothing on it is data); then the four cards as one
+  hairline-divided strip (Glossary → `/about/glossary`, Quick comparison → `/glance`, International comparison →
+  `/about/international`, Explore the map → `MAP_HREF`; the three card pages have no sidebar entry, Sidebar keeps About lit,
+  their eyebrow is `AboutKicker`); "Why this dashboard" (five consumer questions); problem chips beside "what you can
+  examine"; a six-node evidence trail; closing statement beside the 12 coverage states (read from the data, Odisha JV
+  footnote). Every section = small-caps eyebrow + serif heading. International comparison (`InternationalView.tsx`, data in
+  `lib/international.ts`) is transcribed from `international saidi_saifi(updated).pdf` — India is a range of state
+  regulatory benchmarks, the rest observed performance; drawn differently (bar vs dot), log-scale axes, never presented as
+  like-for-like.
+  Reached from the landing view: scroll down / ArrowDown / swipe up / the Explore button play `to-about` in `HeroSection.tsx`
+  (headline lifts, photo darkens, then `router.push('/about')`; About fades up) — the landing view no longer scrolls into the map;
+  the map is `MAP_HREF` (About's "Explore the map" card, sidebar Home).
+- `GlanceView.tsx` (`/glance`, reached from the About page's "Quick comparison" card — no sidebar entry, page title "Quick Comparison Across DISCOMs",
   data from `lib/glance.ts`) — one reliability indicator × one year, every DISCOM's figure. The chart
   is ONE CSS grid (state | DISCOM | figure | plot, rows via `gridTemplateRows`), so the axis,
   gridlines, bars and each state's benchmark line share the plot column and align by construction —
@@ -152,7 +165,7 @@ to have zero reported figures in any of them.
   Not met / No verdict / Benchmark) is one quiet line under the chart, not in the header. No ranking
   score — just sorted by value. Desktop: no page scroll — `useNoScrollbar` plus rows sized to the
   window (`useFitRowHeight`, 20–28px). The DISCOM card sits beside the chart.
-- One-screen pages (About, Accessibility) size themselves to the window on desktop (measure, then
+- One-screen pages (Glossary, Accessibility) size themselves to the window on desktop (measure, then
   trim whatever  still overflows) and never draw a scrollbar —
    hides the window's bar, inner panels use .
 - Each DISCOM gets a fixed-order categorical hue from `CATEGORICAL` in `lib/colors.ts`

@@ -4,7 +4,7 @@ export type YoyStatus = 'improved' | 'declined' | 'no-change' | 'not-assessable'
 
 export interface YoyResult {
   status: YoyStatus;
-  /** The raw numerical direction of movement (curr vs. prev) — independent of whether that
+  /** The raw numerical direction of movement (curr vs. prev), independent of whether that
    * movement counts as an improvement. A lower_is_better indicator that fell still shows a down
    * arrow; only the color/status says that's an improvement. '○' when no numeric comparison was
    * possible at all. */
@@ -13,7 +13,7 @@ export interface YoyResult {
 
 export interface YoyPoint {
   value: number | null;
-  /** The record's own stated definition of what `value` measures — the basis for direction, see
+  /** The record's own stated definition of what `value` measures, the basis for direction, see
    * `lib/indicatorDirection.ts`. Never the indicator name, benchmark, or the value itself. */
   reportedMeaning: string | null;
 }
@@ -26,13 +26,13 @@ export const YOY_META: Record<YoyStatus, { text: string; cls: string }> = {
 };
 
 /** Year-on-year performance assessment used everywhere it's shown (main dashboard chart cards and
- * the Compare page) — see CLAUDE.md working preferences and the Methodology page's Rules
+ * the Compare page), see CLAUDE.md working preferences and the Methodology page's Rules
  * section. Compares one fiscal year's reported value against the *immediately preceding* fiscal
- * year in the displayed period — never an earlier usable year found by skipping past a missing one,
+ * year in the displayed period, never an earlier usable year found by skipping past a missing one,
  * so a gap always reads as Not assessable for the year right after it, not a silently-bridged
  * comparison. Callers are responsible for passing the actual previous slot in the displayed
  * sequence (`undefined` only for the very first displayed year, which has no preceding year at all
- * and is rendered as "—", not "Not assessable" — see EvidenceRail.tsx). */
+ * and is rendered as ", ", not "Not assessable", see EvidenceRail.tsx). */
 export function assessYearOverYear(prev: YoyPoint, curr: YoyPoint): YoyResult {
   if (prev.value == null || curr.value == null || Number.isNaN(prev.value) || Number.isNaN(curr.value)) {
     return { status: 'not-assessable', arrow: '○' };

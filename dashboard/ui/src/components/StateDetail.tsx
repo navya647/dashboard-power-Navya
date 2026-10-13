@@ -8,6 +8,7 @@ import { useData } from '@/lib/DataContext';
 import { stateHueMap } from '@/lib/colors';
 import { stateHasSopData, stateReportedYears } from '@/lib/computations';
 import { fyRunsLabel } from '@/lib/format';
+import { REGULATORS } from '@/lib/regulators';
 import {
   buildUnifiedAtoms,
   buildUnifiedCards,
@@ -26,37 +27,37 @@ import StateShape from './StateShape';
 
 /** The State Performance page. One architecture serves every state regardless of whether it has a
  * single reported figure yet: header, one DISCOM / Indicator filter bar, one IndicatorModule per selected indicator. Reported data and framework-only data (the 5
- * states with a notified SoP regulation but no per-DISCOM reported-figures sheet — see CLAUDE.md)
+ * states with a notified SoP regulation but no per-DISCOM reported-figures sheet, see CLAUDE.md)
  * are unified into one flat list of indicator "atoms" by lib/unifiedIndicators before this
  * component ever sees them, so there is no separate no-data layout to keep in sync with this one. */
 export default function StateDetail({ name }: { name: string }) {
   const { discoms, geojson, stateSpecific, loading, error } = useData();
   const router = useRouter();
 
-  // One filter bar drives the chart gallery: DISCOM and Indicator (no Year — the page is a
+  // One filter bar drives the chart gallery: DISCOM and Indicator (no Year, the page is a
   // year-wise trend view, so charts always show the full series). Both are tickable multi-selects (each picked
   // indicator gets its own compliance card and trend section); an empty DISCOM list means "no
   // constraint" (all DISCOMs), but an empty `selectedIndicators` means nothing is shown at all
   // until at least one indicator is picked. Indicator Category and Indicator Type are no longer
-  // filters of their own — every indicator name belongs to exactly one category/type within a
+  // filters of their own, every indicator name belongs to exactly one category/type within a
   // state (verified across all 12), so they're derived from the picked indicators (see `filters`
   // below) and select exactly the rows the old Category → Type → Indicator cascade did.
   const [selectedDiscoms, setSelectedDiscoms] = useState<string[]>([]);
   const [selectedIndicators, setSelectedIndicators] = useState<string[]>([]);
   // Set when a DISCOM change left none of the picked indicators available, so the page fell back
-  // to that DISCOM selection's own default indicator instead of going empty — says what happened.
+  // to that DISCOM selection's own default indicator instead of going empty, says what happened.
   const [fallbackNote, setFallbackNote] = useState<string | null>(null);
 
   // computed defensively (discoms/stateSpecific may still be null/undefined while loading, or
   // permanently absent for a framework-only state) so they're safe to use in the effect below,
-  // which — being a hook — must run on every render, before either early return further down.
+  // which, being a hook, must run on every render, before either early return further down.
   const YEARS_ASC = discoms ? [...discoms.years].reverse() : [];
   const allDs = discoms ? discoms.discoms.filter((d) => d.state === name) : [];
   // indicators with neither a standard nor reported figures for this state are never offered
   const atoms = withStandardOrFigures(buildUnifiedAtoms(discoms, allDs, stateSpecific, name, YEARS_ASC));
 
-  // The page-load default — also exactly what Reset returns to: all DISCOMs, the default indicator
-  // (SAIDI if reported, else the most-reported one — see pickDefaultIndicator).
+  // The page-load default, also exactly what Reset returns to: all DISCOMs, the default indicator
+  // (SAIDI if reported, else the most-reported one, see pickDefaultIndicator).
   function applyDefaultView(stateAtoms: UnifiedIndicatorAtom[]) {
     const preferred = pickDefaultIndicator(stateAtoms);
     setSelectedDiscoms([]);
@@ -65,7 +66,7 @@ export default function StateDetail({ name }: { name: string }) {
   }
 
   // Re-picks (and resets every filter for) a fresh default each time the viewer lands on a
-  // *different* state/UT than `name` last was — covers both the first mount and a client-side
+  // *different* state/UT than `name` last was, covers both the first mount and a client-side
   // navigation between two state pages, which reuses this same component instance (same dynamic
   // route, just a different `name` prop) rather than remounting it, so plain useState alone would
   // otherwise carry one state's stale DISCOM/category/type/indicator selection over onto the next
@@ -83,7 +84,7 @@ export default function StateDetail({ name }: { name: string }) {
   if (error || !discoms) return <p className="detail-placeholder">Could not load dashboard data.</p>;
 
   // a state can have zero reliability DISCOMs and still have real Standards-of-Performance
-  // content to show (its own per-DISCOM sheets, or a regulatory-framework listing) — only bail
+  // content to show (its own per-DISCOM sheets, or a regulatory-framework listing), only bail
   // out entirely when neither dataset has anything for this state.
   if (!allDs.length && !stateHasSopData(stateSpecific, name)) {
     return (
@@ -159,16 +160,16 @@ export default function StateDetail({ name }: { name: string }) {
   const filteredAtoms = selectedIndicators.length === 0 ? [] : atoms.filter((a) => matchesFilters(a, filters));
   const cards = buildUnifiedCards(filteredAtoms);
 
-  // ---- Overview counts — plain counts of source records, never a derived score ----
+  // ---- Overview counts, plain counts of source records, never a derived score ----
   // counted from the same list the header chips show (the reliability dataset's DISCOMs), so the
-  // number and the chips can never disagree — counting the filter's options instead also counted
+  // number and the chips can never disagree, counting the filter's options instead also counted
   // a state's regulatory-framework entry as a "DISCOM", and Gujarat's DGCVL/DGVCL spelling variant
   // across the two workbooks twice.
   const discomCount = allDs.length;
   // the years this state actually has reported figures for (either dataset), not the dashboard-wide
-  // year list — every sheet has rows for every year, but e.g. Madhya Pradesh reports only FY22–FY24
+  // year list, every sheet has rows for every year, but e.g. Madhya Pradesh reports only FY22–FY24
   const reportedYears = fyRunsLabel(stateReportedYears(discoms.discoms, name, stateSpecific), YEARS_ASC) || 'N/A';
-  // placeholder ownership label — not real per-DISCOM ownership data, see StateDetail.tsx history
+  // placeholder ownership label, not real per-DISCOM ownership data, see StateDetail.tsx history
   const ownershipLabel = name === 'Odisha' ? 'All public-private joint venture' : 'All state-government owned';
 
   return (
@@ -205,6 +206,14 @@ export default function StateDetail({ name }: { name: string }) {
             {/* one per line: short name (fixed-width column, so the full names line up) then the
                 full name. 5+ DISCOMs split into two side-by-side lists to keep the card short. */}
             <div className={`hero-discom-list${allDs.length >= 5 ? ' hero-discom-list--split' : ''}`}>
+              {/* the state's regulator heads the list in the same two columns, so it reads as the
+                  body the DISCOMs below answer to */}
+              {REGULATORS[name] && (
+                <div className="hero-regulator" role="note" aria-label="Regulator">
+                  <b>{REGULATORS[name].abbr}</b>
+                  <span>{REGULATORS[name].name}</span>
+                </div>
+              )}
               {(allDs.length >= 5 ? [allDs.slice(0, Math.ceil(allDs.length / 2)), allDs.slice(Math.ceil(allDs.length / 2))] : [allDs]).map((col, ci) => (
                 <ul key={ci} aria-label="DISCOMs">
                   {col.map((d) => {
@@ -225,7 +234,7 @@ export default function StateDetail({ name }: { name: string }) {
 
       <div className="toolbar toolbar--filters" role="group" aria-label="Filters">
         <div className="toolbar-field">
-          <label>DISCOM</label>
+          <label>Select DISCOM</label>
           <DiscomMultiSelect
             options={discomOpts}
             selected={selectedDiscoms}
@@ -239,7 +248,7 @@ export default function StateDetail({ name }: { name: string }) {
         </div>
 
         <div className="toolbar-field toolbar-field--indicator">
-          <label>Indicator</label>
+          <label>Select Indicator</label>
           <IndicatorSelect
             options={indicatorOpts}
             selected={selectedIndicators}
@@ -269,7 +278,7 @@ export default function StateDetail({ name }: { name: string }) {
       {selectedIndicators.length === 0 && <p className="detail-placeholder">Select at least one indicator above to view its reported performance, benchmarks and trends.</p>}
 
 
-      {/* one self-contained analysis module per selected indicator — never merged across indicators */}
+      {/* one self-contained analysis module per selected indicator, never merged across indicators */}
       {cards.length > 0 && (
         <div className="im-stack">
           {cards.map((c) => (

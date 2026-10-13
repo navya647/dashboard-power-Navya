@@ -1,5 +1,5 @@
 /** Each covered state's electricity regulatory commission (its SERC): short name, full name and
- * official website. Not from the workbooks — looked up and checked by hand (Oct 2026). Where the
+ * official website. Not from the workbooks, looked up and checked by hand (Oct 2026). Where the
  * accessibility workbook records the commission page a state's DISCOM data was found on
  * (`serc_link`), the card links that page instead of the homepage. */
 export interface Regulator {

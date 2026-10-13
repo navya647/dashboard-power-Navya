@@ -12,6 +12,8 @@
 @import '../styles/accessibility.css';
 @import '../styles/methodology.css';
 @import '../styles/glance.css';
+@import '../styles/about.css';
+@import '../styles/international.css';
 
 html,
 body {

@@ -2,8 +2,8 @@
 
 import { usePathname } from 'next/navigation';
 
-/** The ACPET logo, top right of every page except home — whose HeroSection shows the same logo in
- * the same spot — so it stays in one place across the site rather than moving into the sidebar. */
+/** The ACPET logo, top right of every page except home, whose HeroSection shows the same logo in
+ * the same spot, so it stays in one place across the site rather than moving into the sidebar. */
 export default function PageLogo() {
   if (usePathname() === '/') return null;
   return (

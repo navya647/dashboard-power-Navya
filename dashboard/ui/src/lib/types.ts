@@ -5,9 +5,24 @@ export interface CanonicalIndicatorMeta {
   unit: IndicatorUnit;
 }
 
+/** One Urban or Rural figure of an indicator the sheet reports separately, with its own standard and verdict. */
+export interface SubtypeRecord {
+  value: number | null;
+  benchmark: string | null;
+  benchmark_meaning: string | null;
+  standard_specified: string | null;
+  reported_meaning: string | null;
+  unit_note: string | null;
+  comparison_possible: boolean | null;
+  standard_met: boolean | null;
+  reason_not_comparable: string | null;
+}
+
 export interface IndicatorEntry {
   value: number | null;
   subtypes: Record<string, number | null>;
+  /** present only where the sheet gives Urban and Rural as separate rows (Transformer Failure) */
+  subtype_records?: { Urban: SubtypeRecord; Rural: SubtypeRecord };
   indicator_meaning: string | null;
   standard_specified: string | null;
   benchmark: string | null;
@@ -66,7 +81,7 @@ export interface IndiaGeoJSON {
 
 export type MapStatus = 'full' | 'partial' | 'none' | undefined;
 
-/** Whether a state's SERC has published its standards-of-performance regulation online — not
+/** Whether a state's SERC has published its standards-of-performance regulation online, not
  * what the regulation says, just whether it's findable at all. From ACCESSIBILITY.xlsx's
  * REGULATION sheet. `null` means the source data didn't have a Yes/No answer for this row. */
 export interface StateAccessibility {
@@ -85,7 +100,7 @@ export interface StateAccessibility {
 /** Whether a licensee's reported performance data is published on its state SERC's website, and
  * whether that publication is machine-readable (vs. e.g. a scanned PDF). From
  * ACCESSIBILITY.xlsx's REPORTED DATAPERFORMANCE sheet. `machine_readable` is `null` whenever the
- * source marked it "N/A" — in practice, whenever `available_on_serc` is false, since a format
+ * source marked it "N/A", in practice, whenever `available_on_serc` is false, since a format
  * question doesn't apply to data that isn't published at all. */
 export interface DiscomAccessibility {
   discom: string;
@@ -111,7 +126,7 @@ export interface ReportedDataLink {
 }
 
 /** One regulation document (principal regulation, amendment, consolidated version) as listed in
- * data/hyperlinks.xlsx — `title` and `year` exactly as the sheet gives them. */
+ * data/hyperlinks.xlsx, `title` and `year` exactly as the sheet gives them. */
 export interface RegulationDocument {
   title: string;
   year: string | null;
@@ -133,9 +148,9 @@ export interface AccessibilityData {
   summary: AccessibilitySummary;
 }
 
-/** One raw Standards-of-Performance indicator row, from State specific Indicators.xlsx — the SoP
+/** One raw Standards-of-Performance indicator row, from State specific Indicators.xlsx, the SoP
  * (consumer-service) counterpart to the SAIDI/SAIFI-style Common Indicators dataset. Unlike that
- * dataset, raw indicator names here are too varied (dozens, state-specific — fuse-off calls,
+ * dataset, raw indicator names here are too varied (dozens, state-specific, fuse-off calls,
  * meter complaints, billing mistakes...) to normalize into a small canonical set, so they're kept
  * as-is rather than mapped to `canonical_order`. */
 export interface SopIndicator {
@@ -166,7 +181,7 @@ export interface SopDiscom {
 }
 
 /** A state whose SERC publishes a Standards-of-Performance regulation with named indicators and
- * benchmarks, but for which no licensee reported figures were available to check against them —
+ * benchmarks, but for which no licensee reported figures were available to check against them,
  * so no compliance score can be computed. Kept separate from `SopDiscom` rather than folded in
  * with an all-zero score, which would misleadingly read as "failing" rather than "no data". */
 export interface SopFramework {

@@ -1,0 +1,513 @@
+/* ---- About page styles: the card pages' crumb (AboutKicker.tsx), then the page itself
+   (AboutView.tsx). International comparison styles are in international.css. ---- */
+
+/* "About / Glossary" eyebrow on the card pages (AboutKicker.tsx) */
+.about-crumb a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 150ms var(--ease);
+}
+.about-crumb a:hover {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.about-crumb a:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+.about-crumb-sep {
+  margin: 0 0.6em;
+  opacity: 0.55;
+}
+
+/* ---- About page: the shared shell (kicker, hero title, 1240px column) as on the Methodology page.
+   One lead paragraph, a one-line diagram, the four ways in as one hairline strip, then a pair of
+   short sections and the links to the data pages. One heading style throughout; the link blue
+   (--abt-link) is used for clickable text only. ---- */
+.abt {
+  --abt-link: #1558d6;
+  --abt-quiet: color-mix(in srgb, var(--ink) 55%, transparent);
+  --abt-surface: color-mix(in srgb, var(--panel) 90%, transparent);
+  max-width: 1240px;
+  padding-bottom: 80px;
+}
+:root:not([data-theme='dark']) .abt {
+  --abt-surface: #ffffff;
+}
+:root[data-theme='dark'] .abt {
+  --abt-link: #7db4ff;
+}
+.abt-body {
+  margin: 0;
+  max-width: 560px;
+  font-size: 15.5px;
+  line-height: 1.7;
+  color: var(--text-supporting, var(--muted));
+}
+:root:not([data-theme='dark']) .abt-body,
+:root:not([data-theme='dark']) .abt-go-body,
+:root:not([data-theme='dark']) .abt-back-body {
+  color: #2b2b2b;
+}
+
+/* hero */
+.abt-hero {
+  margin-top: 36px;
+}
+.abt-lead {
+  margin: 0;
+  max-width: 1000px;
+  font-size: clamp(17px, 1.4vw, 20px);
+  line-height: 1.65;
+  color: var(--ink);
+}
+.abt-lead b {
+  font-weight: 600;
+}
+
+/* the diagram: three sources converge on one point, which fans out to the four dimensions. Rows
+   are a fixed 44px so the SVG curves (viewBox 120 x 176, centre y = 88) meet the text exactly:
+   3 rows centred give y = 44 / 88 / 132, 4 rows give y = 22 / 66 / 110 / 154. */
+.abt-flow {
+  --row: 44px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(70px, 140px) auto minmax(70px, 140px) minmax(0, 1fr);
+  grid-template-rows: auto calc(var(--row) * 4);
+  column-gap: 20px;
+  row-gap: 6px;
+  align-items: center;
+  margin-top: 32px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+.abt-flow-label {
+  align-self: start;
+  margin: 0;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--abt-quiet);
+}
+.abt-flow-label--a {
+  grid-column: 1;
+  grid-row: 1;
+}
+.abt-flow-label--b {
+  grid-column: 3;
+  grid-row: 1;
+}
+.abt-flow-label--c {
+  grid-column: 5;
+  grid-row: 1;
+}
+.abt-flow-list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  grid-row: 2;
+}
+.abt-flow-list--a {
+  grid-column: 1;
+}
+.abt-flow-list--c {
+  grid-column: 5;
+}
+/* endpoint dots, in the gap between each text column and its wires */
+.abt-flow-list li,
+.abt-flow-hub {
+  position: relative;
+}
+.abt-flow-list--a li::after,
+.abt-flow-list--c li::before,
+.abt-flow-hub::before,
+.abt-flow-hub::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  margin-top: -3.5px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+.abt-flow-list--a li::after {
+  right: -23.5px;
+}
+.abt-flow-list--c li::before {
+  left: -23.5px;
+}
+.abt-flow-hub::before {
+  left: -23.5px;
+}
+.abt-flow-hub::after {
+  right: -23.5px;
+}
+.abt-flow-list li {
+  display: flex;
+  align-items: center;
+  height: var(--row);
+  font-size: 15.5px;
+  color: var(--ink);
+}
+.abt-flow-list--a li {
+  color: var(--text-supporting, var(--muted));
+}
+.abt-flow-hub {
+  grid-column: 3;
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--ink);
+}
+.abt-flow-hub i {
+  margin-right: 4px;
+  font-style: normal;
+  font-weight: 400;
+  color: var(--abt-quiet);
+}
+.abt-wires {
+  grid-row: 2;
+  width: 100%;
+  height: calc(var(--row) * 4);
+  overflow: visible;
+}
+.abt-wires--a {
+  grid-column: 2;
+}
+.abt-wires--b {
+  grid-column: 4;
+}
+.abt-wires path {
+  fill: none;
+  stroke: color-mix(in srgb, var(--ink) 70%, transparent);
+  stroke-width: 1.6;
+  vector-effect: non-scaling-stroke;
+}
+/* drawn in once: each side is revealed left to right */
+.abt-wires {
+  animation: abt-reveal 900ms var(--ease) both;
+}
+.abt-wires--b {
+  animation-delay: 450ms;
+}
+@keyframes abt-reveal {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .abt-wires {
+    animation: none;
+  }
+}
+
+/* the four ways in: one hairline strip, equal columns (clickable, so the only boxed element) */
+.abt-explore {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 44px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--line);
+}
+.abt-go {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 20px 22px 22px;
+  background: var(--abt-surface);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  color: var(--ink);
+  text-decoration: none;
+  transition: background 200ms var(--ease);
+}
+.abt-go:hover {
+  background: color-mix(in srgb, var(--abt-link) 8%, var(--panel));
+}
+.abt-go:focus-visible {
+  outline: 2px solid var(--abt-link);
+  outline-offset: -3px;
+}
+.abt-go-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
+  color: var(--ink);
+}
+.abt-go-icon svg {
+  width: 20px;
+  height: 20px;
+}
+.abt-go-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--abt-link);
+  white-space: nowrap;
+}
+.abt-go-body {
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--text-supporting, var(--muted));
+}
+.abt-go-arrow {
+  position: absolute;
+  top: 22px;
+  right: 20px;
+  color: var(--abt-link);
+}
+.abt-go-arrow svg,
+.abt-toc svg,
+.abt-back svg {
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.abt-go-arrow svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.8;
+  transition: transform 200ms var(--ease);
+}
+.abt-go:hover .abt-go-arrow svg {
+  transform: translateX(4px);
+}
+
+/* sections: one heading style */
+.abt-title-sm {
+  margin: 0 0 14px;
+  font-family: var(--font-display);
+  font-size: clamp(22px, 2vw, 26px);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--ink);
+}
+.abt-aud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 26px;
+  margin: 0 0 18px;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-display);
+  font-size: clamp(21px, 1.8vw, 24px);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--ink);
+}
+.abt-shifts {
+  display: grid;
+  margin: 0 0 18px;
+  padding: 0;
+  list-style: none;
+}
+.abt-shifts li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 11px 0;
+  border-top: 1px solid var(--line);
+}
+.abt-shifts li:last-child {
+  border-bottom: 1px solid var(--line);
+}
+.abt-shift-head {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--abt-quiet);
+}
+.abt-shift-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font-family: var(--font-display);
+  font-size: 19px;
+  line-height: 1.3;
+  color: var(--text-supporting, var(--muted));
+}
+.abt-shift-row b {
+  font-weight: 600;
+  color: var(--ink);
+}
+.abt-shift-row svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: var(--abt-quiet);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.abt-pair {
+  align-items: start;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 64px;
+  margin-top: 56px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+.abt-sec {
+  margin-top: 56px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+.abt-toc {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--abt-link);
+  text-decoration: none;
+}
+.abt-toc:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.abt-toc svg,
+.abt-back svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 1.8;
+  transition: transform 200ms var(--ease);
+}
+.abt-toc:hover svg,
+.abt-back:hover svg {
+  transform: translateX(4px);
+}
+.abt-toc:focus-visible,
+.abt-back:focus-visible {
+  outline: 2px solid var(--abt-link);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+/* links to the data pages: two ruled rows */
+.abt-backing {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 64px;
+}
+.abt-back {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+  color: var(--abt-link);
+  text-decoration: none;
+}
+.abt-back-head {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--abt-link);
+}
+.abt-back:hover .abt-back-head {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.abt-back-body {
+  flex: 1;
+  font-size: 14px;
+  color: var(--text-supporting, var(--muted));
+}
+.abt-back svg {
+  align-self: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .abt-go,
+  .abt-go-arrow svg,
+  .abt-toc svg,
+  .abt-back svg {
+    transition: none;
+  }
+}
+
+@media (max-width: 1100px) {
+  .abt-explore {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .abt-pair {
+    gap: 40px;
+  }
+}
+@media (max-width: 800px) {
+  .abt-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .abt-wires {
+    display: none;
+  }
+  .abt-flow-list--a li::after,
+  .abt-flow-list--c li::before,
+  .abt-flow-hub::before,
+  .abt-flow-hub::after {
+    display: none;
+  }
+  .abt-flow-label--a { order: 1; }
+  .abt-flow-list--a { order: 2; }
+  .abt-flow-label--b { order: 3; }
+  .abt-flow-hub { order: 4; }
+  .abt-flow-label--c { order: 5; }
+  .abt-flow-list--c { order: 6; }
+  .abt-flow-list li {
+    height: auto;
+    padding: 4px 0;
+  }
+  .abt-pair {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+  .abt-backing {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+}
+@media (max-width: 640px) {
+  .abt-explore {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .abt-go-title {
+    white-space: normal;
+  }
+  .abt-back {
+    flex-wrap: wrap;
+  }
+  .abt-back-body {
+    flex-basis: 100%;
+    order: 3;
+  }
+}

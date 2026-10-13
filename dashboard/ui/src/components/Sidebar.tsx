@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import ThemeToggle from './ThemeToggle';
 import { MAP_HREF } from '@/lib/routes';
 
-// Placeholder icons — stand-ins for real ones, swap the path data out once real iconography for
+// Placeholder icons, stand-ins for real ones, swap the path data out once real iconography for
 // each section is settled rather than treating these as final.
 const NAV = [
   // Home goes to the map explorer, never the landing hero (MAP_HREF, shared with every other
@@ -15,14 +15,11 @@ const NAV = [
     label: 'Home',
     icon: <path d="M4 11 12 4l8 7M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9M10 20v-6h4v6" />,
   },
-  {
-    href: '/glance',
-    label: 'At a glance',
-    // sorted bars: one indicator, every DISCOM side by side
-    icon: <path d="M4 5h13M4 10h9M4 15h15M4 20h6" />,
-  },
+  // At a glance (/glance), the Glossary and International comparison have no entry of their own:
+  // they're reached from the About page's cards, so About stays lit on them
   {
     href: '/about',
+    also: ['/glance'],
     label: 'About',
     icon: (
       <>
@@ -45,7 +42,7 @@ const NAV = [
   },
 ];
 
-/** Always-visible, non-collapsible: a permanent part of the layout, not a drawer — there is
+/** Always-visible, non-collapsible: a permanent part of the layout, not a drawer, there is
  * deliberately no toggle/close control (see layout.css, which reserves the sidebar's width in
  * main.app-main's margin unconditionally rather than behind any open/closed state). */
 export default function Sidebar() {
@@ -59,7 +56,8 @@ export default function Sidebar() {
       <div className="sidebar-inner">
         <nav className="sidenav">
           {NAV.map((item) => {
-            const active = item.href === MAP_HREF ? pathname === '/' : pathname.startsWith(item.href);
+            const active =
+              item.href === MAP_HREF ? pathname === '/' : [item.href, ...(item.also ?? [])].some((h) => pathname.startsWith(h));
             return (
               <Link key={item.href} href={item.href} className={active ? 'active' : ''}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">

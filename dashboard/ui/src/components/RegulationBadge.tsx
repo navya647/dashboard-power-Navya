@@ -8,9 +8,9 @@ interface Props {
 }
 
 /** Extraction joins multiple citations for the same year/DISCOM with ' | ' (see
- * extraction_common.py / extraction_state_specific.py) — split back on that exact delimiter to
+ * extraction_common.py / extraction_state_specific.py), split back on that exact delimiter to
  * preview just the first citation, never guessing at sentence structure within one citation's own
- * text. Renders every citation, split onto its own line, once expanded — full source wording. */
+ * text. Renders every citation, split onto its own line, once expanded, full source wording. */
 function citationParts(text: string): string[] {
   return text
     .split(' | ')
@@ -18,11 +18,11 @@ function citationParts(text: string): string[] {
     .filter(Boolean);
 }
 
-/** A "governed by" provenance line — quiet by default (a source footnote, not another panel
+/** A "governed by" provenance line, quiet by default (a source footnote, not another panel
  * competing with the chart), expanding in place to the full citation text. Renders nothing when
  * there's no citation, rather than an empty footer. The collapsed header's own preview text (the
  * first citation) is dropped once expanded, rather than left showing above the same citation
- * repeated as the expanded body's first line — expanded, the header carries only the icon, label
+ * repeated as the expanded body's first line, expanded, the header carries only the icon, label
  * and chevron. */
 export default function RegulationBadge({ text, label = 'Source regulation' }: Props) {
   const [open, setOpen] = useState(false);

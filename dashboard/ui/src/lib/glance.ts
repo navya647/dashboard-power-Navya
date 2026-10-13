@@ -5,7 +5,7 @@ import { directionForMeaning, type Direction } from './indicatorDirection';
 import { displayUnitForMeaning, type DisplayUnit } from './indicatorUnits';
 
 /** The At a glance page: one reliability indicator, one year, every DISCOM's reported figure side
- * by side. Nothing is computed beyond sorting — each bar is a figure exactly as reported, each
+ * by side. Nothing is computed beyond sorting, each bar is a figure exactly as reported, each
  * benchmark the one the state page draws (`benchmarkLine`), each verdict the source's own
  * `standard_met`. Figures only share a chart when they share a display unit AND a direction
  * (`indicatorUnits.ts`, `indicatorDirection.ts`): the same canonical indicator is reported on
@@ -20,11 +20,13 @@ export interface GlanceRow {
   /** the state's benchmark on this chart's scale, or null where there is none to draw */
   benchmark: number | null;
   benchmarkNote: string | null;
+  /** the regulation's standard for this indicator, in the source's words */
+  standard: string | null;
   standardMet: boolean | null;
   reasonNotComparable: string | null;
   note: string | null;
   /** this figure's own wording, only where it differs from the chart's title (the most common
-   * wording on the chart) — e.g. HT vs EHT/LT cases, a 30-day vs the usual time standard */
+   * wording on the chart), e.g. HT vs EHT/LT cases, a 30-day vs the usual time standard */
   ownWording: string | null;
 }
 
@@ -72,8 +74,8 @@ function niceScale(max: number, unit: DisplayUnit | null): { scaleMax: number; t
   if (unit?.format === 'percent' && max <= 100) return { scaleMax: 100, ticks: [0, 25, 50, 75, 100] };
   if (max <= 0) return { scaleMax: 1, ticks: [0, 1] };
   // the smallest round step that covers the range in at most 5 intervals
-  const p = 10 ** Math.floor(Math.log10(max / 5));
-  const step = [1, 2, 2.5, 5, 10].map((s) => s * p).find((s) => Math.ceil(max / s) <= 5) ?? 10 * p;
+  const p = Math.max(1, 10 ** Math.floor(Math.log10(max / 5)));
+  const step = [1, 2, 2.5, 5, 10].map((s) => s * p).filter(Number.isInteger).find((s) => Math.ceil(max / s) <= 5) ?? 10 * p;
   const scaleMax = Math.ceil(max / step) * step;
   const ticks: number[] = [];
   for (let t = 0; t <= scaleMax + step / 2; t += step) ticks.push(Number(t.toPrecision(12)));
@@ -140,6 +142,7 @@ export function buildGlance(data: DiscomsData, indicator: string, year: string):
         meaning: ind.reported_meaning,
         benchmark: b.value,
         benchmarkNote: b.note,
+        standard: ind.standard_specified,
         standardMet: ind.standard_met,
         reasonNotComparable: ind.reason_not_comparable,
         note: ind.unit_note,
@@ -168,4 +171,46 @@ export function buildGlance(data: DiscomsData, indicator: string, year: string):
   // the chart most DISCOMs share comes first
   groups.sort((a, b) => b.rows.length - a.rows.length);
   return { groups };
+}
+
+/** The data with every Urban/Rural-reporting indicator split into two: "TRANSFORMER FAILURE" becomes
+ * "TRANSFORMER FAILURE (URBAN)" and "(RURAL)" for the DISCOMs whose sheet gives them as separate
+ * rows, each carrying its own figure, benchmark and verdict. DISCOMs that report one figure keep the
+ * original key. Nothing is averaged. */
+export function splitSubtypes(data: DiscomsData): DiscomsData {
+  const subs = ['Urban', 'Rural'] as const;
+  const split = new Set<string>();
+  const discoms = data.discoms.map((d) => ({
+    ...d,
+    years: Object.fromEntries(
+      Object.entries(d.years).map(([y, yd]) => {
+        const indicators: typeof yd.indicators = {};
+        for (const [k, ind] of Object.entries(yd.indicators)) {
+          if (!ind.subtype_records) {
+            indicators[k] = ind;
+            continue;
+          }
+          split.add(k);
+          for (const s of subs) {
+            const rec = ind.subtype_records[s];
+            indicators[`${k} (${s.toUpperCase()})`] = { ...ind, ...rec, comparison_possible: rec.comparison_possible ?? false };
+          }
+        }
+        return [y, { ...yd, indicators }];
+      }),
+    ),
+  }));
+  const canonical_order: string[] = [];
+  const canonical_indicators = { ...data.canonical_indicators };
+  for (const k of data.canonical_order) {
+    canonical_order.push(k);
+    if (split.has(k)) {
+      for (const s of subs) {
+        const name = `${k} (${s.toUpperCase()})`;
+        canonical_order.push(name);
+        canonical_indicators[name] = data.canonical_indicators[k];
+      }
+    }
+  }
+  return { ...data, discoms, canonical_order, canonical_indicators };
 }

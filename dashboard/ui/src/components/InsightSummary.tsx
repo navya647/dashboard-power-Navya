@@ -1,4 +1,4 @@
-/** "What this shows" — a short list of plain, factual observations generated deterministically
+/** "What this shows", a short list of plain, factual observations generated deterministically
  * from the data on screen (see lib/insights.ts). No scoring, ranking or interpretation. */
 export default function InsightSummary({ items }: { items: string[] }) {
   if (!items.length) return null;

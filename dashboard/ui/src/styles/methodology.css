@@ -1,5 +1,5 @@
 /* ---- shared page shell: also used by the About and Accessibility pages (.methodology-page,
-   .method-hero-title) — keep these even though the Methodology page itself now uses .mth ---- */
+   .method-hero-title), keep these even though the Methodology page itself now uses .mth ---- */
 
 .methodology-page {
   display: flex;
@@ -469,7 +469,7 @@
 }
 
 /* ---- limits: the same three-column grid as the commitments above (so the columns line up),
-   set quieter — a small label over each statement, on a faint band ---- */
+   set quieter, a small label over each statement, on a faint band ---- */
 .mth-limits {
   margin-top: 56px;
 }
@@ -527,7 +527,7 @@
 }
 
 /* ---- light mode: the frosted, ghosted look that suits the dark theme washes out on the pale
-   backdrop — so here the card is opaque with a firmer edge, every settled layer is at full
+   backdrop, so here the card is opaque with a firmer edge, every settled layer is at full
    strength, upcoming layers are only dimmed (no blur), and supporting text is full-strength ink. ---- */
 :root:not([data-theme='dark']) .mth {
   --mj-soft: #2b2b2b;
@@ -659,7 +659,7 @@
 
 /* ---- glossary, on one screen: bucket tabs, then that bucket's categories (left) beside the
    selected category's definitions in two columns, paged (right). One opaque frame; inside it only
-   rules and type separate things — no nested cards. Colours are local aliases of the theme
+   rules and type separate things, no nested cards. Colours are local aliases of the theme
    tokens. ---- */
 .gl {
   --gl-accent: var(--accent-hover);
@@ -868,7 +868,7 @@
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: 300px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
 }
 
 /* left: the bucket's categories */
@@ -1054,7 +1054,7 @@
 /* narrower desktops: one column of terms */
 @media (max-width: 1200px) {
   .gl-body {
-    grid-template-columns: 264px minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
   }
   .gl-terms {
     grid-template-columns: 1fr;
@@ -1090,4 +1090,17 @@
   .gl-terms {
     padding: 18px 20px 22px;
   }
+}
+
+/* glossary: what the figure is reported as, and how to read it, under each definition */
+.gl-term dd.gl-reading {
+  margin-top: 4px;
+  font-size: 12.5px;
+  color: var(--gl-meta);
+}
+.gl-term dd.gl-reading span {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }

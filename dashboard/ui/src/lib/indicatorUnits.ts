@@ -1,11 +1,11 @@
 import { fmt } from './format';
 
-/** Dashboard presentation metadata — NOT sourced from either workbook as its own column. Neither
+/** Dashboard presentation metadata, NOT sourced from either workbook as its own column. Neither
  * dataset has a display-unit field: each record only carries a free-text `reported_meaning`
  * ("Total minutes of supply interruption for an average consumer over the year.") describing what
  * its reported figure measures. This table maps every distinct such description found across both
  * workbooks (Common Indicators / State specific Indicators, as of the Oct 2026 versions) and the
- * extracted JSON to a short display unit, by hand, from what that exact text literally says — never
+ * extracted JSON to a short display unit, by hand, from what that exact text literally says, never
  * by truncating it, and never from the indicator's name.
  *
  * Keyed by the description, not the indicator, for the same reason as `indicatorDirection.ts`: one
@@ -13,7 +13,7 @@ import { fmt } from './format';
  * "minutes per year" for most years but "hours per quarter" for AVVNL FY23–24), and those must stay
  * distinguishable rather than share one label. Placeholder descriptions ("N/A", "No data furnished
  * by the licensee", "Value reported as NIL", the sheets' own header text read in as a row, ...) are
- * deliberately absent, as is any wording a future extraction introduces — those resolve to `null`
+ * deliberately absent, as is any wording a future extraction introduces, those resolve to `null`
  * ("unit not stated") rather than a guess. The full source description always stays available
  * alongside (definition view, cell detail). */
 
@@ -113,22 +113,26 @@ export function displayUnitForMeaning(reportedMeaning: string | null | undefined
   return MEANING_UNIT[norm] ?? null;
 }
 
-/** A value rendered in its own unit's style — "98.4%" for a percentage unit, a bare "221.62" for
+/** A value rendered in its own unit's style, "98.4%" for a percentage unit, a bare "221.62" for
  * anything else (whose unit is shown beside it, never glued on). `null` unit = not stated in the
  * source, so the number is shown bare. Missing values read "N/A" (see CLAUDE.md). */
-export function formatInUnit(v: number | null | undefined, unit: DisplayUnit | null): string {
+export function formatInUnit(v: number | null | undefined, unit: DisplayUnit | null, against?: number | null): string {
   if (v == null || Number.isNaN(v)) return 'N/A';
-  return fmt(v, 2) + (unit?.format === 'percent' ? '%' : '');
+  // whole numbers throughout, except a figure that rounding would put level with its benchmark
+  // (94.71 → "95" against 95) when it actually sits on one side of it, which keeps a decimal so the
+  // number, the benchmark and the verdict never appear to contradict each other
+  const straddles = against != null && Math.sign(v - against) !== Math.sign(Math.round(v) - against);
+  return fmt(v, straddles ? 1 : 0) + (unit?.format === 'percent' ? '%' : '');
 }
 
-/** Sentence-cased unit for an axis title ("Minutes / consumer / year") — the DTRs/AT&C acronyms
+/** Sentence-cased unit for an axis title ("Minutes / consumer / year"), the DTRs/AT&C acronyms
  * are left alone since they're already capitalised. */
 export function axisTitleForUnit(unit: DisplayUnit | null): string {
   if (!unit) return 'Unit not stated in source';
   return unit.label.charAt(0).toUpperCase() + unit.label.slice(1);
 }
 
-/** Every placeholder description seen in the data that names no unit at all — not used for display
+/** Every placeholder description seen in the data that names no unit at all, not used for display
  * logic (anything unmapped already resolves to `null`), only so the coverage check below can tell
  * an intentional "no unit" apart from a description nobody has looked at yet. */
 export const PLACEHOLDER_MEANINGS = new Set([

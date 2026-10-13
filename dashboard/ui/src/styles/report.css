@@ -76,7 +76,7 @@
   flex-wrap: wrap;
 }
 
-/* ---- Focus Year control — lives inline in the page toolbar, not a separately floating/sticky
+/* ---- Focus Year control, lives inline in the page toolbar, not a separately floating/sticky
    panel (a prior version stuck to the viewport top and could visually overlap the chart
    section). ---- */
 .year-picker {
@@ -101,7 +101,7 @@
   border-radius: var(--radius-pill);
   padding: 3px;
 }
-/* the pill that swipes between years — position/width set inline from measured button
+/* the pill that swipes between years, position/width set inline from measured button
    geometry (variable label width, so a fixed-fraction transform won't line up), only the
    motion itself lives in CSS */
 .year-picker .yp-slider {

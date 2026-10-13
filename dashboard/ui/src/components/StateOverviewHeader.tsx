@@ -10,13 +10,13 @@ interface Props {
   fyRange: string;
   /** set on the overview page (links through to the Detailed Data page); omitted there */
   dataHref?: string;
-  /** small line under the name — the Detailed Data page's own description */
+  /** small line under the name, the Detailed Data page's own description */
   description?: string;
   eyebrow?: string;
 }
 
 /** The editorial state masthead: a small silhouette, the state name, one line of plain counts
- * (number of DISCOMs, data period) and the DISCOM list as a compact inline row — sitting on the
+ * (number of DISCOMs, data period) and the DISCOM list as a compact inline row, sitting on the
  * page background rather than inside a card. Only facts already in the data appear here. */
 export default function StateOverviewHeader({ name, geojson, color, discoms, fyRange, dataHref, description, eyebrow }: Props) {
   const count = discoms.length;

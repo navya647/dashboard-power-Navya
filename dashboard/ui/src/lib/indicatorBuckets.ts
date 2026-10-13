@@ -1,5 +1,5 @@
-/** A presentation-only classification of every indicator into one of three top-level buckets —
- * Quality of Supply, Quality of Service, Safety — used to head the Indicator filter's dropdown.
+/** A presentation-only classification of every indicator into one of three top-level indicator categories,
+ * Quality and Reliability of Supply, Quality of Service, Safety, used to head the Indicator filter's dropdown.
  * Sits on top of the existing `category`/`type`/`indicator` metadata (reliability groups and the
  * SoP categories from sopCategories.ts) without renaming or altering any of it, and filtering
  * never looks at the bucket.
@@ -10,13 +10,13 @@
  * indicator. Lookup order: indicator → type → category. Anything not matched (Losses, unclear
  * "Other" types) is left in UNMAPPED_BUCKET rather than guessed at. */
 
-export const BUCKET_ORDER = ['Quality of Supply', 'Quality of Service', 'Safety'] as const;
+export const BUCKET_ORDER = ['Quality and Reliability of Supply', 'Quality of Service', 'Safety'] as const;
 export type Bucket = (typeof BUCKET_ORDER)[number];
 
-/** Indicators not (yet) assigned a bucket — listed last, never blended into a real bucket. */
+/** Indicators not (yet) assigned a bucket, listed last, never blended into a real bucket. */
 export const UNMAPPED_BUCKET = 'Other';
 
-const SUPPLY: Bucket = 'Quality of Supply';
+const SUPPLY: Bucket = 'Quality and Reliability of Supply';
 const SERVICE: Bucket = 'Quality of Service';
 const SAFETY: Bucket = 'Safety';
 
@@ -67,7 +67,7 @@ const TYPE_TO_BUCKET: Record<string, Bucket> = {
   'Temporary Supply': SERVICE,
 };
 
-/** keyed `${type}::${indicator}` — for types whose own indicators span buckets */
+/** keyed `${type}::${indicator}`, for types whose own indicators span buckets */
 const INDICATOR_TO_BUCKET: Record<string, Bucket> = {
   // meter replacement listed under "Restoration of Supply" is a metering service, not an outage
   'Restoration of Supply::Replacement of Faulty Meter (Urban)': SERVICE,
@@ -85,7 +85,7 @@ const INDICATOR_TO_BUCKET: Record<string, Bucket> = {
   'System Operations::Voltage Regulation at Supply Point (EHT)': SUPPLY,
   'System Operations::Active Meter Health (Faulty Meter Rate)': SERVICE,
 
-  // "Administrative Remedies" (Other category) — solatium is the administrative payment made after
+  // "Administrative Remedies" (Other category), solatium is the administrative payment made after
   // an accident, a service response; Safety holds only the accident outcomes themselves
   'Administrative Remedies::Payment of Solatium (Accident Clear Cases)': SERVICE,
   'Administrative Remedies::Payment of Solatium (Other Accident Cases)': SERVICE,

@@ -5,7 +5,7 @@ import { CATEGORICAL } from './colors';
 import type { CardPoint, CardSeries } from './indicatorContext';
 import type { Discom, DiscomsData, StateSpecificData } from './types';
 
-/** One reported/notified fact for one DISCOM/indicator/year, from either dataset — everything
+/** One reported/notified fact for one DISCOM/indicator/year, from either dataset, everything
  * `IndicatorVisualCard` needs (via `CardPoint`) plus the two extra fields the Data Table needs:
  * `exists` (was there a source record at all for this year, independent of whether its reported
  * value came back null) and pre-formatted `reportedText`/`benchmarkText` (unit already applied,
@@ -18,8 +18,8 @@ export interface UnifiedPoint extends CardPoint {
 
 /** The finest-grained unit this page reasons about: one indicator, tracked by one DISCOM (or, for
  * the 5 frameworks-only states, the state's regulatory-framework listing standing in for a
- * DISCOM), across every fiscal year. Both the chart cards and the Data Table — and the DISCOM /
- * Indicator Category / Indicator Type / Indicator filter cascade that drives both — are built from
+ * DISCOM), across every fiscal year. Both the chart cards and the Data Table, and the DISCOM /
+ * Indicator Category / Indicator Type / Indicator filter cascade that drives both, are built from
  * the same flat list of these, so there is exactly one page architecture regardless of which
  * dataset an indicator came from or whether it has any reported figure yet. */
 export interface UnifiedIndicatorAtom {
@@ -36,7 +36,7 @@ export interface UnifiedIndicatorAtom {
   standardSpecified: string | null;
   unitSuffix: (v: number) => string;
   yAxisLabel?: string;
-  /** 'allYears' = a framework's static notified indicator, no per-year source rows of its own —
+  /** 'allYears' = a framework's static notified indicator, no per-year source rows of its own,
    * the chart still gets a full FY axis (see buildFrameworkSeries), but the Data Table collapses
    * it to one "All years" row rather than fabricating one row per fiscal year. */
   fyMode: 'perYear' | 'allYears';
@@ -48,7 +48,7 @@ export interface UnifiedIndicatorAtom {
 const RELIABILITY_WORKBOOK = 'Common Indicators';
 const SOP_WORKBOOK = 'State specific Indicators';
 
-/** Each field is the set of selected values for that filter — an empty array means "no constraint"
+/** Each field is the set of selected values for that filter, an empty array means "no constraint"
  * (matches every atom), not "match nothing"; StateDetail.tsx is what additionally treats an empty
  * `indicators` as "show no cards yet" (a display-gating decision, not something this shared match
  * predicate itself should encode, since a page like CompareView.tsx's own category/type/indicator
@@ -63,7 +63,7 @@ export interface UnifiedFilters {
 const RELIABILITY_CATEGORY_ORDER = ['Reliability', 'Power Quality', 'Service', 'Consumer'];
 
 /** Reliability's 4 categories first (in their own fixed order), then the SoP category order, then
- * anything unrecognized last — so switching datasets via the filter never reshuffles a category
+ * anything unrecognized last, so switching datasets via the filter never reshuffles a category
  * list a viewer is already scanning. */
 export function sortAllCategories(categories: string[]): string[] {
   const relRank = (c: string) => RELIABILITY_CATEGORY_ORDER.indexOf(c);
@@ -82,7 +82,7 @@ function firstIndicatorMeaning(d: Discom, yearsAsc: string[], key: string): stri
 
 /** Stable DISCOM display order shared by the filter dropdown and the per-DISCOM color assignment:
  * reliability DISCOMs first (in source order), then any SoP-only DISCOM not already counted, then
- * — only when a state has neither — the state's own name standing in for its regulatory-framework
+ *, only when a state has neither, the state's own name standing in for its regulatory-framework
  * pseudo-DISCOM. */
 export function unifiedDiscomOrder(allDs: Discom[], stateSpecific: StateSpecificData | null | undefined, stateName: string): string[] {
   const order: string[] = [];
@@ -112,63 +112,72 @@ function reliabilityAtoms(discoms: DiscomsData, ds: Discom[], colorOf: (key: str
   for (const d of ds) {
     for (const key of discoms.canonical_order) {
       const meta = discoms.canonical_indicators[key];
-      // Only 'pct' is a unit the source consistently confirms (the "% of cases..." meaning text
-      // matches the number) — 'hours'/'count' are the extraction script's own inferred labels, not
-      // something the sheet states directly (SAIDI, for one DISCOM, turned out to be reported in
-      // minutes, not hours). Rather than risk mislabeling a unit, show the plain number for those
-      // and let the indicator's own "Measured as" text (reportedMeaning, straight from source)
-      // carry the real unit description — see CLAUDE.md "preserve source units exactly".
-      const isPct = meta.unit === 'pct';
-      const unitSuffix = (v: number) => fmt(v, 2) + (isPct ? '%' : '');
-      const points: UnifiedPoint[] = yearsAsc.map((year) => {
-        const ind = d.years[year]?.indicators[key];
-        const benchNum = ind?.benchmark != null && !Number.isNaN(parseFloat(ind.benchmark)) ? parseFloat(ind.benchmark) : null;
-        return {
-          year,
-          exists: ind != null,
-          value: ind?.value ?? null,
-          benchmark: benchNum,
-          benchmarkMeaning: ind?.benchmark_meaning ?? null,
-          reportedMeaning: ind?.reported_meaning ?? null,
-          standardSpecified: ind?.standard_specified ?? null,
-          comparisonPossible: ind?.comparison_possible ?? null,
-          standardMet: ind?.standard_met ?? null,
-          reasonNotComparable: ind?.reason_not_comparable ?? null,
-          regulation: d.years[year]?.regulation || null,
-          note: ind?.unit_note ?? null,
-          // the reliability JSON stores some benchmarks as bare numbers — keep the raw form as text
-          benchmarkRaw: ind?.benchmark == null ? null : String(ind.benchmark),
-          reportedText: ind?.value == null ? null : unitSuffix(ind.value),
-          benchmarkText: benchNum == null ? null : unitSuffix(benchNum),
-        };
-      });
-      atoms.push({
-        dataset: 'reliability',
-        discomKey: d.short_name,
-        discomLabel: d.short_name,
-        discomFullLabel: d.full_name,
-        color: colorOf(d.short_name),
-        isFramework: false,
-        category: meta.group,
-        type: meta.group,
-        indicator: key,
-        meaning: firstIndicatorMeaning(d, yearsAsc, key),
-        standardSpecified: points.find((p) => p.standardSpecified)?.standardSpecified ?? null,
-        unitSuffix,
-        yAxisLabel: isPct ? 'Percentage' : undefined,
-        fyMode: 'perYear',
-        source: { workbook: RELIABILITY_WORKBOOK, sheet: d.sheet ?? null },
-        points,
-      });
+      // Urban and Rural are separate reported figures with their own standard and verdict in the
+      // sheet, so a DISCOM that reports them that way gets one series for each rather than an average.
+      const split = yearsAsc.some((y) => d.years[y]?.indicators[key]?.subtype_records);
+      const variants: { name: string; sub: 'Urban' | 'Rural' | null }[] = split
+        ? [{ name: `${key} (URBAN)`, sub: 'Urban' }, { name: `${key} (RURAL)`, sub: 'Rural' }]
+        : [{ name: key, sub: null }];
+      for (const { name, sub } of variants) {
+        // Only 'pct' is a unit the source consistently confirms (the "% of cases..." meaning text
+        // matches the number), 'hours'/'count' are the extraction script's own inferred labels, not
+        // something the sheet states directly (SAIDI, for one DISCOM, turned out to be reported in
+        // minutes, not hours). Rather than risk mislabeling a unit, show the plain number for those
+        // and let the indicator's own "Measured as" text (reportedMeaning, straight from source)
+        // carry the real unit description, see CLAUDE.md "preserve source units exactly".
+        const isPct = meta.unit === 'pct';
+        const unitSuffix = (v: number) => fmt(v) + (isPct ? '%' : '');
+        const points: UnifiedPoint[] = yearsAsc.map((year) => {
+          const whole = d.years[year]?.indicators[key];
+          const ind = sub && whole ? (whole.subtype_records?.[sub] ? { ...whole, ...whole.subtype_records[sub] } : { ...whole, value: null, standard_met: null, comparison_possible: null }) : whole;
+          const benchNum = ind?.benchmark != null && !Number.isNaN(parseFloat(ind.benchmark)) ? parseFloat(ind.benchmark) : null;
+          return {
+            year,
+            exists: ind != null,
+            value: ind?.value ?? null,
+            benchmark: benchNum,
+            benchmarkMeaning: ind?.benchmark_meaning ?? null,
+            reportedMeaning: ind?.reported_meaning ?? null,
+            standardSpecified: ind?.standard_specified ?? null,
+            comparisonPossible: ind?.comparison_possible ?? null,
+            standardMet: ind?.standard_met ?? null,
+            reasonNotComparable: ind?.reason_not_comparable ?? null,
+            regulation: d.years[year]?.regulation || null,
+            note: ind?.unit_note ?? null,
+            // the reliability JSON stores some benchmarks as bare numbers, keep the raw form as text
+            benchmarkRaw: ind?.benchmark == null ? null : String(ind.benchmark),
+            reportedText: ind?.value == null ? null : unitSuffix(ind.value),
+            benchmarkText: benchNum == null ? null : unitSuffix(benchNum),
+          };
+        });
+        atoms.push({
+          dataset: 'reliability',
+          discomKey: d.short_name,
+          discomLabel: d.short_name,
+          discomFullLabel: d.full_name,
+          color: colorOf(d.short_name),
+          isFramework: false,
+          category: meta.group,
+          type: meta.group,
+          indicator: name,
+          meaning: firstIndicatorMeaning(d, yearsAsc, key),
+          standardSpecified: points.find((p) => p.standardSpecified)?.standardSpecified ?? null,
+          unitSuffix,
+          yAxisLabel: isPct ? 'Percentage' : undefined,
+          fyMode: 'perYear',
+          source: { workbook: RELIABILITY_WORKBOOK, sheet: d.sheet ?? null },
+          points,
+        });
+      }
     }
   }
   return atoms;
 }
 
-const sopUnitSuffix = (v: number) => fmt(v, 2) + '%';
+const sopUnitSuffix = (v: number) => fmt(v) + '%';
 
 /** The SoP sheets' own header row ("Indicator Type" / "Indicator" / "Indicator meaning" …) read in
- * as a data row for a few DISCOMs — not a real indicator, so it never becomes an atom (and so never
+ * as a data row for a few DISCOMs, not a real indicator, so it never becomes an atom (and so never
  * reaches the Indicator filter, charts or tables). Matched exactly, so no genuine indicator can hit it. */
 function isHeaderRowArtefact(s: { type: string | null; indicator: string | null }): boolean {
   return s.type === 'Indicator Type' && s.indicator === 'Indicator';
@@ -265,7 +274,7 @@ function sopAtoms(stateSpecific: StateSpecificData, stateName: string, colorOf: 
 
 /** The one data-unification entry point for the State Performance page: every reliability and SoP
  * indicator this state has anything for (reported or merely notified), as one flat, dataset-
- * agnostic list. Nothing here is a derived score — every field is lifted straight from the source,
+ * agnostic list. Nothing here is a derived score, every field is lifted straight from the source,
  * see CLAUDE.md. */
 export function buildUnifiedAtoms(discoms: DiscomsData | null | undefined, allDs: Discom[], stateSpecific: StateSpecificData | null | undefined, stateName: string, yearsAsc: string[]): UnifiedIndicatorAtom[] {
   const order = unifiedDiscomOrder(allDs, stateSpecific, stateName);
@@ -276,7 +285,7 @@ export function buildUnifiedAtoms(discoms: DiscomsData | null | undefined, allDs
   return atoms;
 }
 
-/** A standard cell that actually states one — not empty, not "N/A", and not the sheets' own
+/** A standard cell that actually states one, not empty, not "N/A", and not the sheets' own
  * "Not specified…" wording (which records that the regulation sets none). */
 export const statesStandard = (t: string | null | undefined): boolean => {
   const v = t == null ? '' : String(t).trim();
@@ -284,7 +293,7 @@ export const statesStandard = (t: string | null | undefined): boolean => {
 };
 
 /** The indicators the State page offers: those the state's regulation sets a standard for (in
- * words — a benchmark alone doesn't count), plus those with reported figures even without one
+ * words, a benchmark alone doesn't count), plus those with reported figures even without one
  * (IndicatorModule tints those cards). An indicator with neither is never offered. Standards are
  * state-level, so an indicator is kept or dropped for every DISCOM at once. */
 export function withStandardOrFigures(atoms: UnifiedIndicatorAtom[]): UnifiedIndicatorAtom[] {
@@ -340,10 +349,10 @@ export interface DefaultIndicatorSelection {
  * touched. Prefers SAIDI whenever it has any actual reported figure for this state; otherwise
  * falls back to whichever indicator has the most reported figures across every DISCOM/year here,
  * so the initial view is never empty just because SAIDI itself wasn't reported. Ties fall to
- * whichever indicator's atoms were built first (a deterministic, state-independent order — see
+ * whichever indicator's atoms were built first (a deterministic, state-independent order, see
  * `buildUnifiedAtoms`), not to indicator name, so the same tie always resolves the same way.
  * Returns null when nothing in this state has a single reported figure at all (the 5
- * frameworks-only states, or a state whose atoms exist but are all unreported) — callers should
+ * frameworks-only states, or a state whose atoms exist but are all unreported), callers should
  * fall back to their existing empty state rather than forcing a selection onto an indicator that
  * merely exists in the regulatory-standards data with nothing reported against it. */
 export function pickDefaultIndicator(atoms: UnifiedIndicatorAtom[]): DefaultIndicatorSelection | null {
@@ -371,14 +380,14 @@ function stripTableFields(p: UnifiedPoint): CardPoint {
   return rest;
 }
 
-/** One chart card per indicator this page shows, one line per DISCOM that reports it — DISCOMs are
+/** One chart card per indicator this page shows, one line per DISCOM that reports it, DISCOMs are
  * never split into separate cards for the same indicator (reliability's canonical keys already
  * guaranteed this; SoP indicator identity is exact-string `category`+`type`+`indicator` equality,
- * never a cross-DISCOM semantic merge — see CLAUDE.md — so two DISCOMs only ever land on the same
+ * never a cross-DISCOM semantic merge, see CLAUDE.md, so two DISCOMs only ever land on the same
  * card when their source sheets used the literal same Indicator Type/Indicator text). Every
- * matching indicator gets a card, whether or not it has a single reported figure yet —
+ * matching indicator gets a card, whether or not it has a single reported figure yet,
  * `IndicatorVisualCard` already renders an indicator's full FY axis and regulatory context either
- * way. `discomKey`/`discomLabel` are only set when exactly one DISCOM contributed to the card —
+ * way. `discomKey`/`discomLabel` are only set when exactly one DISCOM contributed to the card,
  * with more than one they're null, since the chart's own per-series labels/legend already carry
  * that identity, same as the reliability dataset always has. */
 export interface UnifiedCard {
@@ -452,7 +461,7 @@ export interface UnifiedTableRow {
   note: string | null;
 }
 
-/** One Data Table row per actual source record — a framework's notified indicator collapses to a
+/** One Data Table row per actual source record, a framework's notified indicator collapses to a
  * single "All years" row (never one fabricated row per fiscal year, see CLAUDE.md), and a
  * per-DISCOM reported indicator gets one row per fiscal year it actually has a record for
  * (`exists`), never one for a year the workbook simply never covered. */
@@ -506,13 +515,13 @@ export function buildUnifiedTableRows(atoms: UnifiedIndicatorAtom[]): UnifiedTab
   return rows;
 }
 
-/** DISCOM options available for one jurisdiction's Compare picker — reliability DISCOMs first,
+/** DISCOM options available for one jurisdiction's Compare picker, reliability DISCOMs first,
  * then any SoP-only DISCOM, then (only for the 5 frameworks-only states) the state's own name
  * standing in for its regulatory-framework pseudo-DISCOM. Same ordering `unifiedDiscomOrder`
  * already gives the State Performance page's filter, reused here so the two pages never disagree.
  * `key` stays the bare short name (matches `UnifiedIndicatorAtom.discomKey`, used for filtering);
  * `label` is "Full name (SHORT)" wherever a full name is on record and differs from the short one
- * — the framework-only fallback (key === the state's own name) has no full name to add. */
+ *, the framework-only fallback (key === the state's own name) has no full name to add. */
 export function jurisdictionDiscomOptions(discoms: DiscomsData, stateSpecific: StateSpecificData | null | undefined, jurisdiction: string): DiscomOption[] {
   const allDs = discoms.discoms.filter((d) => d.state === jurisdiction);
   const keys = unifiedDiscomOrder(allDs, stateSpecific, jurisdiction);
@@ -534,12 +543,12 @@ export interface JurisdictionDiscomSelection {
 
 /** Compare page atom builder: unlike the State Performance page's `buildUnifiedAtoms` (every
  * DISCOM a state has, always shown as separate lines) this narrows each jurisdiction down to only
- * the DISCOMs ticked in its own picker — one series per ticked DISCOM, never collapsed/averaged
- * across DISCOMs (no state-level median — see CLAUDE.md, that'd be an invented derived metric),
+ * the DISCOMs ticked in its own picker, one series per ticked DISCOM, never collapsed/averaged
+ * across DISCOMs (no state-level median, see CLAUDE.md, that'd be an invented derived metric),
  * and never a fixed "whole state" line either. Colored uniquely across the *entire* selection (not
- * just within one state) so two lines are never the same color, and labeled `DISCOM — State` so a
+ * just within one state) so two lines are never the same color, and labeled `DISCOM, State` so a
  * line is unambiguous once multiple states are on the same chart. Returns one entry per state,
- * each carrying just that state's (already colored/labeled) atoms — see
+ * each carrying just that state's (already colored/labeled) atoms, see
  * `buildMultiDiscomComparableCards` for how these get matched into cards across states. */
 export function buildMultiDiscomAtoms(
   discoms: DiscomsData,
@@ -552,7 +561,7 @@ export function buildMultiDiscomAtoms(
     const atoms = buildUnifiedAtoms(discoms, allDs, stateSpecific, state, yearsAsc).filter((a) => discomKeys.includes(a.discomKey));
     return { state, atoms };
   });
-  // one color per (state, DISCOM) pair, not per atom — a DISCOM reports many indicators, each its
+  // one color per (state, DISCOM) pair, not per atom, a DISCOM reports many indicators, each its
   // own atom, and every one of them must land on the same color or the same line would appear a
   // different color on every chart card.
   const colorByKey = new Map<string, string>();
@@ -565,14 +574,14 @@ export function buildMultiDiscomAtoms(
         i += 1;
       }
       atom.color = colorByKey.get(ck)!;
-      atom.discomLabel = `${atom.discomLabel} — ${state}`;
+      atom.discomLabel = `${atom.discomLabel}, ${state}`;
     }
   }
   return result;
 }
 
 /** One {label, color} entry per (state, DISCOM) actually contributing to `buildMultiDiscomAtoms`'s
- * output — the Compare page's page-level legend, so every DISCOM's color is named once instead of
+ * output, the Compare page's page-level legend, so every DISCOM's color is named once instead of
  * only inside each chart card's own (repeated, and hidden when a card has just one series)
  * legend. */
 export function multiDiscomLegend(atomsByState: { state: string; atoms: UnifiedIndicatorAtom[] }[]): { label: string; color: string }[] {
@@ -586,10 +595,10 @@ export function multiDiscomLegend(atomsByState: { state: string; atoms: UnifiedI
 }
 
 /** From `buildMultiDiscomAtoms`'s per-state atom lists, the cards for indicators captured by at
- * least one ticked DISCOM in EVERY selected state — the multi-DISCOM equivalent of the old
+ * least one ticked DISCOM in EVERY selected state, the multi-DISCOM equivalent of the old
  * single-line-per-state `buildComparableCards` (see CLAUDE.md/spec: matched on the captured
  * record's identity, never on whether a reported value exists). A state with zero DISCOMs ticked
- * contributes no keys, so nothing can match — callers should prompt the viewer to tick at least
+ * contributes no keys, so nothing can match, callers should prompt the viewer to tick at least
  * one DISCOM per state rather than rendering an empty gallery unexplained. */
 export function buildMultiDiscomComparableCards(atomsByState: { state: string; atoms: UnifiedIndicatorAtom[] }[]): UnifiedCard[] {
   const keysByState = atomsByState.map(({ atoms }) => new Set(atoms.map((a) => `${a.dataset}::${a.category}::${a.type}::${a.indicator}`)));

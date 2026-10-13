@@ -3,18 +3,12 @@
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { bucketFor } from "@/lib/indicatorBuckets";
-import { directionForMeaning, type Direction } from "@/lib/indicatorDirection";
+import { groupReadings } from "@/lib/indicatorReading";
 import type { CardSeries } from "@/lib/indicatorContext";
 import { isNA, textKey } from "@/lib/regulationSources";
 
-const DIRECTION_TEXT: Record<Direction, string> = {
-  higher_is_better: "Higher is better",
-  lower_is_better: "Lower is better",
-  direction_unknown: "Not established",
-};
-
 /** A definition with its reporting period removed ("…experienced by a consumer in a month" →
- * "…experienced by a consumer") — the period belongs to how a figure was reported, not to what the
+ * "…experienced by a consumer"), the period belongs to how a figure was reported, not to what the
  * indicator is, and it's what made otherwise-identical definitions differ between DISCOMs. */
 export function definitionWithoutPeriod(text: string): string {
   return text
@@ -46,23 +40,12 @@ function leadDefinition(series: CardSeries[]): string | null {
     : null;
 }
 
-/** "Lower is better" etc. from the reported-metric descriptions (lib/indicatorDirection); where
- * DISCOMs' figures point different ways, each direction is listed with whom it applies to. */
-function interpretation(series: CardSeries[]): string {
-  const byDir = new Map<Direction, Set<string>>();
-  for (const s of series)
-    for (const p of s.points) {
-      if (isNA(p.reportedMeaning)) continue;
-      const d = directionForMeaning(p.reportedMeaning);
-      if (d === "direction_unknown") continue;
-      if (!byDir.has(d)) byDir.set(d, new Set());
-      byDir.get(d)!.add(s.label);
-    }
-  if (byDir.size === 0) return DIRECTION_TEXT.direction_unknown;
-  if (byDir.size === 1) return DIRECTION_TEXT[[...byDir.keys()][0]];
-  return [...byDir]
-    .map(([d, who]) => `${DIRECTION_TEXT[d]} (${[...who].join(", ")})`)
-    .join(" · ");
+/** What the reported figure is, and how to read it, both from the same source wording (see
+ * lib/indicatorReading). Where DISCOMs report on different bases, each basis is listed with the
+ * DISCOMs it applies to, so the measure and its interpretation stay paired line for line. */
+function readings(series: CardSeries[]) {
+  const items = series.flatMap((s) => s.points.map((p) => ({ meaning: p.reportedMeaning, who: s.label })));
+  return groupReadings(items);
 }
 
 interface Props {
@@ -75,7 +58,7 @@ interface Props {
 }
 
 /** Pop-up opened from an indicator's name: what the indicator is (definition without a reporting
- * period), which bucket and category it belongs to, and which way is an improvement. */
+ * period), which indicator category it belongs to, and which way is an improvement. */
 export default function IndicatorDefinition({
   open,
   onClose,
@@ -104,6 +87,8 @@ export default function IndicatorDefinition({
   if (!open || typeof document === "undefined") return null;
 
   const definition = leadDefinition(series);
+  const rs = readings(series);
+  const labelled = (who: string[]) => (rs.length > 1 && who.length ? ` (${who.join(", ")})` : "");
 
   return createPortal(
     <div className="idef-root" role="presentation">
@@ -129,16 +114,34 @@ export default function IndicatorDefinition({
         <p className="idef-definition">{definition ?? "N/A"}</p>
         <dl className="idef-meta">
           <div>
-            <dt>Bucket</dt>
+            <dt>Indicator category</dt>
             <dd>{bucketFor(category, type, indicator)}</dd>
           </div>
           <div>
-            <dt>Category</dt>
-            <dd>{category}</dd>
+            <dt>Reported as</dt>
+            <dd>
+              {rs.length === 0
+                ? "N/A"
+                : rs.map((r) => (
+                    <span className="idef-line" key={r.reading.measure}>
+                      {r.reading.measure}
+                      {labelled(r.who)}
+                    </span>
+                  ))}
+            </dd>
           </div>
           <div>
             <dt>Interpretation</dt>
-            <dd>{interpretation(series)}</dd>
+            <dd>
+              {rs.length === 0
+                ? "Not established."
+                : rs.map((r) => (
+                    <span className="idef-line" key={r.reading.measure}>
+                      {r.reading.interpretation}
+                      {labelled(r.who)}
+                    </span>
+                  ))}
+            </dd>
           </div>
         </dl>
       </div>

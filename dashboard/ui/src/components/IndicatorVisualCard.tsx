@@ -40,7 +40,7 @@ interface Props {
   activeYear: string;
   series: CardSeries[];
   animationDelay?: number;
-  /** Which half of the card to render — the page renders every indicator twice, once per
+  /** Which half of the card to render, the page renders every indicator twice, once per
    * page-level section ("Regulatory Compliance" then "Year-wise Trends"), rather than once as a
    * single combined card; both halves share every value this component derives below, so the only
    * difference between the two calls is which JSX comes out. 'compliance' = identity, the
@@ -57,7 +57,7 @@ export interface SeriesBenchmark {
 }
 
 /** State Electricity Regulatory Commission short names, keyed by the exact state name used
- * throughout this codebase (discoms2.json's state_order) — the standard abbreviation each
+ * throughout this codebase (discoms2.json's state_order), the standard abbreviation each
  * commission itself uses, cross-checked against the actual `regulation` citation text each state's
  * source rows carry (e.g. Rajasthan's own citations already read "RERC ("). Not a derived/invented
  * value: every entry names a real, public regulatory body, used only to label an existing
@@ -78,7 +78,7 @@ const STATE_REGULATOR_ABBR: Record<string, string> = {
 };
 
 /** Matches a state's name (or, for Odisha, its source data's older spelling "Orissa") against a
- * point's own regulation citation text — never guesses a regulator for a row that doesn't
+ * point's own regulation citation text, never guesses a regulator for a row that doesn't
  * literally name one. */
 function regulatorFromRegulationText(text: string | null): string | null {
   if (!text) return null;
@@ -92,7 +92,7 @@ function regulatorFromRegulationText(text: string | null): string | null {
 }
 
 /** Most-frequent numeric benchmark among a single series' points that are actually marked
- * comparable — never draws a reference line from a benchmark the sheet itself said couldn't be
+ * comparable, never draws a reference line from a benchmark the sheet itself said couldn't be
  * compared to what's plotted. Scoped to one series (one DISCOM, or on the Compare page one
  * jurisdiction) so a card spanning several can tell whether they genuinely share one benchmark or
  * not, rather than silently pooling every series' benchmarks into one popular-vote number. Exported
@@ -136,7 +136,7 @@ function firstNonNull<T>(series: CardSeries[], pick: (p: CardPoint) => T | null 
 }
 
 /** Groups per-series values that read identically (e.g. every DISCOM of one state sharing the
- * same regulator-specified standard text) into one entry — so a divergent-standard card shows one
+ * same regulator-specified standard text) into one entry, so a divergent-standard card shows one
  * lens per distinct standard actually in play, not one per series repeating the same text. */
 function groupByText(items: { label: string; value: string | null }[]): { text: string; labels: string[] }[] {
   const order: string[] = [];
@@ -152,15 +152,15 @@ function groupByText(items: { label: string; value: string | null }[]): { text: 
   return order.map((text) => ({ text, labels: byText.get(text)! }));
 }
 
-/** Compare page series labels read `DISCOM — State` (see `buildMultiDiscomAtoms`) — this collapses
- * a list of them sharing one lens down to `DISCOM1, DISCOM2 — State` instead of repeating the same
- * state name after every DISCOM, only splitting into several `— State` groups when the labels
+/** Compare page series labels read `DISCOM, State` (see `buildMultiDiscomAtoms`), this collapses
+ * a list of them sharing one lens down to `DISCOM1, DISCOM2, State` instead of repeating the same
+ * state name after every DISCOM, only splitting into several `, State` groups when the labels
  * genuinely span more than one state. */
 function formatGroupedLabel(labels: string[]): string {
   const order: string[] = [];
   const byState = new Map<string, string[]>();
   for (const l of labels) {
-    const sep = l.lastIndexOf(' — ');
+    const sep = l.lastIndexOf(', ');
     const discom = sep === -1 ? l : l.slice(0, sep);
     const state = sep === -1 ? '' : l.slice(sep + 3);
     if (!byState.has(state)) {
@@ -169,7 +169,7 @@ function formatGroupedLabel(labels: string[]): string {
     }
     byState.get(state)!.push(discom);
   }
-  return order.map((state) => (state ? `${byState.get(state)!.join(', ')} — ${state}` : byState.get(state)!.join(', '))).join('; ');
+  return order.map((state) => (state ? `${byState.get(state)!.join(', ')}, ${state}` : byState.get(state)!.join(', '))).join('; ');
 }
 
 interface ComparabilityMessage {
@@ -179,9 +179,9 @@ interface ComparabilityMessage {
 }
 
 /** Exactly the same "which years, which reason(s)" computation the not-comparable callout always
- * used — factored out so it can run once (for a shared advisory, when every series happens to
+ * used, factored out so it can run once (for a shared advisory, when every series happens to
  * agree) or once per series (when they don't), without duplicating the logic itself. Never changes
- * what counts as not-comparable or what reason is shown — purely a presentation-layer reuse. */
+ * what counts as not-comparable or what reason is shown, purely a presentation-layer reuse. */
 function comparabilityMessage(s: CardSeries): ComparabilityMessage | null {
   const notComparablePts = s.points.filter((p) => p.comparisonPossible === false);
   if (!notComparablePts.length) return null;
@@ -207,7 +207,7 @@ function comparabilityMessage(s: CardSeries): ComparabilityMessage | null {
 }
 
 /** A signature that's identical for two series only when they're not-comparable in exactly the
- * same years for exactly the same reason(s) — used to detect whether every DISCOM on this card
+ * same years for exactly the same reason(s), used to detect whether every DISCOM on this card
  * shares one comparability situation (worth saying once) or genuinely differs (worth keeping
  * distinct, per-DISCOM). Never itself changes the comparability classification. */
 function comparabilitySignature(s: CardSeries): string {
@@ -221,10 +221,10 @@ function comparabilitySignature(s: CardSeries): string {
 type ComparabilityVerdict = 'comparable' | 'not-comparable' | 'unavailable';
 
 /** The coarse, card-level comparability verdict the "Regulatory Standards & Compliance" strip
- * shows — distinct from `comparabilityMessage`'s per-year detail (which years, which reason) and
+ * shows, distinct from `comparabilityMessage`'s per-year detail (which years, which reason) and
  * from `standardMet` (an actual compliance result, shown separately in the year-wise matrix, never
  * here). Derived strictly from `comparisonPossible`: 'unavailable' when the source never recorded
- * an assessment either way for this series (every point's `comparisonPossible` is null — nothing
+ * an assessment either way for this series (every point's `comparisonPossible` is null, nothing
  * to report, not the same as a recorded "no"); 'not-comparable' when at least one year was
  * explicitly marked not comparable; 'comparable' only when every recorded assessment says so. */
 function seriesComparabilityVerdict(s: CardSeries): ComparabilityVerdict {
@@ -234,7 +234,7 @@ function seriesComparabilityVerdict(s: CardSeries): ComparabilityVerdict {
   return 'comparable';
 }
 
-/** Chart.js options are a plain JS object baked in at render time — unlike CSS, they can't pick up
+/** Chart.js options are a plain JS object baked in at render time, unlike CSS, they can't pick up
  * a `var(--chart-grid)` change live, so a hardcoded hex here would go stale the moment the theme
  * toggles (ThemeToggle.tsx flips `data-theme` without a page reload). Reading the token via
  * `getComputedStyle` at render time, combined with `useThemeTick` forcing a re-render whenever
@@ -260,12 +260,12 @@ function truncated(text: string, max = 130): { short: string; needsMore: boolean
   return { short: text.slice(0, max).trimEnd() + '…', needsMore: true };
 }
 
-/** The Regulatory Standard column's own qualitative-text presentation — truncated with a
+/** The Regulatory Standard column's own qualitative-text presentation, truncated with a
  * view-more toggle for a long, multi-condition standard. No separate label/"·" separator (unlike
  * the metadata lenses this replaced), since the column already carries a "Regulatory Standard"
  * heading of its own; repeating a label here would say the same
  * thing twice. `groupLabel`, when given (a DISCOM/jurisdiction name or group), reads as its own
- * small heading above the text — used only when different DISCOMs on one card have genuinely
+ * small heading above the text, used only when different DISCOMs on one card have genuinely
  * different standards specified and each needs attributing to whom it applies. */
 function StandardText({ text, groupLabel, size = 'lg' }: { text: string; groupLabel?: string; size?: 'lg' | 'sm' }) {
   const [expanded, setExpanded] = useState(false);
@@ -284,7 +284,7 @@ function StandardText({ text, groupLabel, size = 'lg' }: { text: string; groupLa
 }
 
 /** The core reusable visual unit: compact indicator identity, a dominant time-series chart,
- * inline context lenses, and — per DISCOM/series — a fiscal-year evidence rail with any
+ * inline context lenses, and, per DISCOM/series, a fiscal-year evidence rail with any
  * not-comparable exception and regulatory citation deduplicated across years that share the same
  * value. Hovering/focusing an evidence cell drives the chart's enlarged point and a vertical
  * guide line, connecting "this year" to "this point" without a separate control. */
@@ -297,13 +297,13 @@ export default function IndicatorVisualCard({ title, typeLabel, meaning, measure
   const accent = cssVar('--accent', '#28546f');
 
   const hasNumeric = series.some((s) => s.points.some((p) => p.value != null));
-  // the same fallback EvidenceRail uses per row (hoverYear, else the page's Focus Year) — lifted
+  // the same fallback EvidenceRail uses per row (hoverYear, else the page's Focus Year), lifted
   // here too so the matrix's shared year header can highlight the whole active column, not just
   // whichever cell happens to be hovered within one row.
   const displayYear = hoverYear ?? activeYear;
 
   // A card can span several series that are NOT the same DISCOM (the Compare page merges one
-  // series per jurisdiction onto the same card) — never silently pool their benchmarks/standards
+  // series per jurisdiction onto the same card), never silently pool their benchmarks/standards
   // into one popular-vote value the way a single-jurisdiction card safely can. Only collapse to
   // one shared lens when every series that has a value agrees; otherwise attribute each series'
   // own value to it explicitly, never implying one benchmark/standard applies to all of them.
@@ -313,13 +313,13 @@ export default function IndicatorVisualCard({ title, typeLabel, meaning, measure
   const bench = distinctBenchValues.length === 1 ? distinctBenchValues[0] : null;
   const benchmarkMeaning = firstNonNull(series, (p) => p.benchmarkMeaning);
   // A raw benchmark number can exist in the source even when it was never counted as `bench`
-  // above (comparisonPossible false/null on every point that has one) — the Regulatory Standard
+  // above (comparisonPossible false/null on every point that has one), the Regulatory Standard
   // column still shows that recorded number (benchmark *availability* is its own fact), while
   // whether it's usable for comparison is the compliance strip's separate concern below, never
   // conflated here.
   const rawBenchmark = bench ?? (!benchDiverges ? firstNonNull(series, (p) => p.benchmark) : null);
   // when every series agrees on one benchmark value, they're only ever the same regulator too
-  // (states never share a commission) — so any series' own regulation citation names it.
+  // (states never share a commission), so any series' own regulation citation names it.
   const sharedRegulator = bench != null ? regulatorFromRegulationText(firstNonNull(series, (p) => p.regulation)) : null;
 
   const perSeriesStandard = series.map((s) => ({ label: s.label, value: perSeriesValue(s, (p) => p.standardSpecified) }));
@@ -328,31 +328,31 @@ export default function IndicatorVisualCard({ title, typeLabel, meaning, measure
 
   const reportedMeaning = measuredAsLabel ?? firstNonNull(series, (p) => p.reportedMeaning);
 
-  // one entry per distinct regulation text shared by every series (DISCOM) citing it — grouped
+  // one entry per distinct regulation text shared by every series (DISCOM) citing it, grouped
   // once here rather than repeated per series, since the citation doesn't change DISCOM to DISCOM
   // within a state. Per-year variation *within* one DISCOM's own series is a separate, unrelated
   // case handled inline where each series renders (see `distinctRegulations` there).
   const constantRegulations = groupByText(series.map((s) => ({ label: s.label, value: allSame(s.points.map((p) => p.regulation)) })));
 
   // Whether every series that has ANY not-comparable years shares the exact same situation (same
-  // years, same reason) — if so, one shared advisory says it once instead of repeating an
+  // years, same reason), if so, one shared advisory says it once instead of repeating an
   // identical callout per DISCOM (see CLAUDE.md/spec: consolidate only when genuinely identical,
   // never suppress a real divergence). `allSame` returns null both when there's no shared value
-  // and when every series has nothing to report — the emptiness check below tells those apart.
+  // and when every series has nothing to report, the emptiness check below tells those apart.
   const comparabilitySignatures = series.map(comparabilitySignature);
   const anyNotComparable = comparabilitySignatures.some((sig) => sig !== '');
   const sharedComparabilitySignature = allSame(comparabilitySignatures);
   const hasSharedAdvisory = anyNotComparable && sharedComparabilitySignature != null && sharedComparabilitySignature !== '';
   const sharedAdvisory = hasSharedAdvisory ? comparabilityMessage(series[0]) : null;
 
-  // The card-level verdict the compliance strip shows — 'null' when series genuinely disagree
+  // The card-level verdict the compliance strip shows, 'null' when series genuinely disagree
   // (one DISCOM comparable, another not), in which case the strip says so plainly instead of
   // picking a side, and the existing per-series exception callouts below it (unaffected by this)
   // carry the real, DISCOM-specific detail.
   const seriesVerdicts = series.map(seriesComparabilityVerdict);
   const sharedVerdict = allSame(seriesVerdicts);
 
-  // point/line color sits on the card's own panel background — matching the ring to it (instead of
+  // point/line color sits on the card's own panel background, matching the ring to it (instead of
   // a fixed cream) keeps the "cutout" look correct in both themes rather than a stray light halo.
   const pointBorder = cssVar('--panel', '#fafaf8');
   const datasets = series.map((s) => ({
@@ -452,7 +452,7 @@ export default function IndicatorVisualCard({ title, typeLabel, meaning, measure
                 ))
               )
             ) : (
-              // every series agrees on the coarse verdict but disagrees on which years/why — the
+              // every series agrees on the coarse verdict but disagrees on which years/why, the
               // per-series detail below (never suppressed when `hasSharedAdvisory` is false) says
               // it precisely per DISCOM instead of one, possibly-wrong, shared reason.
               <div className="compliance-strip-text">See per-DISCOM detail below.</div>
@@ -473,7 +473,7 @@ export default function IndicatorVisualCard({ title, typeLabel, meaning, measure
             {groupByText(series.map((s, i) => ({ label: s.label, value: seriesVerdicts[i] as string }))).map((g) => (
               <div key={g.text} className="compliance-strip-text">
                 <b>{formatGroupedLabel(g.labels)}: </b>
-                {g.text === 'comparable' ? 'Comparable' : g.text === 'not-comparable' ? 'Not directly comparable — see below' : 'Assessment unavailable'}
+                {g.text === 'comparable' ? 'Comparable' : g.text === 'not-comparable' ? 'Not directly comparable, see below' : 'Assessment unavailable'}
               </div>
             ))}
           </div>
@@ -481,7 +481,7 @@ export default function IndicatorVisualCard({ title, typeLabel, meaning, measure
 
         {series.map((s) => {
           // only rendered per-series when the comparability situation genuinely diverges between
-          // DISCOMs — when it's identical everywhere, `sharedAdvisory` above already said it once.
+          // DISCOMs, when it's identical everywhere, `sharedAdvisory` above already said it once.
           // Independent of that: per-year regulation-citation variation within this one DISCOM's
           // own series always renders regardless, since it's an unrelated concern (item 8, not the
           // comparability-warning consolidation in item 5).
@@ -512,7 +512,7 @@ export default function IndicatorVisualCard({ title, typeLabel, meaning, measure
               {distinctRegulations.length > 0 && (
                 <div className="regulation-badge-group">
                   {distinctRegulations.map((r, i) => (
-                    <RegulationBadge key={i} text={r} label={`${s.label} — regulation variant ${i + 1}`} />
+                    <RegulationBadge key={i} text={r} label={`${s.label}, regulation variant ${i + 1}`} />
                   ))}
                 </div>
               )}
@@ -523,7 +523,7 @@ export default function IndicatorVisualCard({ title, typeLabel, meaning, measure
         {constantRegulations.length > 0 && (
           <div className="visual-card-sources">
             {constantRegulations.map((g) => (
-              <RegulationBadge key={g.text} text={g.text} label={series.length > 1 ? `${formatGroupedLabel(g.labels)} — source regulation` : 'Source regulation'} />
+              <RegulationBadge key={g.text} text={g.text} label={series.length > 1 ? `${formatGroupedLabel(g.labels)}, source regulation` : 'Source regulation'} />
             ))}
           </div>
         )}
@@ -580,7 +580,7 @@ export default function IndicatorVisualCard({ title, typeLabel, meaning, measure
                                 borderDash: [6, 4],
                                 label: {
                                   display: true,
-                                  content: `${b.regulator ? `${b.regulator} — ` : ''}${b.label}: ${unitSuffix(b.value as number)}`,
+                                  content: `${b.regulator ? `${b.regulator}, ` : ''}${b.label}: ${unitSuffix(b.value as number)}`,
                                   position: 'start' as const,
                                   backgroundColor: b.color,
                                   color: '#fff',

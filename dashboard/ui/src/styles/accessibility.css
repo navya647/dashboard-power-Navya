@@ -3,8 +3,8 @@
 
 .acm {
   max-width: 1240px;
-  /* states not yet covered: the home map's "Coming soon" look (hero.css) — the same greige fill,
-     dark border and fine dot grid — so "not covered" reads the same across the dashboard */
+  /* states not yet covered: the home map's "Coming soon" look (hero.css), the same greige fill,
+     dark border and fine dot grid, so "not covered" reads the same across the dashboard */
   --acm-out: var(--map-idle);
   --acm-out-line: rgba(74, 51, 32, 0.6);
   --acm-out-dot: #7d6c58;

@@ -1,4 +1,4 @@
-/** Dashboard interpretation metadata for trend assessment — NOT sourced from either workbook.
+/** Dashboard interpretation metadata for trend assessment, NOT sourced from either workbook.
  * Kept in its own module, separate from the extracted JSON, so it is always auditable as an
  * explicit dashboard decision rather than something silently baked into the extraction pipeline.
  *
@@ -6,14 +6,14 @@
  * VARIATION, ...) the way it might first seem: canonical_order groups together raw sheet rows that
  * turned out, on inspection of their own `reported_meaning` field, to describe genuinely different
  * things depending on the DISCOM/year. For example, under the canonical key "TRANSFORMER FAILURE"
- * some rows report "% of cases resolved within specified time/standard" (higher is better — a
+ * some rows report "% of cases resolved within specified time/standard" (higher is better, a
  * resolution rate) while others report "% failure rate of Distribution transformer" (lower is
- * better — an actual failure rate) — opposite directions under the same canonical bucket. The same
+ * better, an actual failure rate), opposite directions under the same canonical bucket. The same
  * split happens under "VOLTAGE VARIATION" (compliance-% rows vs. limit-exceedance-count rows). So
  * direction is assigned per the exact `reported_meaning` text each record already carries (itself a
- * source-extracted definition of what the reported figure means), not per indicator label —
- * `directionForMeaning` below. Any wording not in this table — including anything new a future
- * extraction run introduces — falls through to `direction_unknown` rather than guessing.
+ * source-extracted definition of what the reported figure means), not per indicator label,
+ * `directionForMeaning` below. Any wording not in this table, including anything new a future
+ * extraction run introduces, falls through to `direction_unknown` rather than guessing.
  */
 export type Direction = 'higher_is_better' | 'lower_is_better' | 'direction_unknown';
 
@@ -33,7 +33,7 @@ function normalizeMeaning(text: string | null | undefined): string | null {
  * any trailing period stripped (see `normalizeMeaning`). Meanings that are placeholders rather than
  * definitions ("N/A", "No data furnished...", "Value reported as NIL", ...) are deliberately
  * omitted, as are a handful of genuinely ambiguous ones ("Total no. of help desk established",
- * "No. of deviation of results from the sample test") — all of those fall through to
+ * "No. of deviation of results from the sample test"), all of those fall through to
  * `direction_unknown` by simply not appearing here. */
 const MEANING_DIRECTION: Record<string, Direction> = {
   // --- reliability dataset (discoms2.json) ---
@@ -103,12 +103,12 @@ export function directionForMeaning(reportedMeaning: string | null | undefined):
   return MEANING_DIRECTION[norm] ?? 'direction_unknown';
 }
 
-/** Coarse, literal signal of the unit/period a reported figure is actually on — used only to catch
+/** Coarse, literal signal of the unit/period a reported figure is actually on, used only to catch
  * an explicit basis change within one series (e.g. one year's meaning says "minutes", another
  * year's says "hours"; one says "quarter", another says "year"). Deliberately shallow: it only
  * flags a conflict when both sides name a basis explicitly and disagree, never when one side is
  * simply silent about it, since terse wording is common and isn't itself evidence of a changed
- * metric. See CLAUDE.md — SAIDI has a documented real case of a DISCOM reporting in minutes where
+ * metric. See CLAUDE.md, SAIDI has a documented real case of a DISCOM reporting in minutes where
  * others reported hours. */
 export interface BasisSignature {
   unit: 'min' | 'hr' | 'na';
@@ -118,7 +118,7 @@ export interface BasisSignature {
 export function basisSignature(reportedMeaning: string | null | undefined): BasisSignature {
   const norm = normalizeMeaning(reportedMeaning) ?? '';
   const unit = norm.includes('minute') ? 'min' : norm.includes('hour') ? 'hr' : 'na';
-  // period ignores parenthetical method notes — "over the year (derived from quarterly averages)" is
+  // period ignores parenthetical method notes, "over the year (derived from quarterly averages)" is
   // an annual figure, and its "quarterly" must not read as a quarterly basis
   const p = norm.replace(/\([^)]*\)/g, '');
   const period = p.includes('quarter') ? 'quarter' : p.includes('year') ? 'year' : 'na';

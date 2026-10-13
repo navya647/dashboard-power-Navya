@@ -5,13 +5,13 @@ import { MAP_STATUS_LABEL, stateMapStatus, type StateMapStatus } from '@/lib/com
 import type { Discom, StateSpecificData } from '@/lib/types';
 
 interface Props {
-  /** every state/UT on the map (the geojson's own names), in any order — sorted here */
+  /** every state/UT on the map (the geojson's own names), in any order, sorted here */
   names: string[];
   discoms: Discom[];
   stateSpecific?: StateSpecificData | null;
   compareMode: boolean;
   compareSet: string[];
-  /** same handler a map click goes through — navigates, or toggles the comparison in compare mode */
+  /** same handler a map click goes through, navigates, or toggles the comparison in compare mode */
   onSelect: (name: string) => void;
   /** the option currently hovered / keyboard-active, so the map can highlight that region */
   onHighlight: (name: string | null) => void;
@@ -57,7 +57,7 @@ export default function StateSearch({ names, discoms, stateSpecific, compareMode
     return q ? items.filter((it) => norm(it.name).includes(q)) : items;
   }, [items, query]);
 
-  // in compare mode a "Coming soon" jurisdiction can't be compared — same rule HeroMap applies
+  // in compare mode a "Coming soon" jurisdiction can't be compared, same rule HeroMap applies
   const isDisabled = (status: StateMapStatus) => compareMode && status === 'idle';
   const activeItem = open && active >= 0 ? filtered[active] : undefined;
 

@@ -4,7 +4,7 @@ import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import GlanceView from '@/components/GlanceView';
 
-// ?indicator=&year= are read on the client (useSearchParams) so the page stays a static export —
+// ?indicator=&year= are read on the client (useSearchParams) so the page stays a static export,
 // same pattern as /compare.
 function GlancePageContent() {
   const params = useSearchParams();

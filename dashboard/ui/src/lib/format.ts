@@ -1,5 +1,5 @@
-export function fmt(v: number | null | undefined, digits = 2): string {
-  if (v === null || v === undefined || Number.isNaN(v)) return '—';
+export function fmt(v: number | null | undefined, digits = 0): string {
+  if (v === null || v === undefined || Number.isNaN(v)) return 'N/A';
   return Number(v).toLocaleString(undefined, { maximumFractionDigits: digits });
 }
 
@@ -25,7 +25,7 @@ export function mode(arr: number[]): number | null {
   return best;
 }
 
-/** "2023-24" -> "FY24" — the standard Indian financial-year shorthand (named for the ending
+/** "2023-24" -> "FY24", the standard Indian financial-year shorthand (named for the ending
  * year), used everywhere a year string from the extracted data is shown to the user instead of
  * spelling out the full "FY 2023-24" range. */
 export function fyLabel(year: string): string {
@@ -33,7 +33,7 @@ export function fyLabel(year: string): string {
   return 'FY' + end.slice(-2);
 }
 
-/** "FY22–FY24, FY26" — years compressed into runs along `yearsAsc` (oldest first), so a gap
+/** "FY22–FY24, FY26", years compressed into runs along `yearsAsc` (oldest first), so a gap
  * year is never hidden inside a single range. Empty string for no years. */
 export function fyRunsLabel(years: string[], yearsAsc: string[]): string {
   const idx = Array.from(new Set(years))

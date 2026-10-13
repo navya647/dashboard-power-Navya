@@ -2,7 +2,7 @@ import { fyLabel } from '@/lib/format';
 import { regulationTitle } from '@/lib/regulationTitles';
 import type { DiscomAccessibility, ReportedDataLink, StateAccessibility } from '@/lib/types';
 
-/** The source-document links as the Accessibility page's state card presents them — shared with
+/** The source-document links as the Accessibility page's state card presents them, shared with
  * the state page's indicator modules so both read the same. Styles: the acm-* rules in
  * accessibility.css. */
 
@@ -26,9 +26,9 @@ function YearLinks({ links, who }: { links: ReportedDataLink[]; who: string }) {
   );
 }
 
-/** One row per DISCOM with its year-wise reported-data links. When they all have the same entry —
+/** One row per DISCOM with its year-wise reported-data links. When they all have the same entry,
  * one set of year folders for the whole state (Madhya Pradesh, Odisha), all unpublished, or all
- * without links — it's written once in a cell spanning the rows rather than repeated on each. */
+ * without links, it's written once in a cell spanning the rows rather than repeated on each. */
 export function ReportedDataTable({ state, discoms }: { state: string; discoms: DiscomAccessibility[] }) {
   const entryKey = (d: DiscomAccessibility) => (d.available_on_serc !== true ? 'none' : JSON.stringify(d.data_links));
   const merged = discoms.length > 1 && discoms.every((d) => entryKey(d) === entryKey(discoms[0]));

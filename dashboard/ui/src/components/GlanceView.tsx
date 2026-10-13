@@ -8,11 +8,12 @@ import { indicatorLabel } from '@/lib/glossary';
 import { axisTitleForUnit, formatInUnit } from '@/lib/indicatorUnits';
 import { slugify } from '@/lib/slug';
 import { useNoScrollbar } from '@/lib/useNoScrollbar';
-import { buildGlance, glanceIndicators, glanceYears, type GlanceGroup, type GlanceRow } from '@/lib/glance';
+import { buildGlance, glanceIndicators, glanceYears, splitSubtypes, type GlanceGroup, type GlanceRow } from '@/lib/glance';
+import AboutKicker from './AboutKicker';
 
 /** The At a glance page: one reliability indicator, one year, every DISCOM's reported figure.
  *
- * Each chart is one CSS grid — state | DISCOM | figure | plot — so every part lines up by
+ * Each chart is one CSS grid, state | DISCOM | figure | plot, so every part lines up by
  * construction: the axis and its gridlines sit in the plot column, each state's benchmark is one
  * line spanning exactly its DISCOMs' rows in that same column, and figures sit in their own
  * right-aligned column where nothing can collide with them. A state's DISCOMs come together
@@ -35,8 +36,9 @@ interface Props {
 }
 
 export default function GlanceView({ initialIndicator, initialYear }: Props) {
-  const { discoms, loading, error } = useData();
-  const indicators = useMemo(() => (discoms ? glanceIndicators(discoms) : []), [discoms]);
+  const { discoms: rawDiscoms, loading, error } = useData();
+  const data = useMemo(() => (rawDiscoms ? splitSubtypes(rawDiscoms) : null), [rawDiscoms]);
+  const indicators = useMemo(() => (data ? glanceIndicators(data) : []), [data]);
   const [indicator, setIndicator] = useState<string | null>(initialIndicator);
   const [year, setYear] = useState<string | null>(initialYear);
   const [selected, setSelected] = useState<string | null>(null);
@@ -46,9 +48,9 @@ export default function GlanceView({ initialIndicator, initialYear }: Props) {
   // the indicator/year actually shown: a requested one that has figures, else the first
   // indicator and its latest year with figures
   const ind = indicator && indicators.includes(indicator) ? indicator : (indicators[0] ?? null);
-  const years = useMemo(() => (discoms && ind ? glanceYears(discoms, ind) : []), [discoms, ind]);
+  const years = useMemo(() => (data && ind ? glanceYears(data, ind) : []), [data, ind]);
   const yr = year && years.includes(year) ? year : (years[0] ?? null);
-  const glance = useMemo(() => (discoms && ind && yr ? buildGlance(discoms, ind, yr) : null), [discoms, ind, yr]);
+  const glance = useMemo(() => (data && ind && yr ? buildGlance(data, ind, yr) : null), [data, ind, yr]);
 
   // shareable URL (?indicator=&year=), kept in sync without a navigation
   useEffect(() => {
@@ -63,7 +65,7 @@ export default function GlanceView({ initialIndicator, initialYear }: Props) {
   useEffect(() => setRep(null), [ind]);
 
   if (loading) return <p className="detail-placeholder">Loading dashboard data…</p>;
-  if (error || !discoms || !glance || !ind || !yr) return <p className="detail-placeholder">Could not load dashboard data: {error}</p>;
+  if (error || !data || !glance || !ind || !yr) return <p className="detail-placeholder">Could not load dashboard data: {error}</p>;
 
   // one way of reporting the indicator on screen at a time: the one most DISCOMs use, unless
   // another was picked
@@ -72,42 +74,44 @@ export default function GlanceView({ initialIndicator, initialYear }: Props) {
   const label = indicatorLabel(ind);
   const toggle = (k: string) => setSelected((cur) => (cur === k ? null : k));
 
+  const yearSwitch = (
+      <div className="glc-years" role="radiogroup" aria-label="Financial year">
+        {[...data.years].reverse().map((y) => {
+          const has = years.includes(y);
+          return (
+            <button
+              key={y}
+              type="button"
+              role="radio"
+              aria-checked={y === yr}
+              disabled={!has}
+              className={`glc-year${y === yr ? ' is-active' : ''}`}
+              onClick={() => setYear(y)}
+              title={has ? undefined : `No ${label} figures for ${fyLabel(y)}`}
+            >
+              {fyLabel(y)}
+            </button>
+          );
+        })}
+      </div>
+  );
+
   return (
     <div className="methodology-page about-page glc">
-      <div className="kicker" style={{ marginTop: 0 }}>
-        <span className="bar" />
-        <span className="label">At a glance</span>
-      </div>
+      <AboutKicker here="At a glance" />
       <h1 className="method-hero-title">Quick Comparison Across DISCOMs</h1>
 
       <div className="glc-bar">
         <div className="glc-tabs" role="tablist" aria-label="Indicator">
           {indicators.map((i) => (
-            <button key={i} type="button" role="tab" aria-selected={i === ind} className={`glc-tab${i === ind ? ' is-active' : ''}`} onClick={() => setIndicator(i)}>
-              {indicatorLabel(i)}
+            <button key={i} type="button" role="tab" aria-selected={i === ind} title={indicatorLabel(i)} className={`glc-tab${i === ind ? ' is-active' : ''}`} onClick={() => setIndicator(i)}>
+              {indicatorLabel(i).replace('Transformer Failure (', 'Transformer (')}
             </button>
           ))}
         </div>
-        <div className="glc-years" role="radiogroup" aria-label="Financial year">
-          {[...discoms.years].reverse().map((y) => {
-            const has = years.includes(y);
-            return (
-              <button
-                key={y}
-                type="button"
-                role="radio"
-                aria-checked={y === yr}
-                disabled={!has}
-                className={`glc-year${y === yr ? ' is-active' : ''}`}
-                onClick={() => setYear(y)}
-                title={has ? undefined : `No ${label} figures for ${fyLabel(y)}`}
-              >
-                {fyLabel(y)}
-              </button>
-            );
-          })}
-        </div>
       </div>
+
+      <div className="glc-yearrow">{yearSwitch}</div>
 
       <div className={`glc-body${sel ? ' has-card' : ''}`}>
         <div className="glc-main" key={`${ind}|${yr}|${group.key}`}>
@@ -149,7 +153,7 @@ function groupLabel(g: GlanceGroup, all: GlanceGroup[]): string {
 
 /** Row height that lets the whole chart fit the window below where it starts (desktop only),
  * kept between a compact floor and the usual 28px. */
-const ROW_MIN = 20;
+const ROW_MIN = 15;
 const ROW_MAX = 28;
 function useFitRowHeight(chart: RefObject<HTMLElement | null>, grid: RefObject<HTMLElement | null>, rows: number, gaps: number) {
   const [rowH, setRowH] = useState<number | null>(null);
@@ -163,7 +167,7 @@ function useFitRowHeight(chart: RefObject<HTMLElement | null>, grid: RefObject<H
       const gapH = parseFloat(css.getPropertyValue('--glc-gap-h')) || 12;
       const gridTop = g.getBoundingClientRect().top + window.scrollY;
       const below = c.getBoundingClientRect().bottom - g.getBoundingClientRect().bottom; // the legend line
-      const avail = window.innerHeight - gridTop - below - 28 - axisH - gaps * gapH;
+      const avail = window.innerHeight - gridTop - below - 14 - axisH - gaps * gapH;
       setRowH(Math.max(ROW_MIN, Math.min(ROW_MAX, Math.floor(avail / rows))));
     };
     fit();
@@ -268,13 +272,13 @@ function Chart({
                     className={`glc-row glc-v-${verdictOf(r)}${on ? ' is-selected' : ''}`}
                     style={{ gridRow: start + i }}
                     aria-pressed={on}
-                    aria-label={`${r.discom.short_name}, ${r.discom.state}: ${formatInUnit(r.value, group.unit)}`}
+                    aria-label={`${r.discom.short_name}, ${r.discom.state}: ${formatInUnit(r.value, group.unit, r.benchmark)}`}
                     title={r.discom.full_name}
                     onClick={() => onSelect(k)}
                   >
                     <span className="glc-name">{r.discom.short_name}</span>
                     <span className="glc-fig">
-                      {formatInUnit(r.value, group.unit)}
+                      {formatInUnit(r.value, group.unit, r.benchmark)}
                       {r.note && <sup aria-label="has a note">*</sup>}
                     </span>
                     <span className="glc-plot">
@@ -343,7 +347,8 @@ function DetailCard({ row, group, year, onClose }: { row: GlanceRow; group: Glan
   const d = row.discom;
   const verdict = verdictOf(row);
   const reason = row.reasonNotComparable && row.reasonNotComparable !== 'N/A' ? row.reasonNotComparable : null;
-  const notes = [verdict === 'none' ? reason : null, row.benchmarkNote, row.note].filter(
+  const standard = row.standard && row.standard.trim() && !/^n\/?a\.?$/i.test(row.standard.trim()) ? row.standard.trim() : null;
+  const notes = [row.benchmarkNote, row.note].filter(
     Boolean,
   ) as string[];
 
@@ -390,22 +395,34 @@ function DetailCard({ row, group, year, onClose }: { row: GlanceRow; group: Glan
       </header>
 
       <p className="glc-card-value">
-        <b>{formatInUnit(row.value, group.unit)}</b>
+        <b>{formatInUnit(row.value, group.unit, row.benchmark)}</b>
         <span>
           {axisTitleForUnit(group.unit)} · {fyLabel(year)}
         </span>
       </p>
 
-      <dl className="glc-facts">
-        <div>
-          <dt>Benchmark</dt>
-          <dd>{row.benchmark != null ? formatInUnit(row.benchmark, group.unit) : 'N/A'}</dd>
+      {/* boxed facts: the standard, then the benchmark beside whether it was met; the reason only
+          where "Standard Met?" is N/A */}
+      <div className="glc-boxes">
+        <div className="glc-box glc-box--wide">
+          <span className="glc-box-label">Standard</span>
+          <p>{standard ?? 'N/A'}</p>
         </div>
-        <div>
-          <dt>Verdict</dt>
-          <dd>{verdict === 'none' ? 'N/A' : <span className={`mj-chip mj-chip--${verdict}`}>{verdict === 'met' ? 'Met' : 'Not met'}</span>}</dd>
+        <div className="glc-box">
+          <span className="glc-box-label">Benchmark</span>
+          <p className="glc-box-val">{row.benchmark != null ? formatInUnit(row.benchmark, group.unit) : 'N/A'}</p>
         </div>
-      </dl>
+        <div className="glc-box">
+          <span className="glc-box-label">Standard Met?</span>
+          <p className="glc-box-val">{verdict === 'none' ? 'N/A' : <span className={`mj-chip mj-chip--${verdict}`}>{verdict === 'met' ? 'Met' : 'Not met'}</span>}</p>
+        </div>
+        {verdict === 'none' && reason && (
+          <div className="glc-box glc-box--wide">
+            <span className="glc-box-label">Why standard met is N/A?</span>
+            <p>{reason}</p>
+          </div>
+        )}
+      </div>
 
       {notes.length > 0 && (
         <ul className="glc-notes">

@@ -4,9 +4,9 @@ import { useId } from 'react';
 import type { ReactNode } from 'react';
 
 interface Props {
-  /** the state/UT combobox (StateSearch) — the card's one input, shared by both modes */
+  /** the state/UT combobox (StateSearch), the card's one input, shared by both modes */
   renderSearch: (hintId: string) => ReactNode;
-  /** dot color per selected region — the same hue the map tints it with */
+  /** dot color per selected region, the same hue the map tints it with */
   colorOf: (name: string) => string | null;
   compareSet: string[];
   onRemove: (name: string) => void;
@@ -17,7 +17,7 @@ interface Props {
 }
 
 /** The home page's one map tool, "Explore the data". A View / Compare segmented control decides
- * what a pick does — from the search list or a map click alike: View opens that region's page,
+ * what a pick does, from the search list or a map click alike: View opens that region's page,
  * Compare adds/removes it from the comparison set. The chips + Compare footer exists only in
  * Compare mode (collapsed away in View so the card stays compact), and the selection survives
  * switching back to View so it's never lost by accident. */

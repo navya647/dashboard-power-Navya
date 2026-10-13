@@ -37,7 +37,7 @@
   text-align: right;
 }
 /* the native option-list popup doesn't reliably inherit color/background from the select itself
-   (Windows/Chromium in particular) — without this it falls back to a white popup with inherited
+   (Windows/Chromium in particular), without this it falls back to a white popup with inherited
    near-white dark-mode text, unreadable. Same fix already applied to .toolbar-field select. */
 .filter select option {
   color: var(--ink);

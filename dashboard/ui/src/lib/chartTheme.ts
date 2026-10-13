@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-/** Chart.js options are a plain JS object baked in at render time — unlike CSS, they can't pick up
+/** Chart.js options are a plain JS object baked in at render time, unlike CSS, they can't pick up
  * a `var(--chart-grid)` change live, so a hardcoded hex would go stale the moment the theme toggles
  * (ThemeToggle.tsx flips `data-theme` without a page reload). Reading the token via
  * `getComputedStyle` at render time, combined with `useThemeTick` forcing a re-render whenever

@@ -1,7 +1,7 @@
-/** Groups the SoP dataset's raw, never-normalized "Indicator Type" strings (see CLAUDE.md — the
+/** Groups the SoP dataset's raw, never-normalized "Indicator Type" strings (see CLAUDE.md, the
  * `type`/`indicator` fields on SopIndicator are lifted verbatim per-DISCOM, no cross-DISCOM
  * merging) into a coarser "Indicator Category" for the SoP gallery's top-level filter. This
- * mapping is a fixed classification the raw Indicator Type text is looked up against — it does
+ * mapping is a fixed classification the raw Indicator Type text is looked up against, it does
  * NOT touch or rewrite the underlying `type`/`indicator` values themselves (e.g. the workbook typo
  * "Cosumer complaints" stays exactly as extracted; only its category bucket is assigned here). Any
  * raw type not present in this map (an extraction artifact, or a sheet variant not yet classified)
@@ -19,7 +19,7 @@ export const SOP_CATEGORY_ORDER = [
   'Safety & Accidents',
 ] as const;
 
-/** Fallback bucket for a raw Indicator Type not present in SOP_TYPE_TO_CATEGORY below — kept last
+/** Fallback bucket for a raw Indicator Type not present in SOP_TYPE_TO_CATEGORY below, kept last
  * in any sorted category list, never blended into a "real" category. */
 export const OTHER_CATEGORY = 'Other';
 

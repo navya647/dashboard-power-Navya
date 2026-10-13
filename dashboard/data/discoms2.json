@@ -7645,7 +7645,7 @@
               "reported_meaning": "% of cases resolved within specified time/standard during the year.",
               "unit_note": null,
               "comparison_possible": true,
-              "standard_met": false,
+              "standard_met": true,
               "reason_not_comparable": "N/A"
             },
             "BILLING COMPLAINT RESOLUTION": {

@@ -26,8 +26,8 @@ function StatusIcon({ tone }: { tone: Tone }) {
 /** The indicator overview: name, category pill and plain-language definition, then the
  * regulatory standard beside the reported measure, the comparability status as one compact
  * callout, and the source regulation behind a disclosure. Every value and every status message is
- * the same one the previous "Regulatory Standards & Compliance" card showed — derived once in
- * lib/indicatorContext — only the layout differs. */
+ * the same one the previous "Regulatory Standards & Compliance" card showed, derived once in
+ * lib/indicatorContext, only the layout differs. */
 export default function IndicatorSummary({ title, category, type, meaning, unitSuffix, yAxisLabel, series, ctx }: Props) {
   const { perSeriesBench, benchDiverges, rawBenchmark, benchmarkMeaning, standardShared, standardDiverges, perSeriesStandard, reportedMeaning, sharedVerdict, sharedAdvisory, seriesVerdicts, perSeriesAdvisories } = ctx;
 
@@ -117,9 +117,9 @@ export default function IndicatorSummary({ title, category, type, meaning, unitS
                     ))
                   )
                 ) : (
-                  // every series agrees on the coarse verdict but disagrees on which years/why —
+                  // every series agrees on the coarse verdict but disagrees on which years/why,
                   // the per-DISCOM detail below says it precisely instead of one shared reason
-                  <div className="so-status-text">Details differ by DISCOM — see below.</div>
+                  <div className="so-status-text">Details differ by DISCOM, see below.</div>
                 )}
               </div>
             </div>
@@ -143,14 +143,14 @@ export default function IndicatorSummary({ title, category, type, meaning, unitS
                 {groupByText(series.map((s, i) => ({ label: s.label, value: seriesVerdicts[i] as string }))).map((g) => (
                   <div key={g.text} className="so-status-text">
                     <b>{formatGroupedLabel(g.labels)}: </b>
-                    {g.text === 'comparable' ? 'Comparable' : g.text === 'not-comparable' ? 'Not directly comparable — see below' : 'Assessment unavailable'}
+                    {g.text === 'comparable' ? 'Comparable' : g.text === 'not-comparable' ? 'Not directly comparable, see below' : 'Assessment unavailable'}
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* only when the comparability situation genuinely diverges between DISCOMs — when it's
+          {/* only when the comparability situation genuinely diverges between DISCOMs, when it's
               identical everywhere, the shared status above already said it once */}
           {perSeriesAdvisories.length > 0 && (
             <ul className="so-advisories">

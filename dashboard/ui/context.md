@@ -1,4 +1,4 @@
-# 3D grid map — working context
+# 3D grid map, working context
 
 ## History
 
@@ -6,22 +6,22 @@
    pylons standing upright, states still hoverable/selectable. Built as a CSS 3D transform
    (`rotateX` on the map plane + counter-rotating pylon billboards) on branch
    `feature/3d-hero-map`. Kept the existing flat SVG/d3-geo map, just tilted it in CSS.
-2. **This branch (`feature/webgl-grid-3d`)**: a much more ambitious, explicit spec — a real,
+2. **This branch (`feature/webgl-grid-3d`)**: a much more ambitious, explicit spec, a real,
    code-level 3D/isometric extruded India map (actual geometry with thickness, not a flattened
    SVG), real 3D pylon objects (steel lattice towers), real 3D transmission lines (tube geometry
    with emissive glow + animated flow particles), proper camera/lighting, all built with
    react-three-fiber. Explicitly: *"Do not use CSS transforms to fake the 3D extrusion... do not
    use a flat SVG with drop shadows as a substitute for 3D."* This supersedes the CSS-tilt
-   approach entirely — `HeroMap.tsx`/`TransmissionLayer.tsx` (the old flat-SVG map + pylon icons)
+   approach entirely, `HeroMap.tsx`/`TransmissionLayer.tsx` (the old flat-SVG map + pylon icons)
    are deleted on this branch, replaced by `GridExplorer3D.tsx` and `src/components/three/*`.
 
 ## Rollback (single command per target)
 
-Three states exist as separate branches/commits — pick whichever you want to return to:
+Three states exist as separate branches/commits, pick whichever you want to return to:
 
-- **Original flat 2D map** (no 3D at all): `git checkout master` — baseline commit `ab80877`.
+- **Original flat 2D map** (no 3D at all): `git checkout master`, baseline commit `ab80877`.
 - **CSS-tilt 3D map** (flat SVG map that tilts via `rotateX` on scroll, pylons as CSS
-  counter-rotating billboards): `git checkout feature/3d-hero-map` — commit `9c86754`.
+  counter-rotating billboards): `git checkout feature/3d-hero-map`, commit `9c86754`.
 - **Real WebGL 3D map** (this branch, react-three-fiber, extruded geometry): stay on
   `feature/webgl-grid-3d`.
 
@@ -30,7 +30,7 @@ branches: `git checkout master`.
 
 ## Decision: react-three-fiber / Three.js, not CSS
 
-Already justified in the original ask (see History above) — the spec explicitly required actual
+Already justified in the original ask (see History above), the spec explicitly required actual
 3D geometry (extrusion, real pylon/line objects, a real camera), which CSS transforms on flat
 SVG cannot produce. Added dependencies: `three`, `@react-three/fiber`, `@react-three/drei`,
 `@types/three`.
@@ -38,40 +38,40 @@ SVG cannot produce. Added dependencies: `three`, `@react-three/fiber`, `@react-t
 ## Architecture
 
 ```
-GridExplorer3D.tsx                  — <Canvas> + tooltip (drei <Html>) + screen-projection glue
- ├── three/GridCamera.tsx           — points the default camera at a fixed look-at target (no orbit)
- ├── three/GridLighting.tsx         — ambient + key (upper-left) + rim lights, no bloom/point lights
- ├── three/IndiaMap3D.tsx           — one <StateMesh> per state feature, owns hover/dim state
- │    └── three/StateMesh.tsx       — extruded solid (top cap = data color, sides = shared
+GridExplorer3D.tsx                 , <Canvas> + tooltip (drei <Html>) + screen-projection glue
+ ├── three/GridCamera.tsx          , points the default camera at a fixed look-at target (no orbit)
+ ├── three/GridLighting.tsx        , ambient + key (upper-left) + rim lights, no bloom/point lights
+ ├── three/IndiaMap3D.tsx          , one <StateMesh> per state feature, owns hover/dim state
+ │    └── three/StateMesh.tsx      , extruded solid (top cap = data color, sides = shared
  │                                     structural material) + edge outline
- ├── three/TransmissionNetwork.tsx  — resolves GRID_NODES/GRID_CONNECTIONS (src/lib/grid3d.ts)
+ ├── three/TransmissionNetwork.tsx , resolves GRID_NODES/GRID_CONNECTIONS (src/lib/grid3d.ts)
  │    │                               against real state centroids, renders pylons + lines
- │    ├── three/TransmissionPylon.tsx — procedural steel lattice tower (real 3D geometry)
- │    └── three/TransmissionLine.tsx  — CatmullRom curve → core tube + glow tube + flow particle
-lib/geo3d.ts                        — GeoJSON → per-state THREE.ExtrudeGeometry + edges + centroid
-lib/grid3d.ts                       — grid node/connection DATA (state name, region, flow, status)
+ │    ├── three/TransmissionPylon.tsx, procedural steel lattice tower (real 3D geometry)
+ │    └── three/TransmissionLine.tsx , CatmullRom curve → core tube + glow tube + flow particle
+lib/geo3d.ts                       , GeoJSON → per-state THREE.ExtrudeGeometry + edges + centroid
+lib/grid3d.ts                      , grid node/connection DATA (state name, region, flow, status)
 ```
 
 `GridExplorer3D` keeps the **exact same prop contract** the old `HeroMap` had (`discoms`,
-`geojson`, `year`, `compareColorOf`, `onStateClick`, `revealedRef`, `onCentroids`) — so
+`geojson`, `year`, `compareColorOf`, `onStateClick`, `revealedRef`, `onCentroids`), so
 `HeroSection.tsx`'s scroll rig, click-popup positioning (`handleStateClick`), and everything else
 in the dashboard (compare mode, `StatePopup`, sidebar) needed **zero changes**. `onCentroids` now
 reports real camera-projected screen coordinates (via a small `ScreenProjector` component using
-`useThree()` + `Vector3.project()`) instead of a flat d3 projection — this is actually *more*
+`useThree()` + `Vector3.project()`) instead of a flat d3 projection, this is actually *more*
 correct than the old flat map for popup positioning, not a regression.
 
 ### Axis mapping (geo3d.ts)
 
 The projected map is centered at the local origin, then rotated so `+Z` (extrusion depth)
 becomes world `+Y` (up). After that: **world `+Z` = north, world `+X` = west** (x is negated
-during projection — see the comment in `geo3d.ts`; this was found empirically, not derived, by
+during projection, see the comment in `geo3d.ts`; this was found empirically, not derived, by
 color-marking Jammu & Kashmir/Kerala/Assam and checking where they actually rendered). Pylon/line
 positions come from `topCentroid` on each state's `StateGeometryEntry`, resolved dynamically from
-real geometry — nothing is hardcoded in screen space.
+real geometry, nothing is hardcoded in screen space.
 
 ### Grid network data (grid3d.ts)
 
-Two independent regional clusters, not a national mesh — matches the brief's "2-4 pylons north,
+Two independent regional clusters, not a national mesh, matches the brief's "2-4 pylons north,
 2-3 northeast, not randomly scattered": North = Himachal Pradesh, Haryana, Jammu & Kashmir,
 Rajasthan (4 nodes); Northeast = Assam, Meghalaya, Tripura (3 nodes). `GRID_CONNECTIONS` carries
 mock `flow`/`status` fields already shaped for real grid data later.
@@ -79,21 +79,21 @@ mock `flow`/`status` fields already shaped for real grid data later.
 ## Bugs found and fixed during verification (all caught by actually screenshotting the running
 app, not by reading the code)
 
-1. **East/West mirrored.** Initial render was recognizably India-shaped but rotated wrong —
+1. **East/West mirrored.** Initial render was recognizably India-shaped but rotated wrong,
    confirmed by temporarily forcing Jammu & Kashmir/Kerala/Assam to distinct debug colors and
-   checking where they actually landed. Assam (east) was rendering left of J&K (northwest) —
+   checking where they actually landed. Assam (east) was rendering left of J&K (northwest),
    backwards. Fixed by negating X in `geo3d.ts`'s `project()` and `topCentroid` calculation.
 2. **Panning via look-at target only, not a real pan.** Tried to shift the composition left (to
    clear the right-docked control panel) by moving only the camera's `lookAt` target. This
    re-aims the camera (changes viewing angle) rather than translating the view, and produced
    inconsistent, hard-to-predict shifts. Fixed by panning camera position and target together by
-   the same delta (`PAN_X` in `GridExplorer3D.tsx`) — a true translation.
+   the same delta (`PAN_X` in `GridExplorer3D.tsx`), a true translation.
 3. **Pylon hit-target too thin to reliably hover/click.** The invisible hit-cylinder around each
-   pylon (radius ~0.09-0.13 world units) was too small at the final camera distance/FOV — testing
+   pylon (radius ~0.09-0.13 world units) was too small at the final camera distance/FOV, testing
    hover kept landing on the state mesh underneath instead. Widened to 0.16-0.22. This matters
    for real users too, not just automated testing, at this zoom level.
 4. **ESLint `react-hooks/immutability` / `react-hooks/refs`.** Mutating a `useMemo`'d Three.js
-   material's properties on hover (the standard R3F pattern — mutate scene-graph objects in
+   material's properties on hover (the standard R3F pattern, mutate scene-graph objects in
    place rather than reallocate) trips the newer React-Compiler-oriented lint rules bundled with
    Next 16. Tried moving the mutation into `useEffect` (still flagged) and switching to
    lazily-initialized `useRef` (flagged by a *different* rule, "no ref access during render").
@@ -105,48 +105,48 @@ app, not by reading the code)
 ## Round 2: scroll-driven camera transition + reference-image polish
 
 The user's actual intent turned out to be: land on something that reads as the *old flat 2D
-chart*, then morph into the isometric 3D scene on scroll — not "always-3D, just docked small at
+chart*, then morph into the isometric 3D scene on scroll, not "always-3D, just docked small at
 landing" (what round 1 built). They also pasted a reference render (bold chunky lattice towers,
 brighter glowing lines/bases, a compass rose + legend) and said the pylons/lines "look stupid" by
 comparison.
 
 **Camera now animates between two full poses, not just a look-at target:**
-`GridCamera.tsx` takes `{scrollRef, from, to}` and every frame (`useFrame`, not React state — see
+`GridCamera.tsx` takes `{scrollRef, from, to}` and every frame (`useFrame`, not React state, see
 below) lerps position, look-at target, and FOV between them using `scrollRef.current.p`, the same
 eased scroll fraction `HeroSection`'s existing rAF loop already computes. `scrollRef` is a plain
-mutable ref (`{p: number}`), NOT React state — routing a value that updates ~60x/sec through
+mutable ref (`{p: number}`), NOT React state, routing a value that updates ~60x/sec through
 `useState`/props would re-render the whole scene every frame for nothing; the camera reads it
 imperatively instead, same as any other per-frame Three.js mutation in this codebase.
 
 - **Landing pose** (`CAMERA_TOP_DOWN`): near-overhead, narrow-ish FOV, panned toward
-  `PAN_X_LANDING` — reads as a flat 2D chart, docked toward the right of the frame exactly like
+  `PAN_X_LANDING`, reads as a flat 2D chart, docked toward the right of the frame exactly like
   the old flat-SVG map was (clear of the header text on the left).
 - **Fully-scrolled pose** (`CAMERA_ISO`): the isometric view, panned toward `PAN_X` to clear the
   right-docked control panel.
 
 **Visual polish pass**, chasing the reference image:
 - `grid3d.ts`: added a 5th north node (Punjab) and changed the north cluster from a chain/dense
-  mesh to a **closed loop** (each node has exactly 2 neighbors, zero crossing lines) — a
+  mesh to a **closed loop** (each node has exactly 2 neighbors, zero crossing lines), a
   triangulated mesh among 5 close-together nodes read as a tangled spiderweb, especially from the
   near-top-down landing camera; a loop reads as clearly "connected network" with no visual mess.
 - `TransmissionPylon.tsx`: scaled up substantially (tower height 0.85 → 1.4, all radii ~1.6-1.7x)
-  — the first pass was technically fine but read as thin dark spikes at normal viewing distance.
+ , the first pass was technically fine but read as thin dark spikes at normal viewing distance.
   Added a bright solid amber "plinth" (flattened octahedron) at the base, on top of the existing
   soft glow halo, plus a third crossarm level and more diagonal bracing for a denser lattice
   silhouette.
 - `TransmissionLine.tsx`: brighter/thicker core and glow tubes, warmer amber color, bigger flow
   particle.
 - Added `.grid3d-chrome` (compass rose + legend) to `HeroSection.tsx`/`hero.css`, bottom-left
-  (kept off the right side entirely — the control panel already docks there), fading in with the
+  (kept off the right side entirely, the control panel already docks there), fading in with the
   existing reveal layer for free (no new scroll wiring needed).
 
 **Composition had to be re-tuned from round 1's values** because (a) bigger pylons need more
 lateral clearance from the control panel, and (b) fixing the canvas-sizing bug below changed the
-effective zoom. Current values, arrived at the same way as before — scroll to the target scroll
+effective zoom. Current values, arrived at the same way as before, scroll to the target scroll
 state, screenshot, adjust:
 - Landing: `CAMERA_TOP_DOWN = { position: [PAN_X_LANDING, 24, 0.05], target: [PAN_X_LANDING, 0, 0.15], fov: 32 }`, `PAN_X_LANDING = 2.6`.
 - Fully-scrolled: `CAMERA_ISO = { position: [PAN_X + 2.3, 6.7, -7.5], target: [PAN_X, 0.15, 0.25], fov: 70 }`, `PAN_X = 1.9`.
-- The northeast cluster still sits close to the control panel's edge at full scroll — same
+- The northeast cluster still sits close to the control panel's edge at full scroll, same
   structural tension as round 1 (total angular width at a size that reads well vs. available
   clear width), just re-balanced after the pylon scale-up. Re-tune `PAN_X`/`fov` together if this
   needs revisiting: panning alone shifts the tension between the two edges without fixing it;
@@ -155,38 +155,38 @@ state, screenshot, adjust:
 ### Bug: canvas size gets stuck when its container has an animated CSS transform
 
 `HeroSection.tsx` used to apply `transform: scale(lerp(0.8, 1, p))` to `.hero-map-backdrop` (the
-canvas's ancestor) every frame via direct style mutation — a leftover from the old flat-map
+canvas's ancestor) every frame via direct style mutation, a leftover from the old flat-map
 "docked small, grows on scroll" effect. This actively breaks react-three-fiber's canvas sizing:
 the canvas measures its container once and doesn't re-measure just because an ancestor's
 transform changed (transforms don't change layout/content-box size, so nothing tells the resize
-observer to re-fire) — so the canvas gets stuck at whatever scale was in effect the last time it
+observer to re-fire), so the canvas gets stuck at whatever scale was in effect the last time it
 happened to measure, then visibly fails to fill its container as the scale animates toward 1,
 leaving an uncovered gap. Caught by scripting an instant scroll to a mid-transition position and
 noticing a stray light/white rectangle in that gap; confirmed via
 `canvas.getBoundingClientRect()` showing a smaller-than-expected box. Fixed by removing the CSS
-transform entirely — the camera's own landing-vs-isometric pose already carries that "docked
+transform entirely, the camera's own landing-vs-isometric pose already carries that "docked
 small, grows" effect now, so the CSS scale was redundant on top of being actively harmful. (A
 follow-up instant-scroll test appeared to show a *different* stray white rectangle at another mid
 scroll position even after this fix; a realistic incremental `mouse.wheel()` scroll through the
 same range rendered cleanly throughout, so that appears to be a Playwright instant-`scrollTo`
-artifact — real/continuous scrolling doesn't hit it — not a real bug. Worth a second look if a
+artifact, real/continuous scrolling doesn't hit it, not a real bug. Worth a second look if a
 real user ever reports seeing a flash while scrolling, but not chased further here.)
 
 ## Known follow-ups / not done
 
-- No real-time shadow mapping (`castShadow`/`receiveShadow` + configured shadow camera) — skipped
+- No real-time shadow mapping (`castShadow`/`receiveShadow` + configured shadow camera), skipped
   to avoid tuning risk on the first pass; the lighting/material contrast alone already sells the
   "raised 3D platform" look reasonably well. Contact shadows or a real shadow map would be a
   natural next polish pass.
-- No orbit controls — camera is intentionally fixed per the brief ("stable... not a game
+- No orbit controls, camera is intentionally fixed per the brief ("stable... not a game
   camera").
 - Pylon `onSelect` is wired but `TransmissionNetwork` doesn't pass a handler yet (clicking a
-  pylon currently no-ops safely rather than doing anything) — spec called this optional.
+  pylon currently no-ops safely rather than doing anything), spec called this optional.
 - Tilt/extrusion/lighting constants (`EXTRUDE_HEIGHT`, tower proportions, light angles/intensities)
-  are first-pass values tuned by eye against the actual render, not derived from a formula — fine
+  are first-pass values tuned by eye against the actual render, not derived from a formula, fine
   to keep adjusting the same way (screenshot, tweak, re-screenshot).
 - The northeast cluster's clearance from the control panel is a tight fit tuned by eye (see
-  Round 2 composition notes above), not a robust/responsive layout calculation — will need
+  Round 2 composition notes above), not a robust/responsive layout calculation, will need
   re-tuning if the panel or viewport assumptions change materially.
 
 ## Progress log
@@ -204,28 +204,28 @@ real user ever reports seeing a flash while scrolling, but not chased further he
   reference image, compass+legend chrome, found and fixed the CSS-transform-vs-canvas-sizing bug
   above, re-tuned composition for the bigger pylons, re-verified with both scripted and simulated
   real-scroll Playwright checks, confirmed a clean `next build`.
-- 2026-08-13 (round 3): Composition/color feedback — map felt small and off-center, pylons were
+- 2026-08-13 (round 3): Composition/color feedback, map felt small and off-center, pylons were
   dark and clustered into two congested corners. Changes:
   - `grid3d.ts`: replaced the two regional clusters (8 nodes crammed into the north + northeast
     corners) with one node per state dispersed across the whole country as a single backbone tree
     (J&K → Punjab → Rajasthan → Maharashtra → Karnataka → Tamil Nadu, plus a Rajasthan → West
-    Bengal → Assam branch) — zero crossing lines, no congestion, reads as a real national grid
+    Bengal → Assam branch), zero crossing lines, no congestion, reads as a real national grid
     rather than two dense knots. `GridNode.region` widened from `'north'|'northeast'` to
     `'north'|'west'|'south'|'east'|'northeast'`; `TransmissionNetwork.tsx` labels tooltips off a
     `REGION_LABEL` map instead of a hardcoded ternary.
   - `TransmissionPylon.tsx`: `STEEL`/`STEEL_DARK` recolored from dark gunmetal (#2c3239/#1d2127)
-    to bright white/light chrome (#f1f4f8/#c7ceda) — towers were nearly disappearing into the dark
+    to bright white/light chrome (#f1f4f8/#c7ceda), towers were nearly disappearing into the dark
     navy background before.
   - `GridLighting.tsx`: all intensities raised (ambient 0.6→0.82, key 1.05→1.4, rim 0.22→0.36,
     hemisphere 0.32→0.45) for an overall brighter scene.
   - `StateMesh.tsx`: side-wall material recolored from flat dark navy (#212e3c) to a richer
     teal-blue (#2f6b8c) with a bit more shine; top-surface fill gets an unconditional ×1.15
     brighten on top of the existing hover/dim multipliers. Deliberately scoped to the 3D scene's
-    own materials, not the shared `MAP_STATUS`/`CATEGORICAL` tokens in `lib/colors.ts` — those
+    own materials, not the shared `MAP_STATUS`/`CATEGORICAL` tokens in `lib/colors.ts`, those
     feed the 2D report/legend/comparison chips elsewhere in the app and changing them would have
     a much wider, likely unintended blast radius.
   - `GridExplorer3D.tsx`: `PAN_X` (the isometric pose's rightward pan clearing the control panel)
-    cut from 1.9 to 0.9, and `CAMERA_ISO.fov` cut from 70 to 54 (zoom in) — now that pylons aren't
+    cut from 1.9 to 0.9, and `CAMERA_ISO.fov` cut from 70 to 54 (zoom in), now that pylons aren't
     clustered on one side anymore, the composition needed far less panning to stay clear of the
     panel, which freed up room to zoom in and recenter. Re-verified both landing and fully-scrolled
     states plus hover on the new node layout; confirmed a clean `next build`.

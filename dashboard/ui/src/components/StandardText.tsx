@@ -7,12 +7,12 @@ function truncated(text: string, max = 130): { short: string; needsMore: boolean
   return { short: text.slice(0, max).trimEnd() + '…', needsMore: true };
 }
 
-/** The Regulatory Standard column's own qualitative-text presentation — truncated with a
+/** The Regulatory Standard column's own qualitative-text presentation, truncated with a
  * view-more toggle for a long, multi-condition standard. No separate label/"·" separator (unlike
  * the metadata lenses this replaced), since the column already carries a "Regulatory Standard"
  * heading of its own; repeating a label here would say the same
  * thing twice. `groupLabel`, when given (a DISCOM/jurisdiction name or group), reads as its own
- * small heading above the text — used only when different DISCOMs on one card have genuinely
+ * small heading above the text, used only when different DISCOMs on one card have genuinely
  * different standards specified and each needs attributing to whom it applies. */
 export default function StandardText({ text, groupLabel, size = 'lg' }: { text: string; groupLabel?: string; size?: 'lg' | 'sm' }) {
   const [expanded, setExpanded] = useState(false);

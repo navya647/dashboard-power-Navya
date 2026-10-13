@@ -1,5 +1,5 @@
 /* ---------- State overview (StateDetail) and Detailed Data (DetailedDataPage) ----------
-   Built only on the shared chrome tokens (tokens.css — the map view's surface family), so both
+   Built only on the shared chrome tokens (tokens.css, the map view's surface family), so both
    pages read as the same system as the map in light and dark mode: content sits on the page
    background, with one --panel surface per major block (indicator context, trend) rather than
    cards nested in cards. Blue (--accent) is reserved for interactive emphasis. Prefix: so- / dd-. */
@@ -322,7 +322,7 @@
   font-style: italic;
 }
 
-/* comparability status — a compact, informative callout: tinted surface + small icon, no slab */
+/* comparability status, a compact, informative callout: tinted surface + small icon, no slab */
 .so-status {
   display: flex;
   align-items: flex-start;
@@ -398,7 +398,7 @@
   color: var(--muted);
 }
 
-/* source regulation disclosure — the context panel's footer row */
+/* source regulation disclosure, the context panel's footer row */
 .so-source {
   grid-column: 1 / -1;
   border-top: 1px solid var(--line);

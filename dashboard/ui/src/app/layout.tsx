@@ -3,7 +3,6 @@ import { DataProvider } from '@/lib/DataContext';
 import Sidebar from '@/components/Sidebar';
 import PageLogo from '@/components/PageLogo';
 import PageBackdrop from '@/components/PageBackdrop';
-import OnboardingTour from '@/components/OnboardingTour';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -12,7 +11,7 @@ export const metadata: Metadata = {
     'Understanding how electricity distribution companies in India perform with respect to the Standards of Performance specified by their respective State Electricity Regulatory Commissions (SERCs), and assessing comparative performance among states.',
 };
 
-// Sets data-theme on <html> before first paint — a plain synchronous inline script (not an
+// Sets data-theme on <html> before first paint, a plain synchronous inline script (not an
 // effect) is the only way to avoid a flash of the wrong theme on load in a statically exported
 // app with no per-request server render to inject it during.
 // Dark is the default. The storage key is versioned ('-v2'): moving it reset everyone's old saved
@@ -48,7 +47,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               {children}
             </main>
           </div>
-          <OnboardingTour />
         </DataProvider>
       </body>
     </html>

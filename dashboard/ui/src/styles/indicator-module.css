@@ -1,4 +1,4 @@
-/* ---- Indicator module (IndicatorModule.tsx) — one per selected indicator on the state page.
+/* ---- Indicator module (IndicatorModule.tsx), one per selected indicator on the state page.
    Header (category label | download; name + unit | DISCOM keys) over two columns: a quiet side
    column with the standard in force and the source documents (the Accessibility page's acm-*
    markup, see SourceDocuments.tsx), and the trend chart taking the width. ---- */
@@ -183,7 +183,7 @@
   transform: none;
 }
 
-/* DISCOM keys — the line colours; click to hide/show a line */
+/* DISCOM keys, the line colours; click to hide/show a line */
 .im-keys {
   grid-area: keys;
   align-self: end;
@@ -366,7 +366,7 @@
   border-radius: 10px;
 }
 
-/* legend, then notes — one quiet band under the chart */
+/* legend, then notes, one quiet band under the chart */
 .im-foot {
   display: flex;
   flex-direction: column;
@@ -578,4 +578,12 @@
     grid-template-columns: minmax(0, 1fr);
     gap: 0;
   }
+}
+
+/* one line per reporting basis in the definition pop-up's "Reported as" / "Interpretation" */
+.idef-line {
+  display: block;
+}
+.idef-line + .idef-line {
+  margin-top: 6px;
 }

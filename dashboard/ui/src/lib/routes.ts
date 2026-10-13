@@ -1,7 +1,7 @@
 /**
  * The home page hosts two frames on one route: the landing hero (`/`) and the map explorer
- * (`/?view=map`). The query param is the source of truth for which one is showing — HeroSection
- * reads it on load and keeps it in sync as the visitor moves between them — so a refresh stays on
+ * (`/?view=map`). The query param is the source of truth for which one is showing, HeroSection
+ * reads it on load and keeps it in sync as the visitor moves between them, so a refresh stays on
  * the map, and every "back to the map" control can link straight to it.
  *
  * MAP_HREF is the one canonical destination for all of them (sidebar Home, Back to Home, Explore

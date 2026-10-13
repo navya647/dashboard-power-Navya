@@ -11,7 +11,7 @@
 }
 
 /* .chart-grid (panels.css, shared with every other card gallery on the site) uses
-   `repeat(auto-fit, minmax(440px, 1fr))` — when a filtered view leaves only one or two cards in a
+   `repeat(auto-fit, minmax(440px, 1fr))`, when a filtered view leaves only one or two cards in a
    row, that `1fr` stretches each card to fill whatever's left of a wide desktop viewport, which is
    what made the chart/metadata/matrix all read as spread unnecessarily far apart. Capped here, at
    the card itself, rather than in .chart-grid: that class is shared by every gallery on the site,
@@ -58,11 +58,11 @@
 }
 
 /* ---- Regulatory Standard / Reported Measure: a two-column layout, not a row of same-weight
-   metadata tiles — the standard column is the section's primary focal point (larger numeral,
+   metadata tiles, the standard column is the section's primary focal point (larger numeral,
    stronger color), the measure column is deliberately quieter/secondary. A soft background tint
    (not a border) tells the two apart from each other and from the surrounding card, so the section
    reads as one cohesive strip rather than nested bordered boxes. Balanced 1fr/1fr on desktop, one
-   column on mobile (see the media query at the end of this file) — neither ever looks stretched
+   column on mobile (see the media query at the end of this file), neither ever looks stretched
    since both are already capped by .visual-card's own 1300px max-width. */
 .compliance-columns {
   display: grid;
@@ -86,7 +86,7 @@
   text-transform: uppercase;
   color: var(--muted);
 }
-/* the regulatory standard's own numeral is the section's single most emphasized value — bigger and
+/* the regulatory standard's own numeral is the section's single most emphasized value, bigger and
    bolder than anything else in this card besides the indicator name itself. */
 .reg-standard-value {
   font-family: var(--font-condensed);
@@ -157,10 +157,10 @@
   text-decoration: underline;
 }
 
-/* ---- Comparability assessment: a single, restrained strip beneath the two columns above — its
+/* ---- Comparability assessment: a single, restrained strip beneath the two columns above, its
    own quiet color per verdict (never louder than the standard/measure it's assessing), a short
    heading, then the explanation. Distinct from `standardMet` (an actual per-year compliance
-   result, shown in the year-wise matrix instead — comparability and compliance are never
+   result, shown in the year-wise matrix instead, comparability and compliance are never
    conflated here). ---- */
 .compliance-strip {
   display: flex;
@@ -203,7 +203,7 @@
 }
 
 /* ---- the chart is the dominant object: taller, quieter gridlines, generous breathing room. A
-   fixed height here (rather than an aspect-ratio) is deliberate — width is now bounded by
+   fixed height here (rather than an aspect-ratio) is deliberate, width is now bounded by
    .visual-card's own max-width above, so a fixed height gives a predictable, still-substantial
    ratio instead of ballooning taller on a narrower column. ---- */
 .visual-card-chart {
@@ -212,7 +212,7 @@
 }
 
 /* ---- Year-wise reported values: one shared matrix (real <table>) instead of one repeated,
-   full-width "rail" per DISCOM — a single header row of fiscal years aligns every DISCOM's values
+   full-width "rail" per DISCOM, a single header row of fiscal years aligns every DISCOM's values
    under the same columns, and each DISCOM is one compact row instead of its own block. ---- */
 .indicator-matrix-head {
   display: flex;
@@ -238,7 +238,7 @@
 .indicator-matrix-wrap {
   overflow-x: auto;
 }
-/* Deliberately not width:100% — stretching to fill the (now-capped, but still often wider than a
+/* Deliberately not width:100%, stretching to fill the (now-capped, but still often wider than a
    handful of year columns need) card would just recreate the "spread too far apart" problem one
    level down. Sized to its own content instead, left-aligned like everything else in the card, so
    a 4-year indicator reads as a compact matrix rather than 4 columns stretched across 1300px. */
@@ -351,12 +351,12 @@
   font-weight: 500;
 }
 
-/* ---- year-on-year assessment — a small colored chip pinned to a cell's top-right corner, out of
+/* ---- year-on-year assessment, a small colored chip pinned to a cell's top-right corner, out of
    the value/status stack's flow entirely so it reads as an annotation on the cell rather than
    another row competing with the compliance pill underneath it. Color carries the
    improved/declined/no-change/not-assessable classification; the arrow glyph itself always
    reflects the raw numerical movement (curr vs. prev), so a lower_is_better indicator that fell
-   still shows a down arrow even though that's an improvement — see lib/trend.ts. */
+   still shows a down arrow even though that's an improvement, see lib/trend.ts. */
 .matrix-cell-yoy {
   position: absolute;
   top: 2px;
@@ -391,7 +391,7 @@
 }
 
 /* ---- per-DISCOM exceptions kept ONLY when they genuinely diverge from each other (see
-   comparabilityMessage/comparabilitySignature) — a footnote-weight warning, still clearly
+   comparabilityMessage/comparabilitySignature), a footnote-weight warning, still clearly
    distinguishable per DISCOM via its own label, never a box louder than the chart. ---- */
 .series-exception {
   display: flex;
@@ -425,7 +425,7 @@
   font-weight: 600;
 }
 
-/* ---- regulatory sources: visually secondary to the analysis above it — smaller, muted, set off
+/* ---- regulatory sources: visually secondary to the analysis above it, smaller, muted, set off
    by a hairline divider rather than another panel. ---- */
 .visual-card-sources {
   display: flex;
@@ -552,7 +552,7 @@
   margin: -8px 0 14px;
 }
 /* stays reachable while scrolling through the (possibly long) list of DISCOM accordions below it
-   — sticks to the top of the viewport, then scrolls away normally once the Complete Data band
+  , sticks to the top of the viewport, then scrolls away normally once the Complete Data band
    itself ends, rather than floating over unrelated sections of the page. */
 .complete-data-toggle-sticky {
   position: sticky;

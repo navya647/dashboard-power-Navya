@@ -2,7 +2,7 @@ import { fyLabel } from './format';
 import { allSame } from './evidenceStatus';
 
 /** Pure regulatory-context derivations for one indicator's set of series (one per DISCOM, or on the
- * Compare page one per jurisdiction) — benchmark, standard, reported measure, comparability and
+ * Compare page one per jurisdiction), benchmark, standard, reported measure, comparability and
  * source-regulation grouping. Lifted out of IndicatorVisualCard unchanged so the Compare page's card
  * and the State page's indicator summary / trend chart all read the exact same logic rather than
  * each re-deriving it. Nothing here computes a score; every value is lifted from the source rows. */
@@ -31,7 +31,7 @@ export interface CardSeries {
   points: CardPoint[];
   /** the series' own source definition of the indicator (its sheet's "Indicator meaning") */
   meaning?: string | null;
-  /** a frameworks-only state's notified SoP indicator — no per-year reported records */
+  /** a frameworks-only state's notified SoP indicator, no per-year reported records */
   isFramework?: boolean;
   /** which workbook sheet this series was extracted from, when the extraction recorded one */
   source?: { workbook: string; sheet: string | null };
@@ -45,7 +45,7 @@ export interface SeriesBenchmark {
 }
 
 /** State Electricity Regulatory Commission short names, keyed by the exact state name used
- * throughout this codebase (discoms2.json's state_order) — the standard abbreviation each
+ * throughout this codebase (discoms2.json's state_order), the standard abbreviation each
  * commission itself uses, cross-checked against the actual `regulation` citation text each state's
  * source rows carry (e.g. Rajasthan's own citations already read "RERC ("). Not a derived/invented
  * value: every entry names a real, public regulatory body, used only to label an existing
@@ -66,7 +66,7 @@ const STATE_REGULATOR_ABBR: Record<string, string> = {
 };
 
 /** Matches a state's name (or, for Odisha, its source data's older spelling "Orissa") against a
- * point's own regulation citation text — never guesses a regulator for a row that doesn't
+ * point's own regulation citation text, never guesses a regulator for a row that doesn't
  * literally name one. */
 export function regulatorFromRegulationText(text: string | null): string | null {
   if (!text) return null;
@@ -80,7 +80,7 @@ export function regulatorFromRegulationText(text: string | null): string | null 
 }
 
 /** Most-frequent numeric benchmark among a single series' points that are actually marked
- * comparable — never draws a reference line from a benchmark the sheet itself said couldn't be
+ * comparable, never draws a reference line from a benchmark the sheet itself said couldn't be
  * compared to what's plotted. Scoped to one series (one DISCOM, or on the Compare page one
  * jurisdiction) so a card spanning several can tell whether they genuinely share one benchmark or
  * not, rather than silently pooling every series' benchmarks into one popular-vote number. */
@@ -122,7 +122,7 @@ export function firstNonNull<T>(series: CardSeries[], pick: (p: CardPoint) => T 
 }
 
 /** Groups per-series values that read identically (e.g. every DISCOM of one state sharing the
- * same regulator-specified standard text) into one entry — so a divergent-standard card shows one
+ * same regulator-specified standard text) into one entry, so a divergent-standard card shows one
  * lens per distinct standard actually in play, not one per series repeating the same text. */
 export function groupByText(items: { label: string; value: string | null }[]): { text: string; labels: string[] }[] {
   const order: string[] = [];
@@ -138,15 +138,15 @@ export function groupByText(items: { label: string; value: string | null }[]): {
   return order.map((text) => ({ text, labels: byText.get(text)! }));
 }
 
-/** Compare page series labels read `DISCOM — State` (see `buildMultiDiscomAtoms`) — this collapses
- * a list of them sharing one lens down to `DISCOM1, DISCOM2 — State` instead of repeating the same
- * state name after every DISCOM, only splitting into several `— State` groups when the labels
+/** Compare page series labels read `DISCOM, State` (see `buildMultiDiscomAtoms`), this collapses
+ * a list of them sharing one lens down to `DISCOM1, DISCOM2, State` instead of repeating the same
+ * state name after every DISCOM, only splitting into several `, State` groups when the labels
  * genuinely span more than one state. */
 export function formatGroupedLabel(labels: string[]): string {
   const order: string[] = [];
   const byState = new Map<string, string[]>();
   for (const l of labels) {
-    const sep = l.lastIndexOf(' — ');
+    const sep = l.lastIndexOf(', ');
     const discom = sep === -1 ? l : l.slice(0, sep);
     const state = sep === -1 ? '' : l.slice(sep + 3);
     if (!byState.has(state)) {
@@ -155,7 +155,7 @@ export function formatGroupedLabel(labels: string[]): string {
     }
     byState.get(state)!.push(discom);
   }
-  return order.map((state) => (state ? `${byState.get(state)!.join(', ')} — ${state}` : byState.get(state)!.join(', '))).join('; ');
+  return order.map((state) => (state ? `${byState.get(state)!.join(', ')}, ${state}` : byState.get(state)!.join(', '))).join('; ');
 }
 
 export interface ComparabilityMessage {
@@ -165,9 +165,9 @@ export interface ComparabilityMessage {
 }
 
 /** Exactly the same "which years, which reason(s)" computation the not-comparable callout always
- * used — factored out so it can run once (for a shared advisory, when every series happens to
+ * used, factored out so it can run once (for a shared advisory, when every series happens to
  * agree) or once per series (when they don't), without duplicating the logic itself. Never changes
- * what counts as not-comparable or what reason is shown — purely a presentation-layer reuse. */
+ * what counts as not-comparable or what reason is shown, purely a presentation-layer reuse. */
 export function comparabilityMessage(s: CardSeries): ComparabilityMessage | null {
   const notComparablePts = s.points.filter((p) => p.comparisonPossible === false);
   if (!notComparablePts.length) return null;
@@ -193,7 +193,7 @@ export function comparabilityMessage(s: CardSeries): ComparabilityMessage | null
 }
 
 /** A signature that's identical for two series only when they're not-comparable in exactly the
- * same years for exactly the same reason(s) — used to detect whether every DISCOM on this card
+ * same years for exactly the same reason(s), used to detect whether every DISCOM on this card
  * shares one comparability situation (worth saying once) or genuinely differs (worth keeping
  * distinct, per-DISCOM). Never itself changes the comparability classification. */
 function comparabilitySignature(s: CardSeries): string {
@@ -206,11 +206,11 @@ function comparabilitySignature(s: CardSeries): string {
 
 export type ComparabilityVerdict = 'comparable' | 'not-comparable' | 'unavailable';
 
-/** The coarse, indicator-level comparability verdict — distinct from `comparabilityMessage`'s
+/** The coarse, indicator-level comparability verdict, distinct from `comparabilityMessage`'s
  * per-year detail (which years, which reason) and from `standardMet` (an actual compliance result,
  * shown separately per year, never here). Derived strictly from `comparisonPossible`: 'unavailable'
  * when the source never recorded an assessment either way for this series (every point's
- * `comparisonPossible` is null — nothing to report, not the same as a recorded "no");
+ * `comparisonPossible` is null, nothing to report, not the same as a recorded "no");
  * 'not-comparable' when at least one year was explicitly marked not comparable; 'comparable' only
  * when every recorded assessment says so. */
 export function seriesComparabilityVerdict(s: CardSeries): ComparabilityVerdict {
@@ -224,7 +224,7 @@ export interface IndicatorContext {
   hasNumeric: boolean;
   perSeriesBench: SeriesBenchmark[];
   benchDiverges: boolean;
-  /** the one comparable benchmark every series agrees on — drawn as the chart's reference line */
+  /** the one comparable benchmark every series agrees on, drawn as the chart's reference line */
   bench: number | null;
   benchmarkMeaning: string | null;
   /** the recorded benchmark number, comparable or not (benchmark availability is its own fact) */
@@ -251,7 +251,7 @@ export function deriveIndicatorContext(series: CardSeries[], measuredAsLabel?: s
   const hasNumeric = series.some((s) => s.points.some((p) => p.value != null));
 
   // Several series on one indicator may NOT share a benchmark/standard (the Compare page merges
-  // one series per jurisdiction) — never silently pool them into one popular-vote value. Only
+  // one series per jurisdiction), never silently pool them into one popular-vote value. Only
   // collapse to one shared value when every series that has a value agrees; otherwise attribute
   // each series' own value to it explicitly.
   const perSeriesBench = perSeriesComparableBenchmarks(series);
@@ -260,12 +260,12 @@ export function deriveIndicatorContext(series: CardSeries[], measuredAsLabel?: s
   const bench = distinctBenchValues.length === 1 ? distinctBenchValues[0] : null;
   const benchmarkMeaning = firstNonNull(series, (p) => p.benchmarkMeaning);
   // A raw benchmark number can exist in the source even when it was never counted as `bench`
-  // above (comparisonPossible false/null on every point that has one) — the Regulatory Standard
+  // above (comparisonPossible false/null on every point that has one), the Regulatory Standard
   // still shows that recorded number, while whether it's usable for comparison is the separate
   // comparability verdict's concern, never conflated here.
   const rawBenchmark = bench ?? (!benchDiverges ? firstNonNull(series, (p) => p.benchmark) : null);
   // when every series agrees on one benchmark value, they're only ever the same regulator too
-  // (states never share a commission) — so any series' own regulation citation names it.
+  // (states never share a commission), so any series' own regulation citation names it.
   const sharedRegulator = bench != null ? regulatorFromRegulationText(firstNonNull(series, (p) => p.regulation)) : null;
 
   const perSeriesStandard = series.map((s) => ({ label: s.label, value: perSeriesValue(s, (p) => p.standardSpecified) }));
@@ -274,7 +274,7 @@ export function deriveIndicatorContext(series: CardSeries[], measuredAsLabel?: s
 
   const reportedMeaning = measuredAsLabel ?? firstNonNull(series, (p) => p.reportedMeaning);
 
-  // one entry per distinct regulation text shared by every series citing it — grouped once rather
+  // one entry per distinct regulation text shared by every series citing it, grouped once rather
   // than repeated per series, since the citation doesn't change DISCOM to DISCOM within a state.
   // Per-year variation *within* one series is a separate case, kept per series.
   const constantRegulations = groupByText(series.map((s) => ({ label: s.label, value: allSame(s.points.map((p) => p.regulation)) })));
@@ -286,9 +286,9 @@ export function deriveIndicatorContext(series: CardSeries[], measuredAsLabel?: s
     .filter((v) => v.texts.length > 0);
 
   // Whether every series that has ANY not-comparable years shares the exact same situation (same
-  // years, same reason) — if so, one shared advisory says it once instead of repeating an
+  // years, same reason), if so, one shared advisory says it once instead of repeating an
   // identical callout per DISCOM; never suppress a real divergence. `allSame` returns null both
-  // when there's no shared value and when every series has nothing to report — the emptiness check
+  // when there's no shared value and when every series has nothing to report, the emptiness check
   // tells those apart.
   const comparabilitySignatures = series.map(comparabilitySignature);
   const anyNotComparable = comparabilitySignatures.some((sig) => sig !== '');

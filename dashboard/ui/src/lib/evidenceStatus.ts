@@ -1,6 +1,6 @@
 /** "N/A" can mean fundamentally different things (no benchmark exists, a benchmark exists but
  * isn't comparable, the DISCOM simply didn't report a figure, or the sheet just has nothing
- * marked either way) — this distinguishes them rather than collapsing all of them into one
+ * marked either way), this distinguishes them rather than collapsing all of them into one
  * generic status, so a compact rail can still communicate which kind of gap it is. */
 export type EvidenceStatus = 'met' | 'not-met' | 'not-comparable' | 'no-benchmark' | 'no-value' | 'unavailable';
 
@@ -15,7 +15,7 @@ interface StatusMeta {
  * exists and the standard was met; ✕ Not met = a reported value exists and it wasn't; ⚠ Not
  * comparable = a reported value exists but can't validly be checked against the standard; ○ Not
  * assessable = no reported value exists at all. The rail's own per-year badge shows just the glyph
- * (`short`) — full wording lives in its hover title and in the card-level dedup callout below it,
+ * (`short`), full wording lives in its hover title and in the card-level dedup callout below it,
  * so a run of identical years never repeats the whole phrase five times in a row. */
 export const STATUS_META: Record<EvidenceStatus, StatusMeta> = {
   met: { text: '✓ Met', short: '✓', cls: 'eviq-met' },
@@ -36,7 +36,7 @@ export function evidenceStatus(point: { value: number | null; benchmark: number 
 }
 
 /** The value every item shares, or null if there's no single value they all agree on (including
- * when every item is null) — used to lift context that's constant across a series' fiscal years
+ * when every item is null), used to lift context that's constant across a series' fiscal years
  * up to the card level instead of repeating it once per year. */
 export function allSame<T>(items: (T | null | undefined)[]): T | null {
   const present = items.filter((x): x is T => x != null);

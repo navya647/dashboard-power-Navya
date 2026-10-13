@@ -1,15 +1,15 @@
 // Generates public/data/small-ut-detail.geojson: higher-detail outlines for the smallest UTs.
 //
 // public/data/india-states.geojson (the main map) is simplified enough that tiny island groups
-// collapse — Lakshadweep is a single 7-point polygon there, not its ~35 islands. The "data being
+// collapse, Lakshadweep is a single 7-point polygon there, not its ~35 islands. The "data being
 // compiled" page (components/CompilingState.tsx) draws a small region's outline on its own, so it
 // loads this file for those UTs only; the main map keeps its existing detail level.
 //
-// Source: udit-001/india-maps-data, pinned to one commit — the same `st_nm` schema and 2011-census
+// Source: udit-001/india-maps-data, pinned to one commit, the same `st_nm` schema and 2011-census
 // lineage as india-states.geojson (bounds match it to 0.01°). Data licence: CC BY 4.0; see the
 // attribution line written into the output. Each UT's district features are merged into one
 // MultiPolygon under the main map's own `st_nm` spelling, and coordinates are rounded to 4 decimal
-// places (~11 m) — far below anything visible on screen — to keep the file small.
+// places (~11 m), far below anything visible on screen, to keep the file small.
 //
 // Run after changing SOURCES:  node scripts/build-small-ut-geometry.mjs
 import { writeFileSync } from 'node:fs';
@@ -49,7 +49,7 @@ for (const [stNm, file] of Object.entries(SOURCES)) {
 
 const out = {
   type: 'FeatureCollection',
-  attribution: `India district boundaries, udit-001/india-maps-data (commit ${COMMIT.slice(0, 7)}), CC BY 4.0 — https://github.com/udit-001/india-maps-data`,
+  attribution: `India district boundaries, udit-001/india-maps-data (commit ${COMMIT.slice(0, 7)}), CC BY 4.0, https://github.com/udit-001/india-maps-data`,
   features,
 };
 const here = dirname(fileURLToPath(import.meta.url));

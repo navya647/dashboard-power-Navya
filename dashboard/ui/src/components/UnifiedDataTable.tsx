@@ -6,11 +6,11 @@ function MetPill({ met }: { met: boolean | null }) {
   return <span className="status-pill status-none">○ Not assessable</span>;
 }
 
-/** The single Excel-like source-data view for the whole State Performance page — one row per
+/** The single Excel-like source-data view for the whole State Performance page, one row per
  * matching source record from either dataset (a DISCOM's reported indicator in one FY, or a
  * state's notified framework indicator where no DISCOM ever reported one), driven by the same
  * DISCOM / Indicator Category / Indicator Type / Indicator filters as the chart cards above it.
- * Every field is lifted straight from the workbook — no derived score, grade, or percentage of any
+ * Every field is lifted straight from the workbook, no derived score, grade, or percentage of any
  * kind; this table is the underlying data, the charts are the interpretive layer. */
 export default function UnifiedDataTable({ rows }: { rows: UnifiedTableRow[] }) {
   if (!rows.length) {

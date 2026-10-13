@@ -15,34 +15,34 @@ export function compareColor(compareSet: string[], name: string): string | null 
   return idx === -1 ? null : CATEGORICAL[idx % CATEGORICAL.length];
 }
 
-/** Whether the Standards-of-Performance dataset has anything at all to show for this state — a
+/** Whether the Standards-of-Performance dataset has anything at all to show for this state, a
  * per-DISCOM sheet with its own SoP indicators, or (for the 5 states with no reported SoP figures
  * at all) the regulatory-framework listing. Either is real page content, even when every reported
- * value in it is null. Used only to widen "in scope" — see stateIsTracked — never treated as
+ * value in it is null. Used only to widen "in scope", see stateIsTracked, never treated as
  * "has reported data" on its own (a framework listing has no reported figures by definition). */
 export function stateHasSopData(stateSpecific: StateSpecificData | null | undefined, state: string): boolean {
   if (!stateSpecific) return false;
   return stateSpecific.discoms.some((d) => d.state === state) || stateSpecific.frameworks.some((f) => f.state === state);
 }
 
-/** Whether this state is in ACPET's scope at all (year-independent) — gates whether it's on the
+/** Whether this state is in ACPET's scope at all (year-independent), gates whether it's on the
  * map as anything but "Coming soon". True if either dataset tracks it, even if neither has a
  * reported figure yet (see stateMapStatus for the "tracked but no data" split). */
 export function stateIsTracked(discoms: Discom[], state: string, stateSpecific?: StateSpecificData | null): boolean {
   return discoms.some((d) => d.state === state) || stateHasSopData(stateSpecific, state);
 }
 
-/** Whether this state has an actual reported figure anywhere — a reliability indicator value, or
- * a SoP indicator's reported value — in any year, in either dataset. A SoP regulatory-framework
+/** Whether this state has an actual reported figure anywhere, a reliability indicator value, or
+ * a SoP indicator's reported value, in any year, in either dataset. A SoP regulatory-framework
  * listing alone (standards and benchmarks with no reported data by definition) does NOT count:
  * this specifically answers "is there real performance data to explore", which is what
- * distinguishes the map's "Tracked—Data Reported" fill from "Tracked—Data Not Reported". */
+ * distinguishes the map's "Tracked, Data Reported" fill from "Tracked, Data Not Reported". */
 export function stateHasReportedData(discoms: Discom[], state: string, stateSpecific?: StateSpecificData | null): boolean {
   return stateReportedYears(discoms, state, stateSpecific).length > 0;
 }
 
 /** The fiscal years (raw "2023-24" keys, unordered) in which this state has an actual reported
- * figure, by the same rule as stateHasReportedData — so a state page's "Reported data FY22–FY24"
+ * figure, by the same rule as stateHasReportedData, so a state page's "Reported data FY22–FY24"
  * covers the years with real figures, not the dashboard-wide year list every sheet has rows for. */
 export function stateReportedYears(discoms: Discom[], state: string, stateSpecific?: StateSpecificData | null): string[] {
   const years = new Set<string>();
@@ -59,16 +59,16 @@ export function stateReportedYears(discoms: Discom[], state: string, stateSpecif
 
 export type StateMapStatus = 'tracked' | 'no-data' | 'idle';
 
-/** The one wording for each map status — the home map legend and the state search list (visible
+/** The one wording for each map status, the home map legend and the state search list (visible
  * swatch labels and screen-reader text) both read from here so they can never drift apart. */
 export const MAP_STATUS_LABEL: Record<StateMapStatus, string> = {
-  tracked: 'Tracked—Data Reported',
-  'no-data': 'Tracked—Data Not Reported',
+  tracked: 'Tracked, Data Reported',
+  'no-data': 'Tracked, Data Not Reported',
   idle: 'Coming soon',
 };
 
-/** Three-way map status for a state: 'idle' (outside ACPET's scope in both datasets — "Coming
- * soon", not clickable), 'no-data' (in scope, but no reported figure anywhere yet — still
+/** Three-way map status for a state: 'idle' (outside ACPET's scope in both datasets, "Coming
+ * soon", not clickable), 'no-data' (in scope, but no reported figure anywhere yet, still
  * clickable, since a SoP framework listing or an all-null DISCOM sheet is real content worth
  * seeing, just not performance data), or 'tracked' (has an actual reported figure somewhere). */
 export function stateMapStatus(discoms: Discom[], state: string, stateSpecific?: StateSpecificData | null): StateMapStatus {
@@ -76,7 +76,7 @@ export function stateMapStatus(discoms: Discom[], state: string, stateSpecific?:
   return stateHasReportedData(discoms, state, stateSpecific) ? 'tracked' : 'no-data';
 }
 
-/** Map fill by status — a muted terracotta/clay for states with reported data, a lighter tint of
+/** Map fill by status, a muted terracotta/clay for states with reported data, a lighter tint of
  * that same clay for states entirely outside ACPET's tracked scope, and an off-white for
  * tracked states still awaiting reported data. */
 export function stateFillColor(status: StateMapStatus): string {
@@ -85,7 +85,7 @@ export function stateFillColor(status: StateMapStatus): string {
   return MAP_STATUS.idle;
 }
 
-/** One state's direct aggregation of its licensees' accessibility booleans — a count/percentage
+/** One state's direct aggregation of its licensees' accessibility booleans, a count/percentage
  * summary, never a weighted or composite score. `publishedPct`/`machineReadablePct` are `null`
  * only when the state has zero tracked licensees to divide by. */
 export interface StateAccessibilityCoverage {
@@ -98,12 +98,12 @@ export interface StateAccessibilityCoverage {
   machineReadablePct: number | null;
 }
 
-/** The single source of truth for a DISCOM's *displayed* machine-readability — never
+/** The single source of truth for a DISCOM's *displayed* machine-readability, never
  * independently "not machine-readable" when performance data was never published at all, since
  * machine readability is only a meaningful question once something has actually been published.
  * Today's workbook always leaves `machine_readable` null/blank for an unpublished row (see
  * `extraction_accessibility.py`'s `to_bool()`), but nothing in the type system enforces that
- * convention — every place this page shows or filters on machine-readability derives it from this
+ * convention, every place this page shows or filters on machine-readability derives it from this
  * function (which forces `null` whenever `available_on_serc` isn't `true`) rather than trusting
  * `d.machine_readable` directly, so a future data-entry mistake (e.g. `available_on_serc: false,
  * machine_readable: true`) can never surface as a contradictory or misleading status. */
@@ -112,7 +112,7 @@ export function machineReadableDisplayStatus(d: DiscomAccessibility): boolean | 
 }
 
 /** A DISCOM has an accessibility gap when its performance data isn't published at all, OR is
- * published but not machine-readable — an unpublished DISCOM is never counted as a *second*,
+ * published but not machine-readable, an unpublished DISCOM is never counted as a *second*,
  * separate "not machine-readable" gap. */
 export function hasAccessibilityGap(d: DiscomAccessibility): boolean {
   return d.available_on_serc !== true || machineReadableDisplayStatus(d) !== true;
@@ -137,7 +137,7 @@ export function accessibilityByState(accessibility: AccessibilityData): StateAcc
 }
 
 /** Sorted for the jurisdiction comparison chart only (machine-readable % desc, then published %
- * desc, then jurisdiction name as a deterministic final tie-break) — every other view (grid,
+ * desc, then jurisdiction name as a deterministic final tie-break), every other view (grid,
  * small-multiples, matrix) keeps `state_order` so it stays directly comparable to the source
  * workbook. */
 export function sortStatesForComparison(coverage: StateAccessibilityCoverage[]): StateAccessibilityCoverage[] {
@@ -150,7 +150,7 @@ export function sortStatesForComparison(coverage: StateAccessibilityCoverage[]):
   });
 }
 
-/** Direct counts of where accessibility breaks down across every tracked DISCOM — never a
+/** Direct counts of where accessibility breaks down across every tracked DISCOM, never a
  * derived score. */
 export interface AccessibilityGaps {
   notPublished: number;

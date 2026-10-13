@@ -34,7 +34,7 @@ export const STATE_POPULATION_2026: Record<string, number> = {
   Sikkim: 709_000,
 };
 
-/** Union territories — kept in a separate table from the 28 states above (not merged in) so that
+/** Union territories, kept in a separate table from the 28 states above (not merged in) so that
  * `populationCoveragePercent`'s existing denominator (states only) stays exactly as it was; this
  * table exists purely so the map tooltip can show a population figure for every jurisdiction,
  * "coming soon" UTs (e.g. Ladakh) included, not just the ones ACPET currently tracks. Same
@@ -59,11 +59,11 @@ export function formatPopulation(name: string): string | null {
   const value = STATE_POPULATION_2026[name] ?? UT_POPULATION_2026[name];
   if (!value) return null;
   const crores = value / 1e7;
-  return `${crores.toLocaleString('en-IN', { maximumFractionDigits: 2, minimumFractionDigits: 2 })} Cr`;
+  return `${crores.toLocaleString('en-IN', { maximumFractionDigits: 0 })} Cr`;
 }
 
 /** Share of the population in the table above that lives in a state ACPET tracks in some form
- * (reused from stateIsTracked — same reliability/SoP scope the map's fill color is built from,
+ * (reused from stateIsTracked, same reliability/SoP scope the map's fill color is built from,
  * see stateMapStatus in computations.ts). The denominator is the sum of this table's 28 states,
  * not an official all-India total (which also includes UTs not in this table). */
 export function populationCoveragePercent(discoms: Discom[], stateSpecific?: StateSpecificData | null): number {

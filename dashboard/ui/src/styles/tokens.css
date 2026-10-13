@@ -1,10 +1,10 @@
 /* Design tokens. Two families, kept strictly separate:
-   - chrome tokens style UI structure: nav, buttons, tabs, headings —
+   - chrome tokens style UI structure: nav, buttons, tabs, headings,
      cool blue-grey paper, near-black ink, blue accent (corporate-SaaS palette).
    - status/categorical tokens encode data and must never be repurposed as chrome. */
 :root {
   /* The chrome surfaces (page, panel, line, sidebar, shadows) are the home page map view's
-     approved warm family (--mv-* below) — the map view is the visual source of truth, so every
+     approved warm family (--mv-* below), the map view is the visual source of truth, so every
      page reads as the same system. --paper is that view's own base colour (the --hero-veil in
      hero.css, without its photo). */
   /* inside pages' canvas: a neutral off-white a step below the cards (--panel #fafaf8). The home
@@ -15,8 +15,8 @@
   /* darkened again (was #15181f) so every piece of body text reads at full strength */
   --ink: #111111;
   /* darkened from #6b7280 (~4.3:1 on --paper, just under WCAG AA), then #262a32, and again here
-     for stronger secondary text (hints, labels, meta copy) — still a step lighter than --ink. */
-  --muted: #333333; /* secondary text: ~12:1 — raised for maximum readability */
+     for stronger secondary text (hints, labels, meta copy), still a step lighter than --ink. */
+  --muted: #333333; /* secondary text: ~12:1, raised for maximum readability */
   /* light-mode-only surface tokens for the soft off-white system. Each is read as
      var(--token, <original expression>) and reset to `initial` in dark mode, so dark mode falls
      back to exactly its original value. */
@@ -41,7 +41,7 @@
   --sidebar-bg: var(--mv-sidebar-top);
   --accent: #28546f;
   --accent-light: #21475f;
-  /* --accent used as TEXT (not a button/fill background) — identical to --accent in light mode,
+  /* --accent used as TEXT (not a button/fill background), identical to --accent in light mode,
      but dark mode brightens it (see override below): --accent itself is unchanged there (so
      accent-background buttons/borders keep the same brand blue), yet #3b5fe0 as plain text only
      reaches ~2.7:1 against the dark panel, well under WCAG AA's 4.5:1 for normal text. */
@@ -66,7 +66,7 @@
   --mv-indicator: #8a5a36;
   --mv-shadow-float: 0 18px 48px rgba(74, 51, 32, 0.14), 0 2px 8px rgba(74, 51, 32, 0.07);
 
-  /* status — reserved, never themed */
+  /* status, reserved, never themed */
   --good: #0ca30c;
   --good-deep: #006300;
   --good-soft: #d7f3d3;
@@ -78,7 +78,7 @@
   --critical-soft: #fadcdc;
   --map-none: #dfe2e8;
 
-  /* validated categorical palette — 8 hues, fixed order, never cycled per-render */
+  /* validated categorical palette, 8 hues, fixed order, never cycled per-render */
   --cat-0: #2a78d6;
   --cat-1: #eb6834;
   --cat-2: #1baf7a;
@@ -86,14 +86,14 @@
   --cat-4: #e87ba4;
   --cat-5: #008300;
   --cat-6: #4a3aa7;
-  /* soft/deep pair for the "mixed status" pill (panels.css .status-mixed) — was previously only a
+  /* soft/deep pair for the "mixed status" pill (panels.css .status-mixed), was previously only a
      hardcoded var() fallback with no real token behind it; defined properly here instead. */
   --cat-6-soft: #e6e2f7;
   --cat-7: #e34948;
 
-  /* map fills — a restrained editorial palette, not a GIS choropleth: a muted terracotta/clay for
+  /* map fills, a restrained editorial palette, not a GIS choropleth: a muted terracotta/clay for
      a tracked state with reported data (clickable through to its full report), an off-white for a
-     tracked state still awaiting reported data (not clickable — see stateMapStatus), and a muted
+     tracked state still awaiting reported data (not clickable, see stateMapStatus), and a muted
      warm greige for states outside scope entirely ("Coming soon"), quieter than the clay and set
      apart from the sand background (in both themes) mainly by being less saturated. Solid fills
      only, no pattern, separated by lightness and saturation (clay ~L*58, greige ~L*78,
@@ -109,25 +109,24 @@
   --shadow-float: var(--mv-shadow-float);
 
   /* Chart.js options for grid lines/axis title/tooltip background can't reference a CSS custom
-     property directly (they're plain JS strings baked into the chart's options object) — kept as
+     property directly (they're plain JS strings baked into the chart's options object), kept as
      tokens here anyway, read via getComputedStyle in IndicatorVisualCard.tsx, so the dark-mode
      variant lives in one shared place instead of being duplicated as a hardcoded literal in TSX. */
   --chart-grid: rgba(18, 23, 42, 0.05);
-  /* the indicator charts' dotted benchmark line — neutral, never a status colour */
+  /* the indicator charts' dotted benchmark line, neutral, never a status colour */
   --chart-benchmark: rgba(17, 17, 17, 0.72);
   /* reuses --muted rather than its own separate (and, before, lighter/fainter) hex, same
      consolidation already done for dark mode. */
   --chart-axis-title: var(--muted);
   --chart-tooltip-bg: #1c2127;
 
-  /* Shared opacity for every `:disabled` button (.control-compare-btn,
-     .tour-btn--ghost) — one token so "how dim is disabled" stays consistent across the dashboard.
+  /* Shared opacity for every `:disabled` button (.control-compare-btn), one token so "how dim is disabled" stays consistent across the dashboard.
      Dark mode raises it (see override below): the same 0.4 fraction of an already-dark backdrop
      made disabled button text/labels read as too faint to tell they still say "Compare"/"Clear". */
-  /* light: 0.6 (was 0.4, which left disabled labels at ~2.4:1 — clearly disabled, barely legible) */
+  /* light: 0.6 (was 0.4, which left disabled labels at ~2.4:1, clearly disabled, barely legible) */
   --disabled-opacity: 0.75;
 
-  /* Loaded via a Google Fonts <link> in layout.tsx's <head>, not next/font/google — this Next.js
+  /* Loaded via a Google Fonts <link> in layout.tsx's <head>, not next/font/google, this Next.js
      version's Turbopack build fails to resolve next/font/google's internal font module
      ("@vercel/turbopack-next/internal/font/google/font"). */
   --font-montserrat: 'Montserrat';
@@ -150,14 +149,14 @@
   --z-dropdown: 50;
 }
 
-/* Dark theme — chrome tokens only (paper/panel/ink/muted/line/shadows). Status and categorical
+/* Dark theme, chrome tokens only (paper/panel/ink/muted/line/shadows). Status and categorical
    tokens are deliberately left untouched in both themes: they're validated for contrast/CVD-safety
    as an already-dark-on-light or light-on-dark palette and are documented as "reserved, never
-   themed" above — re-deriving them per theme would risk breaking that validation. Applied via
+   themed" above, re-deriving them per theme would risk breaking that validation. Applied via
    `data-theme` on <html>, set by the blocking init script in layout.tsx (no flash on load) and
    toggled by ThemeToggle in the sidebar; persisted to localStorage under 'acpet-theme-v2' (dark by default). */
 :root[data-theme='dark'] {
-  /* Lifted off near-black toward a softer charcoal — less harsh to look at for long stretches,
+  /* Lifted off near-black toward a softer charcoal, less harsh to look at for long stretches,
      and it gives --panel more headroom above --paper so cards still read as raised without
      needing pure-white borders to separate them. */
   /* the map view's own backdrop stays a light sand in dark mode too (a photo under a veil), which
@@ -166,11 +165,11 @@
   --panel: var(--mv-surface);
   /* brightened (was #e8e9ed) so primary text reads at full strength */
   --ink: #ffffff;
-  /* Brightened again (was #adb4c0, then #cdd1d9) — still a step below --ink so
+  /* Brightened again (was #adb4c0, then #cdd1d9), still a step below --ink so
      secondary/instructional text stays secondary, but close to full readability. */
   --muted: #f0f2f5;
   --line: var(--mv-line);
-  /* brightened from --accent (#3b5fe0, ~2.7:1 here) to ~7:1 against both --paper and --panel —
+  /* brightened from --accent (#3b5fe0, ~2.7:1 here) to ~7:1 against both --paper and --panel,
      verified with the standard WCAG relative-luminance formula, not eyeballed. */
   --accent-text: #b8d0e6;
   /* the muted blue as seen in dark mode before the light-mode off-white change, kept as is */
@@ -189,7 +188,7 @@
   --control-track: initial;
   --hero-ground: initial;
   --state-accent: initial;
-  /* was 0.55 — still read as too faint on "Compare"/"Clear" when disabled, raised again. */
+  /* was 0.55, still read as too faint on "Compare"/"Clear" when disabled, raised again. */
   --disabled-opacity: 0.8;
 
   /* --charcoal deliberately not overridden: it's the hamburger button's own fixed dark square

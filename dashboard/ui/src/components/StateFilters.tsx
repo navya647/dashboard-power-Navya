@@ -6,7 +6,7 @@ import IndicatorSelect from './IndicatorSelect';
 import YearSelect from './YearSelect';
 
 /** The one DISCOM / Indicator / Year control bar shared by the state overview and its Detailed
- * Data page — a light row on the page background, not a card. All behaviour lives in
+ * Data page, a light row on the page background, not a card. All behaviour lives in
  * useStateView; this only renders the controls. */
 export default function StateFilters({ view, sticky = false }: { view: StateView; sticky?: boolean }) {
   return (

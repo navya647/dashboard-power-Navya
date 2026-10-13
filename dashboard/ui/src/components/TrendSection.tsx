@@ -14,7 +14,7 @@ interface Props {
   yearsAsc: string[];
   series: CardSeries[];
   ctx: IndicatorContext;
-  /** a year hovered in the values strip below — enlarges that year's points and draws a guide */
+  /** a year hovered in the values strip below, enlarges that year's points and draws a guide */
   hoverYear: string | null;
   /** the Year filter's single year, when one is picked (null = all years) */
   focusYear: string | null;
@@ -25,7 +25,7 @@ const BENCH_COLOR = '#b1441c';
 
 /** The page's centrepiece: the reported-value line chart, one line per DISCOM in its fixed
  * categorical colour, with the same benchmark reference line(s) as before (only ever drawn from a
- * benchmark the source marked comparable — see perSeriesComparableBenchmarks). The legend is HTML
+ * benchmark the source marked comparable, see perSeriesComparableBenchmarks). The legend is HTML
  * above the chart; clicking a DISCOM hides/shows its line, as Chart.js's own legend did. */
 export default function TrendSection({ title, unitSuffix, yAxisLabel, yearsAsc, series, ctx, hoverYear, focusYear, children }: Props) {
   useThemeTick();
@@ -65,7 +65,7 @@ export default function TrendSection({ title, unitSuffix, yAxisLabel, yearsAsc, 
   const benchLines = benchDiverges
     ? perSeriesBench
         .filter((b) => b.value != null && !hidden.has(b.label))
-        .map((b) => ({ key: b.label, value: b.value as number, color: b.color, text: `${b.regulator ? `${b.regulator} — ` : ''}${b.label}: ${unitSuffix(b.value as number)}` }))
+        .map((b) => ({ key: b.label, value: b.value as number, color: b.color, text: `${b.regulator ? `${b.regulator}, ` : ''}${b.label}: ${unitSuffix(b.value as number)}` }))
     : bench != null
       ? [{ key: 'standard', value: bench, color: BENCH_COLOR, text: `${sharedRegulator ? `${sharedRegulator} benchmark` : 'Benchmark'}: ${unitSuffix(bench)}` }]
       : [];
@@ -74,7 +74,7 @@ export default function TrendSection({ title, unitSuffix, yAxisLabel, yearsAsc, 
   const range = yearsAsc.length > 1 ? `${fyLabel(yearsAsc[0])}–${fyLabel(yearsAsc[yearsAsc.length - 1])}` : yearsAsc.length ? fyLabel(yearsAsc[0]) : '';
 
   return (
-    <section className="so-trend" aria-label={`${title} — performance over time`}>
+    <section className="so-trend" aria-label={`${title}, performance over time`}>
       <div className="so-trend-head">
         <div>
           <h3>Performance over time</h3>
@@ -182,7 +182,7 @@ export default function TrendSection({ title, unitSuffix, yAxisLabel, yearsAsc, 
           />
         </div>
       ) : (
-        <p className="so-trend-empty">No reported figures are available for this indicator yet — only the regulatory standard above is on record.</p>
+        <p className="so-trend-empty">No reported figures are available for this indicator yet, only the regulatory standard above is on record.</p>
       )}
 
       {children}

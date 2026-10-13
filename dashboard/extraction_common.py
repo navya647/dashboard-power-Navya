@@ -304,6 +304,35 @@ def collapse_canonical(entries):
     for canon, es in by_canon.items():
         vals = [e['value'] for e in es if e['value'] is not None]
         rep = max(es, key=lambda e: 0 if e['value'] is None else 1)
+        verdicts = [e['standard_met'] for e in es if e['standard_met'] is not None]
+        standard_met = all(verdicts) if verdicts else None
+        # Urban and Rural disagree (e.g. TPWODL FY22: Urban 98.37 met, Rural 94.71 missed), so the
+        # AND above would contradict the averaged figure shown. For a "% of cases resolved within
+        # standard" figure (higher is better) judge the shown average against the benchmark instead.
+        try:
+            bench = float(rep['benchmark'])
+        except (TypeError, ValueError):
+            bench = None
+        if (len(set(verdicts)) > 1 and vals and bench is not None
+                and _norm_meaning(rep['reported_meaning']).startswith('% of cases resolved')):
+            standard_met = round(sum(vals) / len(vals), 3) >= bench
+        # Urban and Rural are separate reported figures, each with its own standard and verdict in
+        # the sheet — kept whole here so the UI can show them as two series instead of an average.
+        subtype_records = None
+        if {e['subtype'] for e in es} == {'Urban', 'Rural'} and len(es) == 2:
+            subtype_records = {
+                e['subtype']: {
+                    'value': e['value'],
+                    'benchmark': e['benchmark'],
+                    'benchmark_meaning': e['benchmark_meaning'],
+                    'standard_specified': e['standard_specified'],
+                    'reported_meaning': e['reported_meaning'],
+                    'unit_note': e['unit_note'],
+                    'comparison_possible': e['comparison_possible'],
+                    'standard_met': e['standard_met'],
+                    'reason_not_comparable': e['reason_not_comparable'],
+                } for e in es
+            }
         out[canon] = {
             'value': round(sum(vals) / len(vals), 3) if vals else None,
             'subtypes': {e['subtype'] or 'default': e['value'] for e in es},
@@ -314,9 +343,11 @@ def collapse_canonical(entries):
             'reported_meaning': rep['reported_meaning'],
             'unit_note': rep['unit_note'],
             'comparison_possible': any(e['comparison_possible'] for e in es if e['comparison_possible'] is not None) if any(e['comparison_possible'] is not None for e in es) else None,
-            'standard_met': all(e['standard_met'] for e in es if e['standard_met'] is not None) if any(e['standard_met'] is not None for e in es) else None,
+            'standard_met': standard_met,
             'reason_not_comparable': rep['reason_not_comparable'],
         }
+        if subtype_records:
+            out[canon]['subtype_records'] = subtype_records
     return out
 
 

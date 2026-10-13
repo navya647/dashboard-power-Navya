@@ -46,8 +46,8 @@ const SEP = "␟";
 const unitOf = (p: CardPoint): DisplayUnit | null =>
   displayUnitForMeaning(p.reportedMeaning);
 const unitKey = (p: CardPoint) => unitOf(p)?.label ?? NO_UNIT;
-const withUnit = (v: number | null, unit: DisplayUnit | null) =>
-  `${formatInUnit(v, unit)}${v != null && unit && unit.format !== "percent" ? ` ${unit.label}` : ""}`;
+const withUnit = (v: number | null, unit: DisplayUnit | null, against?: number | null) =>
+  `${formatInUnit(v, unit, against)}${v != null && unit && unit.format !== "percent" ? ` ${unit.label}` : ""}`;
 /** a point the source has a record for (a year row exists), whether or not it reports a figure */
 const hasRecord = (p: CardPoint) =>
   (p as { exists?: boolean }).exists !== false;
@@ -97,7 +97,7 @@ function benchmarkText(p: CardPoint): string | null {
   )
     return p.benchmarkRaw.replace(/\s+/g, " ").trim();
   if (p.benchmark != null)
-    return `${fmt(p.benchmark, 2)}${p.benchmarkMeaning && !isNA(p.benchmarkMeaning) ? ` · ${p.benchmarkMeaning.trim()}` : ""}`;
+    return `${fmt(p.benchmark)}${p.benchmarkMeaning && !isNA(p.benchmarkMeaning) ? ` · ${p.benchmarkMeaning.trim()}` : ""}`;
   if (p.benchmarkRaw && !isNA(p.benchmarkRaw)) return p.benchmarkRaw.trim();
   return null;
 }
@@ -125,7 +125,7 @@ function consensus(values: (string | null)[]): string | null {
 }
 
 /** Standards and benchmarks are set by the state's regulation, so they never differ between
- * DISCOMs — only (possibly) between years. Each year gets one standard and one benchmark (the
+ * DISCOMs, only (possibly) between years. Each year gets one standard and one benchmark (the
  * DISCOM sheets' shared text; where their copies differ in wording, the most common copy), and
  * years with the same pair form one column. The workbooks record the standard per year but not
  * the date a regulation took effect, so a column is labelled with the years it covers. */
@@ -164,7 +164,7 @@ declare module "chart.js" {
   }
 }
 
-/** Hover picks the single reported figure nearest the cursor — never several DISCOMs at once, and
+/** Hover picks the single reported figure nearest the cursor, never several DISCOMs at once, and
  * never the benchmark line (it's explained beside the chart). */
 Interaction.modes.imNearestFigure = (chart, e) => {
   const pos = getRelativePosition(e, chart);
@@ -233,9 +233,9 @@ function TrendChart({
   const single = series.length === 1;
   const showLabels = visible.length <= 2;
 
-  const fmtV = (v: number) => formatInUnit(v, unit);
+  const fmtV = (v: number, against?: number | null) => formatInUnit(v, unit, against);
   const hasBench = bench.some((v) => v != null);
-  // minutes, counts and rates can't go below zero — keep the axis from inventing negative room
+  // minutes, counts and rates can't go below zero, keep the axis from inventing negative room
   const nonNegative = [...series.flatMap((s) => s.points.map((p) => p.value)), ...bench].every(
     (v) => v == null || v >= 0,
   );
@@ -289,7 +289,7 @@ function TrendChart({
 
   // figure written above each point (the mockup's value labels); skipped when 3+ lines would overlap.
   // react-chartjs-2 registers a plugin once, when the chart is created, so the plugin reads this
-  // render's values from a ref — otherwise the label colours and toggled lines would stay stale.
+  // render's values from a ref, otherwise the label colours and toggled lines would stay stale.
   const drawState = useRef({ hasBench, bench, benchColor, ink, showLabels, series, fmtV });
   drawState.current = { hasBench, bench, benchColor, ink, showLabels, series, fmtV };
   const valueLabels = useRef<Plugin<"line">>({
@@ -333,7 +333,7 @@ function TrendChart({
           const v = ds.data[i] as number | null;
           if (v == null) return;
           const note = series[di]?.points[i]?.note ? "*" : "";
-          ctx.fillText(`${fmtV(v)}${note}`, el.x, el.y - 9);
+          ctx.fillText(`${fmtV(v, bench[i] as number | null)}${note}`, el.x, el.y - 9);
         });
       });
       ctx.restore();
@@ -358,7 +358,7 @@ function TrendChart({
           plugins: {
             legend: { display: false },
             // one figure at a time: DISCOM · year, the figure, its verdict and change on one line,
-            // and the source's note (if any) in small print — the benchmark is explained beside
+            // and the source's note (if any) in small print, the benchmark is explained beside
             // the chart, so it never takes a tooltip of its own
             tooltip: {
               backgroundColor: tooltipBg,
@@ -378,7 +378,7 @@ function TrendChart({
                     ? `${items[0].dataset.label} · ${fyLabel(yearsAsc[items[0].dataIndex])}`
                     : "",
                 label: (c) =>
-                  c.raw == null ? "N/A" : withUnit(c.raw as number, unit),
+                  c.raw == null ? "N/A" : withUnit(c.raw as number, unit, bench[c.dataIndex] as number | null),
                 afterLabel: (c) => {
                   const s = series[c.datasetIndex];
                   const p = s?.points[c.dataIndex];
@@ -389,7 +389,7 @@ function TrendChart({
                   const mv = movementAt(s.points, c.dataIndex);
                   if (mv.kind === "moved" && mv.arrow !== "○")
                     bits.push(
-                      `${mv.arrow} ${fmt(Math.abs(mv.delta), 2)} vs ${fyLabel(mv.prevYear)}`,
+                      `${mv.arrow} ${fmt(Math.abs(mv.delta))} vs ${fyLabel(mv.prevYear)}`,
                     );
                   return bits.join("  ·  ");
                 },
@@ -412,6 +412,7 @@ function TrendChart({
               ticks: {
                 font: { size: 11 },
                 maxTicksLimit: 5,
+                precision: 0,
                 padding: 10,
                 callback: (v) => fmtV(Number(v)),
               },
@@ -471,7 +472,7 @@ export default function IndicatorModule({
 
   const series = card.series;
   const isFramework = series.length > 0 && series.every((s) => s.isFramework);
-  // reported figures but no standard in words for this state — the card gets its own tint
+  // reported figures but no standard in words for this state, the card gets its own tint
   const noStandard =
     !isFramework &&
     !series.some((s) => s.points.some((p) => statesStandard(p.standardSpecified)));
@@ -655,11 +656,7 @@ export default function IndicatorModule({
 
   // ---- header: where the indicator sits, and each DISCOM's key ----
   const bucket = bucketFor(card.category, card.type, card.indicator);
-  const section =
-    card.category === OTHER_CATEGORY ? card.type : card.category;
-  const eyebrow = [bucket === UNMAPPED_BUCKET ? null : bucket, section]
-    .filter((x, i, a) => x && a.indexOf(x) === i)
-    .join(" · ");
+  const eyebrow = bucket === UNMAPPED_BUCKET ? "" : bucket;
   return (
     <article
       className={`im animate-in${noStandard ? " im--no-standard" : ""}`}
@@ -675,7 +672,7 @@ export default function IndicatorModule({
             type="button"
             className="im-dl"
             aria-disabled="true"
-            aria-label="Download — this feature is coming soon"
+            aria-label="Download, this feature is coming soon"
             aria-describedby={`${uid}-dl`}
             onClick={(e) => e.preventDefault()}
           >
@@ -716,7 +713,7 @@ export default function IndicatorModule({
         </div>
 
         {series.length > 1 && !isFramework && (
-          <ul className="im-keys" aria-label="DISCOMs — click to show or hide">
+          <ul className="im-keys" aria-label="DISCOMs, click to show or hide">
             {series.map((s) => {
               const off = hidden.has(s.label);
               return (
@@ -792,11 +789,11 @@ export default function IndicatorModule({
         <div className="im-main">
           {isFramework ? (
             <p className="im-empty">
-              N/A — the state’s SoP regulation lists this indicator, but no
+              N/A, the state’s SoP regulation lists this indicator, but no
               figures are reported.
             </p>
           ) : !hasNumeric ? (
-            <p className="im-empty">N/A — no reported figures.</p>
+            <p className="im-empty">N/A, no reported figures.</p>
           ) : (
             <>
               <TrendChart
@@ -834,7 +831,7 @@ export default function IndicatorModule({
                     ))}
                     {offChart > 0 && (
                       <p>
-                        Unit varies — {offChart} figure{offChart === 1 ? "" : "s"}{" "}
+                        Unit varies, {offChart} figure{offChart === 1 ? "" : "s"}{" "}
                         reported in another unit {offChart === 1 ? "is" : "are"} left
                         off the chart.
                       </p>
@@ -842,8 +839,8 @@ export default function IndicatorModule({
                     {hasNotes && (
                       <p>
                         {labelsOnChart
-                          ? "* Adjusted or annotated figure — hover the point for the note."
-                          : "Some figures carry a source note — hover the points to read it."}
+                          ? "* Adjusted or annotated figure, hover the point for the note."
+                          : "Some figures carry a source note, hover the points to read it."}
                       </p>
                     )}
                   </div>

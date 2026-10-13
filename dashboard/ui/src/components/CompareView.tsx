@@ -3,18 +3,17 @@
 import '@/lib/chartSetup';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { bucketFor, BUCKET_ORDER, UNMAPPED_BUCKET } from '@/lib/indicatorBuckets';
 import { MAP_HREF } from '@/lib/routes';
 import { useData } from '@/lib/DataContext';
 import { compareColor, stateHasReportedData } from '@/lib/computations';
 import {
   buildMultiDiscomAtoms,
   buildMultiDiscomComparableCards,
-  categoryOptions,
   indicatorOptions,
   jurisdictionDiscomOptions,
   matchesFilters,
   multiDiscomLegend,
-  typeOptions,
 } from '@/lib/unifiedIndicators';
 import DiscomMultiSelect from './DiscomMultiSelect';
 import IndicatorVisualCard from './IndicatorVisualCard';
@@ -24,7 +23,7 @@ interface Props {
   states: string[];
 }
 
-/** "One selected jurisdiction has nothing reported" / "none of them do" — phrased as *currently*
+/** "One selected jurisdiction has nothing reported" / "none of them do", phrased as *currently*
  * unavailable (data may arrive later) and never as "they don't overlap", which would misattribute
  * a missing-reported-data situation to some sort of mismatch between the jurisdictions. */
 function dataAvailabilityMessage(jurisdictions: string[], lacking: string[]): string | null {
@@ -38,22 +37,21 @@ function dataAvailabilityMessage(jurisdictions: string[], lacking: string[]): st
   return `Reported performance data is currently unavailable for ${names}. Available standards and benchmarks are shown where captured.`;
 }
 
-/** The Compare results view — same page architecture as the State Performance page: one chart
+/** The Compare results view, same page architecture as the State Performance page: one chart
  * gallery (always the full FY-axis trend, never re-scoped by a year control). Each selected state gets its own tickable DISCOM picker (`DiscomMultiSelect`)
- * — no "whole state" option, so every line on the chart is always a specific, real DISCOM's own
+ *, no "whole state" option, so every line on the chart is always a specific, real DISCOM's own
  * reported figures, never an invented cross-DISCOM average (see CLAUDE.md).
  * `buildMultiDiscomComparableCards` matches indicators captured by at least one ticked DISCOM in
- * EVERY selected state, never on whether a reported value exists — see CLAUDE.md and the unified
+ * EVERY selected state, never on whether a reported value exists, see CLAUDE.md and the unified
  * State page this mirrors. */
 export default function CompareView({ states }: Props) {
   const { discoms, stateSpecific, geojson, loading, error } = useData();
   const router = useRouter();
   const [selectedDiscoms, setSelectedDiscoms] = useState<Record<string, string[]>>({});
-  // Same cascading Indicator Category / Type / Indicator narrowing as the State Performance
-  // page's toolbar (StateDetail.tsx) — DISCOM selection is handled per-jurisdiction by the
+  // Same cascading Indicator Category / Indicator narrowing as the State Performance
+  // page's toolbar (StateDetail.tsx), DISCOM selection is handled per-jurisdiction by the
   // pickers below instead, so there's no "Discom" filter here.
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedType, setSelectedType] = useState('all');
   const [selectedIndicator, setSelectedIndicator] = useState('all');
 
   if (loading) return <p className="detail-placeholder">Loading…</p>;
@@ -74,7 +72,7 @@ export default function CompareView({ states }: Props) {
   const activeYear = discoms.years.includes('2023-24') ? '2023-24' : discoms.years[0];
 
   // ticked DISCOMs default to "every DISCOM this state has" until the viewer narrows a state's
-  // own picker — never a state-level median, just every real DISCOM line shown at once.
+  // own picker, never a state-level median, just every real DISCOM line shown at once.
   const discomOptsByState = new Map(states.map((name) => [name, jurisdictionDiscomOptions(discoms, stateSpecific, name)]));
   const selection = states.map((name) => ({
     state: name,
@@ -84,23 +82,25 @@ export default function CompareView({ states }: Props) {
   const atomsByState = buildMultiDiscomAtoms(discoms, stateSpecific, selection, YEARS_ASC);
 
   // Category/Type/Indicator option lists cascade off the ticked-DISCOM atoms across every
-  // selected jurisdiction combined — same narrowing pattern as StateDetail.tsx's toolbar.
+  // selected jurisdiction combined, same narrowing pattern as StateDetail.tsx's toolbar.
   const allAtoms = atomsByState.flatMap(({ atoms }) => atoms);
-  const categoryOpts = categoryOptions(allAtoms);
-  const categoryScope = allAtoms.filter((a) => selectedCategory === 'all' || a.category === selectedCategory);
-  const typeOpts = typeOptions(categoryScope);
-  const typeScope = categoryScope.filter((a) => selectedType === 'all' || a.type === selectedType);
-  const indicatorOpts = indicatorOptions(typeScope);
+  const categoryOf = (a: { category: string; type: string; indicator: string }) => bucketFor(a.category, a.type, a.indicator);
+  const presentCategories = new Set<string>(allAtoms.map(categoryOf));
+  const categoryOpts = [...BUCKET_ORDER, UNMAPPED_BUCKET].filter((c) => presentCategories.has(c as string));
+  const categoryScope = allAtoms.filter((a) => selectedCategory === 'all' || categoryOf(a) === selectedCategory);
+  const indicatorOpts = indicatorOptions(categoryScope);
 
   const filteredAtomsByState = atomsByState.map(({ state, atoms }) => ({
     state,
-    atoms: atoms.filter((a) =>
-      matchesFilters(a, {
-        discoms: [],
-        categories: selectedCategory === 'all' ? [] : [selectedCategory],
-        types: selectedType === 'all' ? [] : [selectedType],
-        indicators: selectedIndicator === 'all' ? [] : [selectedIndicator],
-      })
+    atoms: atoms.filter(
+      (a) =>
+        (selectedCategory === 'all' || categoryOf(a) === selectedCategory) &&
+        matchesFilters(a, {
+          discoms: [],
+          categories: [],
+          types: [],
+          indicators: selectedIndicator === 'all' ? [] : [selectedIndicator],
+        })
     ),
   }));
   const cards = buildMultiDiscomComparableCards(filteredAtomsByState);
@@ -162,32 +162,13 @@ export default function CompareView({ states }: Props) {
             value={selectedCategory}
             onChange={(e) => {
               setSelectedCategory(e.target.value);
-              setSelectedType('all');
               setSelectedIndicator('all');
             }}
           >
-            <option value="all">All Categories</option>
+            <option value="all">All Indicator Categories</option>
             {categoryOpts.map((c) => (
               <option key={c} value={c}>
                 {c}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="toolbar-field">
-          <label>Indicator Type</label>
-          <select
-            value={selectedType}
-            onChange={(e) => {
-              setSelectedType(e.target.value);
-              setSelectedIndicator('all');
-            }}
-          >
-            <option value="all">All Types</option>
-            {typeOpts.map((t) => (
-              <option key={t} value={t}>
-                {t}
               </option>
             ))}
           </select>
@@ -249,7 +230,7 @@ export default function CompareView({ states }: Props) {
                 key={c.id}
                 section="compliance"
                 title={c.indicator}
-                typeLabel={c.type}
+                typeLabel={bucketFor(c.category, c.type, c.indicator)}
                 meaning={c.meaning}
                 unitSuffix={c.unitSuffix}
                 yAxisLabel={c.yAxisLabel}
@@ -270,7 +251,7 @@ export default function CompareView({ states }: Props) {
                 key={c.id}
                 section="trends"
                 title={c.indicator}
-                typeLabel={c.type}
+                typeLabel={bucketFor(c.category, c.type, c.indicator)}
                 meaning={c.meaning}
                 unitSuffix={c.unitSuffix}
                 yAxisLabel={c.yAxisLabel}

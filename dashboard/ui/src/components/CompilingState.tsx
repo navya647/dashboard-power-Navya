@@ -15,7 +15,7 @@ const TARGET_MOBILE = 110;
 const MAX_ZOOM = 6;
 
 /** Small-region treatment. A region is "small" when its on-screen area, after the normal zoom
- * above, is still under (SMALL_SIDE × target)² — i.e. smaller than a square ~23% of the target
+ * above, is still under (SMALL_SIDE × target)², i.e. smaller than a square ~23% of the target
  * size on a side (≈39px on desktop). That is decided from the geometry alone, so no list of UTs. */
 const SMALL_SIDE = 0.23;
 /** each island/fragment is drawn at least this big (longest side, px), scaled about its own
@@ -34,8 +34,8 @@ const MAX_ZOOM_SMALL = 60;
 const CONTEXT_FADE_RING = 1.35;
 const CONTEXT_FADE_PAST_LAND = 40;
 /** A small region that is a single piece and still at least this big (longest side, px) at the
- * normal zoom keeps the normal framing — the page-wide feathered backdrop, so it sits in a
- * regional map like every other page — and only adds the locator ring. It is zoomed to
+ * normal zoom keeps the normal framing, the page-wide feathered backdrop, so it sits in a
+ * regional map like every other page, and only adds the locator ring. It is zoomed to
  * READABLE_SHARE of the target size (tuned by eye on Delhi): big enough to read as the focal
  * subject, not so far that its neighbours crop down to a featureless sliver. */
 const READABLE_SMALL = 2 * MIN_FRAGMENT_FEW;
@@ -43,7 +43,7 @@ const READABLE_SHARE = 0.4;
 
 /** Higher-detail outlines for the smallest UTs (public/data/small-ut-detail.geojson, built by
  * scripts/build-small-ut-geometry.mjs). The main map is simplified enough that island groups
- * collapse — Lakshadweep is one polygon there, 35 here. Fetched once per page load and shared. */
+ * collapse, Lakshadweep is one polygon there, 35 here. Fetched once per page load and shared. */
 let smallUtDetail: Promise<IndiaGeoJSON | null> | null = null;
 function loadSmallUtDetail(): Promise<IndiaGeoJSON | null> {
   smallUtDetail ??= fetch('/data/small-ut-detail.geojson')
@@ -69,7 +69,7 @@ function polygonsOf(f: GeoFeature): Polygon[] {
 }
 
 /** smallest on-screen distance (px, under `proj`) from point `p` to any vertex of any feature
- * other than `exclude` — used to find how far the nearest neighbouring land is */
+ * other than `exclude`, used to find how far the nearest neighbouring land is */
 function nearestOtherLand(geojson: IndiaGeoJSON, exclude: string, proj: GeoProjection, p: [number, number]): number {
   let best = Infinity;
   for (const f of geojson.features) {
@@ -97,7 +97,7 @@ const isConnector = (word: string) => word === 'and' || word === '&';
 /** Where a region name may break across lines. A normal-length name never splits ("Andaman &
  * Nicobar" can't become "Andaman / & Nicobar"). In a long one, a connector ("and", "&") is glued
  * to the word after it, so no line ends on a dangling "and", and the final "X and Y" stays in one
- * piece — "…Nagar Haveli / and Daman and Diu", never "…Daman / and Diu". */
+ * piece, "…Nagar Haveli / and Daman and Diu", never "…Daman / and Diu". */
 function nameBreaks(name: string): string {
   const words = name.split(' ');
   if (name.length <= SHORT_NAME) return words.join(NBSP);
@@ -119,7 +119,7 @@ interface Fragment {
 /** The "data being compiled" view for any state/UT with nothing in either dataset (see
  * StateDetail.tsx). One SVG, one projection: the full India map is drawn as faint texture, and the
  * selected region is the very same geometry from that same projection, given the accent outline
- * and fill — so it can never drift off its real boundary. The projection is zoomed and panned so
+ * and fill, so it can never drift off its real boundary. The projection is zoomed and panned so
  * the region sits in an empty slot just above the text block. Very small regions (by on-screen
  * area) get each fragment drawn at a minimum readable size, a dashed locator ring, and a zoom
  * that keeps the nearest neighbouring land in view. */
@@ -203,7 +203,7 @@ export default function CompilingState({ name, geojson }: { name: string; geojso
       ringR = Math.max(clusterR * zoom + RING_PAD, MIN_FRAGMENT_FEW / 2 + RING_PAD);
       slotH = ringR * 2;
       // the backdrop is only shown inside a soft circle around the cluster, reaching just past
-      // the nearest land — a sliver of coast for context, not a whole side of the page
+      // the nearest land, a sliver of coast for context, not a whole side of the page
       fadeR = Math.min(Math.max(ringR * CONTEXT_FADE_RING, landD * zoom + CONTEXT_FADE_PAST_LAND), Math.min(w / 2, h / 2));
     }
 

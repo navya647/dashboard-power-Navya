@@ -19,7 +19,7 @@ export default function OverviewPage() {
   function removeState(name: string) {
     setCompareSet((prev) => prev.filter((s) => s !== name));
   }
-  // only reachable in compare mode — outside it, HeroSection sends a click straight to
+  // only reachable in compare mode, outside it, HeroSection sends a click straight to
   // onViewFullReport instead of here. HeroMap itself already refuses the click for a jurisdiction
   // with no captured evidence in either dataset (stateMapStatus === 'idle'), so toggleState is
   // never called with one.
@@ -33,7 +33,7 @@ export default function OverviewPage() {
 
   return (
     <div id="page-overview">
-      {/* HeroSection reads the URL (useSearchParams — /?view=map), which needs a Suspense boundary */}
+      {/* HeroSection reads the URL (useSearchParams, /?view=map), which needs a Suspense boundary */}
       <Suspense fallback={null}>
         <HeroSection
           discoms={discoms.discoms}

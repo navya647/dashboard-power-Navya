@@ -12,7 +12,7 @@ interface Props {
 }
 
 export default function AnimatedNumber({ target, digits = 0, duration = 750, prefix = '', suffix = '' }: Props) {
-  const [display, setDisplay] = useState('—');
+  const [display, setDisplay] = useState('N/A');
   const frame = useRef<number | null>(null);
 
   useEffect(() => {
@@ -30,6 +30,6 @@ export default function AnimatedNumber({ target, digits = 0, duration = 750, pre
     };
   }, [target, digits, duration, prefix, suffix]);
 
-  if (target === null || Number.isNaN(target)) return <>—</>;
+  if (target === null || Number.isNaN(target)) return <>N/A</>;
   return <>{display}</>;
 }

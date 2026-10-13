@@ -13,8 +13,8 @@ import type { CardPoint } from './indicatorContext';
  *   otherwise it is 'unknown' and the UI must not call the movement an improvement or decline.
  *
  * No movement is computed at all ('basis-changed') when the two years' figures are on different
- * reporting bases — a different display unit (minutes/year vs hours/quarter), or an explicit
- * minutes/hours or quarter/year conflict in their descriptions — since subtracting them would
+ * reporting bases, a different display unit (minutes/year vs hours/quarter), or an explicit
+ * minutes/hours or quarter/year conflict in their descriptions, since subtracting them would
  * compare different things. */
 
 export type Performance = 'improved' | 'worsened' | 'no-change' | 'unknown';

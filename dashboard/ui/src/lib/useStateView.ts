@@ -25,19 +25,19 @@ const Q_DISCOM = 'discom';
 const Q_INDICATOR = 'indicator';
 const Q_YEAR = 'year';
 
-/** All filter state and derived data for one state's pages (overview and Detailed Data) — one
+/** All filter state and derived data for one state's pages (overview and Detailed Data), one
  * DISCOM / Indicator / Year filter set driving both the indicator analysis and the source-record
  * table, so the two pages never disagree about what a filter means. Pure state + derivation; no
- * markup. Every hook runs unconditionally — callers branch on `loading`/`error`/`isEmpty` after. */
+ * markup. Every hook runs unconditionally, callers branch on `loading`/`error`/`isEmpty` after. */
 export function useStateView(name: string) {
   const { discoms, geojson, stateSpecific, loading, error } = useData();
-  // the router's view of the URL — unlike window.location, already the *target* URL during the
+  // the router's view of the URL, unlike window.location, already the *target* URL during the
   // first render after a client-side navigation
   const searchParams = useSearchParams();
 
   // DISCOM and Indicator are tickable multi-selects; an empty DISCOM list means "no constraint"
   // (all DISCOMs), but an empty `selectedIndicators` means nothing is shown at all until at least
-  // one indicator is picked. Indicator Category and Indicator Type aren't filters of their own —
+  // one indicator is picked. Indicator Category and Indicator Type aren't filters of their own,
   // every indicator name belongs to exactly one category/type within a state, so they're derived
   // from the picked indicators (see `filters` below).
   const [selectedDiscoms, setSelectedDiscoms] = useState<string[]>([]);
@@ -45,7 +45,7 @@ export function useStateView(name: string) {
   const [selectedIndicators, setSelectedIndicators] = useState<string[]>([]);
   const [showAllYears, setShowAllYears] = useState(true);
   // Set when a DISCOM change left none of the picked indicators available, so the page fell back
-  // to that DISCOM selection's own default indicator instead of going empty — says what happened.
+  // to that DISCOM selection's own default indicator instead of going empty, says what happened.
   const [fallbackNote, setFallbackNote] = useState<string | null>(null);
 
   const YEARS_ASC = discoms ? [...discoms.years].reverse() : [];
@@ -53,8 +53,8 @@ export function useStateView(name: string) {
   const atoms = buildUnifiedAtoms(discoms, allDs, stateSpecific, name, YEARS_ASC);
   const isEmpty = !allDs.length && !stateHasSopData(stateSpecific, name);
 
-  // The page-load default — also exactly what Reset returns to: all DISCOMs, the default indicator
-  // (SAIDI if reported, else the most-reported one — see pickDefaultIndicator). Reset also returns
+  // The page-load default, also exactly what Reset returns to: all DISCOMs, the default indicator
+  // (SAIDI if reported, else the most-reported one, see pickDefaultIndicator). Reset also returns
   // Year to "All years"; moving to another state's page leaves Year as it was.
   function applyDefaultView(stateAtoms: UnifiedIndicatorAtom[], resetYear: boolean) {
     const preferred = pickDefaultIndicator(stateAtoms);
@@ -68,7 +68,7 @@ export function useStateView(name: string) {
   }
 
   /** Restores filters from the URL (a refresh, or arriving from the other page of the pair).
-   * Every value is validated against this state's own data — an unknown DISCOM/indicator/year is
+   * Every value is validated against this state's own data, an unknown DISCOM/indicator/year is
    * dropped, and if no valid indicator survives, the normal default applies. Returns false when
    * the URL carries no filter at all. */
   function applyFromUrl(stateAtoms: UnifiedIndicatorAtom[], years: string[]): boolean {
@@ -97,7 +97,7 @@ export function useStateView(name: string) {
     return true;
   }
 
-  // Re-picks (and resets every filter for) a fresh default — or the filters in the URL — each time
+  // Re-picks (and resets every filter for) a fresh default, or the filters in the URL, each time
   // the viewer lands on a *different* state/UT than `name` last was. Covers both the first mount and
   // a client-side navigation between two state pages, which reuses this same component instance
   // (same dynamic route, just a different `name` prop) rather than remounting it. Done during
@@ -120,7 +120,7 @@ export function useStateView(name: string) {
     selectedYear == null &&
     (defaultIndicator ? selectedIndicators.length === 1 && selectedIndicators[0] === defaultIndicator : selectedIndicators.length === 0);
 
-  // The current filters as a query string ('' at the default view) — kept in the address bar so a
+  // The current filters as a query string ('' at the default view), kept in the address bar so a
   // refresh restores them, and carried on the links between the overview and Detailed Data pages.
   const params = new URLSearchParams();
   if (!atDefault) {
@@ -131,7 +131,7 @@ export function useStateView(name: string) {
   const queryString = params.toString() ? `?${params.toString()}` : '';
 
   useEffect(() => {
-    // only once this state's own filters have been restored — writing earlier would replace the
+    // only once this state's own filters have been restored, writing earlier would replace the
     // incoming URL with the previous state's (or empty) filters before they were ever read
     if (appliedFor !== name) return;
     if (window.location.search === queryString) return;
@@ -192,7 +192,7 @@ export function useStateView(name: string) {
     }
   }
 
-  // Nothing shown — indicator analysis or source records — until at least one indicator is
+  // Nothing shown, indicator analysis or source records, until at least one indicator is
   // explicitly selected: an empty `filteredAtoms` empties both `cards` and `tableRows`.
   const filteredAtoms = selectedIndicators.length === 0 ? [] : atoms.filter((a) => matchesFilters(a, filters));
   const cards = buildUnifiedCards(filteredAtoms);

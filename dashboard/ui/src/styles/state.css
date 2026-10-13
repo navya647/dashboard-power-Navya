@@ -9,7 +9,7 @@
   gap: 26px;
   /* main.app-main's shared 72px top padding (tuned for the home page's hero, which cancels it via
      its own negative margin) reads as a lot of unused space above the breadcrumb on this page,
-     which has no such cancellation — pull the whole page up without touching that shared token. */
+     which has no such cancellation, pull the whole page up without touching that shared token. */
   margin-top: -32px;
 }
 .state-topbar {
@@ -122,7 +122,7 @@
   fill: none;
 }
 /* dark mode: the same faint texture and pale fill wash out against the charcoal page and let the
-   pill/title/button take over, so lift them a step — the region still clearly leads the backdrop */
+   pill/title/button take over, so lift them a step, the region still clearly leads the backdrop */
 :root[data-theme='dark'] .compiling-map-india path {
   fill: var(--ink);
   fill-opacity: 0.07;
@@ -291,7 +291,7 @@
   transform: translateX(3px);
 }
 
-/* staggered entrance: region, pill, headline, button — 80ms apart */
+/* staggered entrance: region, pill, headline, button, 80ms apart */
 .compiling-rise {
   animation: compiling-rise 400ms ease-out both;
 }
@@ -391,21 +391,21 @@
   pointer-events: none;
   background: linear-gradient(120deg, color-mix(in srgb, var(--hero-color, var(--accent)) 12%, transparent) 0%, transparent 55%);
 }
-/* the compact masthead (state page): two columns — silhouette + name + meta line on the left,
+/* the compact masthead (state page): two columns, silhouette + name + meta line on the left,
    the DISCOM list on the right (short name in a fixed-width column, then the full name), both
    vertically centred, split by a hairline. Height is just the taller column plus padding. */
 .state-hero--compact {
   flex-direction: row;
   align-items: center;
-  gap: 28px;
-  padding: 18px 24px;
+  gap: 36px;
+  padding: 24px 32px;
 }
 .state-hero-title {
   position: relative;
   flex: 1 1 0;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 20px;
   min-width: 0;
 }
 .state-hero-shape {
@@ -426,7 +426,7 @@
 /* secondary metadata: a touch smaller than the DISCOM rows so the order reads
    name → DISCOMs → meta; wraps naturally for long strings */
 .state-hero-meta {
-  margin: 5px 0 0;
+  margin: 8px 0 0;
   font-size: 12.25px;
   line-height: 1.45;
   color: var(--muted);
@@ -441,7 +441,7 @@
   container-type: inline-size;
   flex: 0 0 48%;
   min-width: 0;
-  padding: 9px 0 9px 28px;
+  padding: 9px 0 9px 36px;
 }
 .state-hero-discoms::before {
   content: '';
@@ -455,7 +455,7 @@
 /* One grid for the whole list: every row's two parts (li and, when a 5+ list is split in two,
    each half's ul too, are display:contents) drop straight into it, so all short names share one
    column and every full name starts at the same x. The two halves of a 5+ list only sit side by
-   side when the column is wide enough for the long full names to stay on one line — narrower,
+   side when the column is wide enough for the long full names to stay on one line, narrower,
    each name wrapped onto 2-4 lines and the split card came out taller (measured: 168-221px vs
    159px as one list at 1280-1600px), so there they simply continue as one list. */
 .hero-discom-list {
@@ -474,10 +474,38 @@
 .hero-discom-list li {
   display: contents;
 }
+/* the state's regulator heads the DISCOM list in the same two columns (abbreviation, then full
+   name), the abbreviation in the state's own colour and a hairline beneath, so the list reads
+   regulator → the DISCOMs it regulates. A subgrid keeps its columns identical to the rows below. */
+.hero-regulator {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  align-items: baseline;
+  margin-bottom: 7px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+}
+.hero-regulator b {
+  font-family: var(--font-condensed);
+  font-weight: 600;
+  color: var(--hero-color, var(--accent));
+}
+.hero-regulator span {
+  color: var(--ink);
+  font-weight: 500;
+  overflow-wrap: break-word;
+}
 @container (min-width: 740px) {
   .hero-discom-list--split {
     display: flex;
-    gap: 24px;
+    flex-wrap: wrap;
+    gap: 0 24px;
+  }
+  .hero-discom-list--split .hero-regulator {
+    flex: 0 0 100%;
+    grid-template-columns: minmax(5.5em, max-content) minmax(0, 1fr);
+    column-gap: 12px;
   }
   .hero-discom-list--split ul {
     flex: 1 1 0;
@@ -488,7 +516,7 @@
     gap: 3.5px 12px;
   }
 }
-/* abbreviations: 600 (the heaviest Montserrat weight loaded — 700 was synthesised) so they
+/* abbreviations: 600 (the heaviest Montserrat weight loaded, 700 was synthesised) so they
    stay scannable without competing with the State/UT name */
 .hero-discom-list b {
   font-family: var(--font-condensed);
@@ -535,11 +563,11 @@
   }
 }
 
-/* ---------- one compact analytical toolbar drives every section below it — the chart gallery
-   (both datasets) and the Complete Data tables — rather than each owning its own picker. Focus
+/* ---------- one compact analytical toolbar drives every section below it, the chart gallery
+   (both datasets) and the Complete Data tables, rather than each owning its own picker. Focus
    Year lives in this same row (not a separately floating/sticky control) so it reads as one more
    toolbar input, not an accidental overlay. ---------- */
-/* A CSS grid (not flex-wrap) so every field gets the same column width — with flex-wrap, fields
+/* A CSS grid (not flex-wrap) so every field gets the same column width, with flex-wrap, fields
    just sit at their own content width, so wrapping to a second row (e.g. 3 fields fit the first
    row, the 4th falls alone onto the second) left that lone field at a different width/position
    than the ones above it, reading as lopsided rather than a clean grid. */
@@ -555,7 +583,7 @@
   box-shadow: var(--shadow-sm);
   animation: fadeInUp 520ms var(--ease) both;
 }
-/* Stacked (label above, select below) rather than side-by-side — a longer label ("Indicator
+/* Stacked (label above, select below) rather than side-by-side, a longer label ("Indicator
    Category", "Indicator Type") wrapping onto two lines next to a one-line label ("Discom") was
    what actually made the row look uneven: each field's label and select sat at different
    heights/baselines depending on how many lines the label happened to take. Stacked, every field's
@@ -601,14 +629,14 @@
 }
 /* the <select> itself picks up `color` from inheritance/computed styles fine, but its dropdown
    popup list does not reliably inherit either color or background from the parent element on
-   every platform (confirmed on Windows/Chromium) — without this, the popup falls back to a
+   every platform (confirmed on Windows/Chromium), without this, the popup falls back to a
    default white background with inherited (near-white, in dark mode) text. */
 .toolbar-field select option {
   color: var(--ink);
   background: var(--panel);
 }
 /* `.toolbar`'s own fadeInUp animation (targeting opacity/transform) makes every `.toolbar` its own
-   stacking context, which normally doesn't matter — but on the Compare page two `.toolbar` rows
+   stacking context, which normally doesn't matter, but on the Compare page two `.toolbar` rows
    sit stacked (DISCOM pickers, then Indicator Category/Type/Indicator), and the first row's
    DiscomMultiSelect dropdown (z-index: 20) is scoped *inside* that first stacking context, so it
    can't rise above the second row's opaque background regardless of its own z-index. Raising the
@@ -625,7 +653,7 @@
   padding-top: 0;
 }
 
-/* ---------- FilterDropdown — the one trigger + menu shell behind every filter-bar control
+/* ---------- FilterDropdown, the one trigger + menu shell behind every filter-bar control
    (DISCOM and Indicator checkbox lists, the single-select Year list; also the Compare page's DISCOM
    pickers). One trigger style and one menu style, so the three filters read as one system. ---------- */
 .discom-multiselect {
@@ -810,7 +838,7 @@
   white-space: nowrap;
   pointer-events: none;
 }
-/* the indicator's type as quiet secondary text beside it — the first thing to give way */
+/* the indicator's type as quiet secondary text beside it, the first thing to give way */
 .filter-value-sub {
   flex: 0 1 auto;
   min-width: 0;
@@ -850,7 +878,7 @@
   border-radius: 4px;
   transition: border-color 150ms var(--ease), box-shadow 150ms var(--ease);
 }
-/* the warm active colour as the border plus a soft halo — clear, but not a bright ring */
+/* the warm active colour as the border plus a soft halo, clear, but not a bright ring */
 .indicator-select-search:focus-visible {
   outline: none;
   border-color: var(--mv-indicator);
@@ -991,7 +1019,7 @@
   color: var(--muted);
   position: relative;
 }
-/* one DISCOM per line — the previous single "·"-joined line read as cramped once a state had
+/* one DISCOM per line, the previous single "·"-joined line read as cramped once a state had
    three-plus DISCOMs with long formal names, wrapping mid-name with no visual separation. */
 .state-hero ul.sub {
   list-style: none;
@@ -1130,7 +1158,7 @@
   padding: 4px 11px;
   border-radius: var(--radius-pill);
   flex: none;
-  /* the DISCOM's raw categorical hue, set inline as --badge-color (see Collapsible.tsx) — used
+  /* the DISCOM's raw categorical hue, set inline as --badge-color (see Collapsible.tsx), used
      directly as text color in light mode, but some of these hues (deep green, deep purple) are too
      dark to read against the low-alpha tint of themselves once that tint sits on the dark panel
      instead of a white one, so dark mode lightens the same hue rather than using it as-is. */
@@ -1154,7 +1182,7 @@
   transform: rotate(180deg);
 }
 /* height can't be transitioned directly (it's not a fixed value), so the row itself is the
-   animated grid track — 0fr collapsed, 1fr open — with the actual content clipped inside via
+   animated grid track, 0fr collapsed, 1fr open, with the actual content clipped inside via
    overflow:hidden on the child. Every browser handles this without measuring anything in JS. */
 .discom-detail-panel {
   display: grid;

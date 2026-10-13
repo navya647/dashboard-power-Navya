@@ -2,14 +2,14 @@ import { fyLabel } from './format';
 import type { CardSeries } from './indicatorContext';
 
 /** Source-reference helpers for the indicator module. Everything here is regrouping of fields the
- * extraction already carries — nothing is looked up or inferred from outside the data:
+ * extraction already carries, nothing is looked up or inferred from outside the data:
  *
  * - Regulations come from each DISCOM/year block's `regulation` field: the regulation titles a
- *   sheet lists on its second row (principal regulation, revisions, amendments — often several,
+ *   sheet lists on its second row (principal regulation, revisions, amendments, often several,
  *   spread across columns), which the extraction joins with ' | '. Split back on exactly that
  *   delimiter, never on anything inside one title. The extraction attaches a sheet's header-row
  *   citations to the first year block only, so a citation is sheet-level (per DISCOM), not a
- *   statement about which years it covers — see `regulationAppliesLabel`.
+ *   statement about which years it covers, see `regulationAppliesLabel`.
  * - Neither workbook records a URL or file for any regulation or for any year's reported figures.
  *   `SOURCE_URLS` is where one goes once it exists (keyed by the exact citation text); until then
  *   every reference renders as plain text and per-year report documents read "N/A". */
@@ -23,7 +23,7 @@ export function sourceUrlFor(title: string): string | null {
 const clean = (s: string) => s.replace(/\s+/g, ' ').trim();
 
 /** Grouping key for two spellings of the same text that differ only in spacing or a trailing full
- * stop ("…per quarter ." vs "…per quarter", "RG-8 (II)" vs "RG-8(II)") — presentation-only; the
+ * stop ("…per quarter ." vs "…per quarter", "RG-8 (II)" vs "RG-8(II)"), presentation-only; the
  * first-seen spelling is what gets displayed. */
 export function textKey(s: string): string {
   return clean(s).replace(/[\s.]+$/, '').replace(/\s+/g, '').toLowerCase();
@@ -73,7 +73,7 @@ export interface TextGroup {
 }
 
 /** Distinct values of one text field across every series/year of an indicator, each with where it
- * occurs — so a standard that differs between DISCOMs (or changed in one year) is listed once per
+ * occurs, so a standard that differs between DISCOMs (or changed in one year) is listed once per
  * distinct text with whom it applies to, instead of silently showing only the first one. */
 export function groupTextField(series: CardSeries[], pick: (p: CardSeries['points'][number]) => string | null, skip?: (t: string) => boolean): TextGroup[] {
   const order: string[] = [];
@@ -121,7 +121,7 @@ export function collectRegulationSources(series: CardSeries[]): RegulationSource
   return order.map((k) => byKey.get(k)!);
 }
 
-/** Which DISCOMs cite a regulation (sheet-level) — plus, only for a sheet that lists citations
+/** Which DISCOMs cite a regulation (sheet-level), plus, only for a sheet that lists citations
  * above more than one year's rows, the year block(s) it was listed above, since that's the only
  * year information the source actually gives. '' when every citing DISCOM on the indicator cites
  * it and no sheet has a second citation block. */
@@ -141,7 +141,7 @@ export function regulationAppliesLabel(r: RegulationSource, series: CardSeries[]
     .join(' · ');
 }
 
-/** Placeholder text the source uses in place of a value ("N/A") — treated as absent. "Not
+/** Placeholder text the source uses in place of a value ("N/A"), treated as absent. "Not
  * specified" is NOT in here: where the sheet literally says that, it's real reported content. */
 export function isNA(t: string | null | undefined): boolean {
   // String(): the source JSON isn't always the string its type says (numeric benchmarks)

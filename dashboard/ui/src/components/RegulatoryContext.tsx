@@ -5,7 +5,7 @@ import { fyLabel } from '@/lib/format';
 import { formatGroupedLabel, type CardSeries, type IndicatorContext } from '@/lib/indicatorContext';
 
 /** Extraction joins multiple citations for the same year/DISCOM with ' | ' (see
- * extraction_common.py / extraction_state_specific.py) — split back on that exact delimiter so
+ * extraction_common.py / extraction_state_specific.py), split back on that exact delimiter so
  * each citation reads on its own line, never guessing at structure within one citation's text. */
 function citationParts(text: string): string[] {
   return text
@@ -16,7 +16,7 @@ function citationParts(text: string): string[] {
 
 /** "Source regulation" as a disclosure rather than a permanent full-width row: closed, it's one
  * quiet line; opened, it lists every regulation text cited for this indicator and which DISCOMs
- * (and, where it varies year to year, which years) it applies to. Same grouping as before —
+ * (and, where it varies year to year, which years) it applies to. Same grouping as before,
  * `constantRegulations` / `variantRegulations` from lib/indicatorContext. Renders nothing when the
  * source cites no regulation at all. */
 export default function RegulatoryContext({ ctx, series }: { ctx: IndicatorContext; series: CardSeries[] }) {
