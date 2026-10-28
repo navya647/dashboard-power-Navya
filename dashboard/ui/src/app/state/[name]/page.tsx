@@ -2,9 +2,9 @@ import { readFileSync } from 'fs';
 import path from 'path';
 import type { Metadata } from 'next';
 import StateDetail from '@/components/StateDetail';
-import { stateHasSopData } from '@/lib/computations';
+import { stateIsTracked } from '@/lib/computations';
 import { slugify } from '@/lib/slug';
-import type { DiscomsData, StateSpecificData } from '@/lib/types';
+import type { MasterData } from '@/lib/types';
 
 const readJson = <T,>(file: string): T => JSON.parse(readFileSync(path.join(process.cwd(), 'public/data', file), 'utf8')) as T;
 
@@ -22,16 +22,14 @@ export function generateStaticParams() {
   return loadAllStateNames().map((name) => ({ name: slugify(name) }));
 }
 
-// A state with nothing in either dataset gets the "data being compiled" page, whose visible
+// A state with no row in the master sheet gets the "data being compiled" page, whose visible
 // headline is only the region name, so its <title> carries the full sentence instead. Same check
 // StateDetail uses to pick that page; every other state page keeps the site-wide title.
 export async function generateMetadata({ params }: { params: Promise<{ name: string }> }): Promise<Metadata> {
   const { name: slug } = await params;
   const name = loadAllStateNames().find((s) => slugify(s) === slug);
   if (!name) return {};
-  const discoms = readJson<DiscomsData>('discoms2.json');
-  const stateSpecific = readJson<StateSpecificData>('state_specific.json');
-  const isEmpty = !discoms.discoms.some((d) => d.state === name) && !stateHasSopData(stateSpecific, name);
+  const isEmpty = !stateIsTracked(readJson<MasterData>('sop_master.json'), name);
   return isEmpty ? { title: `Data for ${name} is being compiled · India Power Supply, Service Quality and Safety Dashboard` } : {};
 }
 

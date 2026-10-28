@@ -7,13 +7,13 @@ import { useNoScrollbar } from "@/lib/useNoScrollbar";
 import AboutKicker from "./AboutKicker";
 import GlossaryList from "./GlossaryList";
 
-/** The Glossary page (/about/glossary, reached from the About page): every indicator in the two
- * performance datasets (bucket, category, name, definition as the source sheets give it), under the
+/** The Glossary page (/about/glossary, reached from the About page): every indicator in
+ * DISCOM_SoP_master.xlsx (category, name, definition as the sheet gives it), under the
  * Methodology page's heading typography (.methodology-page/.kicker/.method-hero-title), as one
  * searchable, filterable list. */
 export default function GlossaryView() {
-  const { discoms, stateSpecific, loading, error } = useData();
-  const glossary = useMemo(() => buildGlossary(discoms, stateSpecific), [discoms, stateSpecific]);
+  const { master, loading, error } = useData();
+  const glossary = useMemo(() => buildGlossary(master), [master]);
   useNoScrollbar();
 
   return (

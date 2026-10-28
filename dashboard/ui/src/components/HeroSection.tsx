@@ -8,11 +8,10 @@ import StateSearch from './StateSearch';
 import ComparePanel from './ComparePanel';
 import { compareColor, MAP_STATUS_LABEL } from '@/lib/computations';
 import { LANDING_HREF, MAP_HREF, MAP_VIEW_PARAM, MAP_VIEW_VALUE } from '@/lib/routes';
-import type { Discom, IndiaGeoJSON, StateSpecificData } from '@/lib/types';
+import type { IndiaGeoJSON, MasterData } from '@/lib/types';
 
 interface Props {
-  discoms: Discom[];
-  stateSpecific?: StateSpecificData | null;
+  master: MasterData | null;
   geojson: IndiaGeoJSON;
   compareSet: string[];
   onToggleState: (name: string) => void;
@@ -38,40 +37,15 @@ type HeroAnim = 'to-map' | 'to-hero';
 /** Total length of either crossfade; matches the keyframe timings in hero.css (the last phase of
  * each ends at 650ms). */
 const EXPLORE_ANIM_MS = 680;
-/** Accumulated wheel/trackpad delta (px) in one direction needed to navigate, and the pause after
- * which a partial accumulation is forgotten. */
-const WHEEL_TRIGGER_PX = 40;
-const WHEEL_IDLE_RESET_MS = 300;
-/** After a navigation (and after a scrollable list inside the map view has used up a gesture), the
- * wheel stays locked until the input goes quiet for this long, so a trackpad's momentum tail, or
- * the rest of a gesture that just scrolled a list to its top, can never start another navigation:
- * one gesture, at most one transition. */
-const GESTURE_GAP_MS = 250;
-
-/** Whether the wheel at `target` belongs to a scrollable element inside the stage (the state
- * search list, the compare chip list, any overflow panel) because that element can still scroll in
- * the wheel's direction. At its boundary in that direction it returns false, so the gesture is
- * free to navigate. */
-function scrollableCanScroll(target: EventTarget | null, stop: Element, up: boolean) {
-  for (let n = target instanceof Element ? target : null; n && n !== stop; n = n.parentElement) {
-    if (n.scrollHeight <= n.clientHeight + 1) continue;
-    const { overflowY } = getComputedStyle(n);
-    if (overflowY !== 'auto' && overflowY !== 'scroll' && overflowY !== 'overlay') continue;
-    if (up ? n.scrollTop > 0 : n.scrollTop + n.clientHeight < n.scrollHeight - 1) return true;
-  }
-  return false;
-}
-
 /** The home page: exactly two full-screen frames, the sunset landing view (headline + "Explore
  * dashboard") and the interactive map view. On desktop the page itself never scrolls (scrollY stays
- * 0): the Explore button or a scroll down on the landing view go straight to About
- * (triggerAboutTransition; the map is reached from there or from MAP_HREF, which plays the
- * landing → map transition, triggerDashboardTransition), and a scroll up on the map view plays its mirror image back
- * (triggerLandingTransition). Below the mobile breakpoint the two stack in a normal scrolling column
- * instead (the map view is taller than a phone screen). */
+ * 0): only the Explore button leaves the landing view, for About (triggerAboutTransition; the map is
+ * reached from there or from MAP_HREF, which plays the landing → map transition,
+ * triggerDashboardTransition). No scroll, swipe or key moves between the two frames. Below the mobile
+ * breakpoint the two stack in a normal scrolling column instead (the map view is taller than a phone
+ * screen). */
 export default function HeroSection({
-  discoms,
-  stateSpecific,
+  master,
   geojson,
   compareSet,
   onToggleState,
@@ -149,14 +123,8 @@ export default function HeroSection({
   // reached from the About page, the sidebar's Home, or any MAP_HREF control)
   function triggerAboutTransition() {
     if (animRef.current) return;
-    router.push('/about');
+    router.push('/about'); // a push, so Back from About is the landing page's own history entry
   }
-  // Map → landing: an upward gesture on the map view (desktop only)
-  function triggerLandingTransition() {
-    if (isMobile()) return;
-    runTransition('landing', 'to-hero');
-  }
-
   // outside compare mode, a click jumps straight to that state's full report, no intermediate
   // preview card. In compare mode it instead adds/removes the state from the comparison set.
   function handleStateClick(name: string) {
@@ -189,102 +157,6 @@ export default function HeroSection({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- triggerDashboardTransition only uses refs and setters
   }, [wantMap]);
-
-  useEffect(() => {
-    const stage = stageRef.current;
-    if (!stage) return;
-
-    // The input handlers only ever start a transition, never change the view themselves: a
-    // deliberate downward gesture on the landing view calls triggerDashboardTransition(), and a
-    // deliberate upward gesture on the map view calls triggerLandingTransition(). Upward on the
-    // landing view and downward on the map view do nothing. They read the view and transition
-    // state from refs, so they never act on a stale render.
-    //
-    // Wheel / trackpad: WHEEL_TRIGGER_PX of accumulated delta in the navigating direction (a pause
-    // of WHEEL_IDLE_RESET_MS or a change of direction resets it). On the map view, a wheel over a
-    // scrollable list that can still scroll up is left to the list. Every navigation, and every
-    // gesture a list used up, locks the wheel until the input goes quiet for GESTURE_GAP_MS.
-    let wheelAccum = 0;
-    let lastWheel = 0;
-    let gestureLocked = false;
-    function lockGesture() {
-      gestureLocked = true;
-      wheelAccum = 0;
-    }
-    onTransitionEndRef.current = () => {
-      wheelAccum = 0; // the lock itself stays until the wheel goes quiet
-    };
-    function onWheel(e: WheelEvent) {
-      if (isMobile()) return;
-      const now = performance.now();
-      const sinceLast = now - lastWheel;
-      lastWheel = now;
-      if (animRef.current) return; // ignore everything while a transition plays
-      if (gestureLocked) {
-        if (sinceLast < GESTURE_GAP_MS) return; // still the same gesture (or its momentum)
-        gestureLocked = false;
-      }
-      const dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * window.innerHeight : e.deltaY;
-      if (dy === 0) return;
-      const onLanding = viewRef.current === 'landing';
-      const navigating = onLanding ? dy > 0 : dy < 0; // down on the landing view, up on the map
-      if (!navigating) {
-        wheelAccum = 0;
-        return;
-      }
-      if (!onLanding && scrollableCanScroll(e.target, stage!, true)) {
-        lockGesture(); // the list scrolls; the rest of this gesture can't navigate once it hits its top
-        return;
-      }
-      if (sinceLast > WHEEL_IDLE_RESET_MS) wheelAccum = 0;
-      wheelAccum += Math.abs(dy);
-      if (wheelAccum < WHEEL_TRIGGER_PX) return;
-      lockGesture();
-      if (onLanding) triggerAboutTransition();
-      else triggerLandingTransition();
-    }
-    // Keyboard, outside text fields: the "scroll down" keys on the landing view, the "scroll up"
-    // keys on the map view
-    function onKey(e: KeyboardEvent) {
-      if (isMobile() || animRef.current || e.altKey || e.ctrlKey || e.metaKey) return;
-      const t = e.target as HTMLElement | null;
-      if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
-      const onButton = t?.tagName === 'BUTTON';
-      if (viewRef.current === 'landing') {
-        if (['ArrowDown', 'PageDown', 'End'].includes(e.key) || (e.key === ' ' && !e.shiftKey && !onButton)) triggerAboutTransition();
-      } else if (['ArrowUp', 'PageUp', 'Home'].includes(e.key) || (e.key === ' ' && e.shiftKey && !onButton)) {
-        triggerLandingTransition();
-      }
-    }
-    // Touchscreen: a swipe of more than 40px, up on the landing view, down on the map view
-    // (unless it was scrolling a list that can still scroll up)
-    let touchY: number | null = null;
-    function onTouchStart(e: TouchEvent) {
-      touchY = e.touches[0]?.clientY ?? null;
-    }
-    function onTouchEnd(e: TouchEvent) {
-      if (isMobile() || animRef.current || touchY == null) return;
-      const dy = touchY - (e.changedTouches[0]?.clientY ?? touchY);
-      touchY = null;
-      if (viewRef.current === 'landing') {
-        if (dy > 40) triggerAboutTransition();
-      } else if (dy < -40 && !scrollableCanScroll(e.target, stage!, true)) {
-        triggerLandingTransition();
-      }
-    }
-
-    window.addEventListener('wheel', onWheel, { passive: true });
-    window.addEventListener('keydown', onKey);
-    stage.addEventListener('touchstart', onTouchStart, { passive: true });
-    stage.addEventListener('touchend', onTouchEnd, { passive: true });
-    return () => {
-      onTransitionEndRef.current = null;
-      window.removeEventListener('wheel', onWheel);
-      window.removeEventListener('keydown', onKey);
-      stage.removeEventListener('touchstart', onTouchStart);
-      stage.removeEventListener('touchend', onTouchEnd);
-    };
-  }, []);
 
   // While the landing view is the frame on screen, the sidebar (outside this section) matches the
   // sunset and hides the theme toggle, see :root[data-hero-landing] in layout.css; while the map
@@ -331,10 +203,12 @@ export default function HeroSection({
         </div>
 
         <div className="hero-coverage-badge">
-          {/* eslint-disable-next-line @next/next/no-img-element -- static export has no Image Optimization API */}
-          <img src="/acpet-logo.png" alt="ACPET" width={208} height={69} className="hero-logo hero-logo-light" />
-          {/* eslint-disable-next-line @next/next/no-img-element -- static export has no Image Optimization API */}
-          <img src="/acpet-logo-white.png" alt="ACPET" width={208} height={69} className="hero-logo hero-logo-dark" />
+          <a href="https://acpet.ashoka.edu.in/" target="_blank" rel="noopener noreferrer" aria-label="ACPET website (opens in a new tab)" className="acpet-link">
+            {/* eslint-disable-next-line @next/next/no-img-element -- static export has no Image Optimization API */}
+            <img src="/acpet-logo.png" alt="ACPET" width={208} height={69} className="hero-logo hero-logo-light" />
+            {/* eslint-disable-next-line @next/next/no-img-element -- static export has no Image Optimization API */}
+            <img src="/acpet-logo-white.png" alt="ACPET" width={208} height={69} className="hero-logo hero-logo-dark" />
+          </a>
         </div>
 
         <div className="hero-editorial">
@@ -366,10 +240,12 @@ export default function HeroSection({
       <div className="hero-sticky" ref={mapViewRef}>
         <div className="hero-logo-fade" aria-hidden="true" />
         <div className="hero-coverage-badge">
-          {/* eslint-disable-next-line @next/next/no-img-element -- static export has no Image Optimization API */}
-          <img src="/acpet-logo.png" alt="ACPET" width={208} height={69} className="hero-logo hero-logo-light" />
-          {/* eslint-disable-next-line @next/next/no-img-element -- static export has no Image Optimization API */}
-          <img src="/acpet-logo-white.png" alt="ACPET" width={208} height={69} className="hero-logo hero-logo-dark" />
+          <a href="https://acpet.ashoka.edu.in/" target="_blank" rel="noopener noreferrer" aria-label="ACPET website (opens in a new tab)" className="acpet-link">
+            {/* eslint-disable-next-line @next/next/no-img-element -- static export has no Image Optimization API */}
+            <img src="/acpet-logo.png" alt="ACPET" width={208} height={69} className="hero-logo hero-logo-light" />
+            {/* eslint-disable-next-line @next/next/no-img-element -- static export has no Image Optimization API */}
+            <img src="/acpet-logo-white.png" alt="ACPET" width={208} height={69} className="hero-logo hero-logo-dark" />
+          </a>
         </div>
 
         {/* before the map stage in the DOM so that on mobile (a static column) it sits above the map */}
@@ -378,8 +254,7 @@ export default function HeroSection({
             renderSearch={(hintId) => (
               <StateSearch
                 names={regionNames}
-                discoms={discoms}
-                stateSpecific={stateSpecific}
+                master={master}
                 compareMode={compareMode}
                 compareSet={compareSet}
                 onSelect={handleSearchSelect}
@@ -400,8 +275,7 @@ export default function HeroSection({
         <div className="hero-map-stage">
           <div className="hero-map-inner">
             <HeroMap
-              discoms={discoms}
-              stateSpecific={stateSpecific}
+              master={master}
               geojson={geojson}
               compareColorOf={(name) => compareColor(compareSet, name)}
               onStateClick={handleStateClick}

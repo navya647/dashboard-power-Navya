@@ -289,7 +289,7 @@ export function buildUnifiedAtoms(discoms: DiscomsData | null | undefined, allDs
  * "Not specified…" wording (which records that the regulation sets none). */
 export const statesStandard = (t: string | null | undefined): boolean => {
   const v = t == null ? '' : String(t).trim();
-  return v !== '' && !/^n\/?a\.?$/i.test(v) && !/^not specified/i.test(v);
+  return v !== '' && !/^n\/?a\.?$/i.test(v) && !/^not specified/i.test(v) && !/^no quantitative (benchmark|standard)/i.test(v);
 };
 
 /** The indicators the State page offers: those the state's regulation sets a standard for (in

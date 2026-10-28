@@ -196,3 +196,49 @@ export interface StateSpecificData {
   discoms: SopDiscom[];
   frameworks: SopFramework[];
 }
+
+/** One row of DISCOM_SoP_master.xlsx (sop_master.json, written by extraction_master.py), the
+ * single source for the State page. Every field is the cell exactly as Excel displays it (number
+ * formats applied, text untouched); `null` only where the cell is blank. `standardised_num` is the
+ * one added field: `standardised_data` as a plain number, present only when that cell is itself a
+ * number or a bare number/percentage, used for plotting and nothing else. */
+export interface MasterRow {
+  id: string;
+  state: string;
+  discom_code: string;
+  discom_name: string;
+  financial_year: string;
+  category: string;
+  indicator_family_id: string;
+  indicator_family: string;
+  unit: string | null;
+  indicator: string;
+  definition: string | null;
+  standard: string | null;
+  reported_data: string | null;
+  standardised_data: string | null;
+  standardised_num: number | null;
+  comparison_possible: string | null;
+  standard_met: string | null;
+  standard_met_q1: string | null;
+  standard_met_q2: string | null;
+  standard_met_q3: string | null;
+  standard_met_q4: string | null;
+  standard_met_detail: string | null;
+  why_not_comparable: string | null;
+  interpretation: string | null;
+  documentation: string | null;
+  source_file: string | null;
+  applicable_regulation: string | null;
+  reported_data_source: string | null;
+}
+
+export interface MasterData {
+  source: string;
+  columns: (keyof MasterRow)[];
+  /** states in the order they first appear in the sheet */
+  state_order: string[];
+  states: Record<string, { discoms: { code: string; name: string }[] }>;
+  families: Record<string, { name: string; unit: string | null }>;
+  rows: MasterRow[];
+}

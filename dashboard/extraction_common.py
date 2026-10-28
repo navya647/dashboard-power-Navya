@@ -379,54 +379,60 @@ def score_year(canon_map):
     }
 
 
-discoms = []
-for sheet_name in wb.sheetnames:
-    if sheet_name in EXCLUDE_SHEETS:
-        continue
-    parsed = parse_sheet(sheet_name, wb[sheet_name])
-    by_year = {}
-    for year, block in parsed['years'].items():
-        canon_map = collapse_canonical(block['indicators'])
-        by_year[year] = {
-            'regulation': block['regulation'],
-            'indicators': canon_map,
-            'scoring': score_year(canon_map),
-        }
-    # A reported figure whose meaning cell was left blank (e.g. DGVCL FY22 transformer failure)
-    # takes the meaning its other years all agree on, so it is labelled with the same unit.
-    for canon in CANONICAL_ORDER:
-        stated = {_norm_meaning(y['indicators'][canon]['reported_meaning']): y['indicators'][canon]['reported_meaning']
-                  for y in by_year.values()
-                  if canon in y['indicators'] and y['indicators'][canon]['value'] is not None
-                  and not is_na(y['indicators'][canon]['reported_meaning'])}
-        if len(stated) != 1:
+
+def main():
+    discoms = []
+    for sheet_name in wb.sheetnames:
+        if sheet_name in EXCLUDE_SHEETS:
             continue
-        for y in by_year.values():
-            e = y['indicators'].get(canon)
-            if e and e['value'] is not None and is_na(e['reported_meaning']):
-                e['reported_meaning'] = next(iter(stated.values()))
-                e['unit_note'] = "Unit not stated in the source for this year; taken from this DISCOM's other years."
-    discoms.append({
-        'sheet': parsed['sheet'],
-        'full_name': parsed['full_name'],
-        'short_name': parsed['short_name'],
-        'state': parsed['state'],
-        'years': by_year,
-    })
+        parsed = parse_sheet(sheet_name, wb[sheet_name])
+        by_year = {}
+        for year, block in parsed['years'].items():
+            canon_map = collapse_canonical(block['indicators'])
+            by_year[year] = {
+                'regulation': block['regulation'],
+                'indicators': canon_map,
+                'scoring': score_year(canon_map),
+            }
+        # A reported figure whose meaning cell was left blank (e.g. DGVCL FY22 transformer failure)
+        # takes the meaning its other years all agree on, so it is labelled with the same unit.
+        for canon in CANONICAL_ORDER:
+            stated = {_norm_meaning(y['indicators'][canon]['reported_meaning']): y['indicators'][canon]['reported_meaning']
+                      for y in by_year.values()
+                      if canon in y['indicators'] and y['indicators'][canon]['value'] is not None
+                      and not is_na(y['indicators'][canon]['reported_meaning'])}
+            if len(stated) != 1:
+                continue
+            for y in by_year.values():
+                e = y['indicators'].get(canon)
+                if e and e['value'] is not None and is_na(e['reported_meaning']):
+                    e['reported_meaning'] = next(iter(stated.values()))
+                    e['unit_note'] = "Unit not stated in the source for this year; taken from this DISCOM's other years."
+        discoms.append({
+            'sheet': parsed['sheet'],
+            'full_name': parsed['full_name'],
+            'short_name': parsed['short_name'],
+            'state': parsed['state'],
+            'years': by_year,
+        })
 
-all_years = sorted({y for d in discoms for y in d['years']}, reverse=True)
+    all_years = sorted({y for d in discoms for y in d['years']}, reverse=True)
 
-with open('data/discoms2.json', 'w', encoding='utf-8') as f:
-    json.dump({
-        'state_order': STATE_ORDER,
-        'canonical_indicators': CANONICAL,
-        'canonical_order': CANONICAL_ORDER,
-        'years': all_years,
-        'discoms': discoms,
-    }, f, indent=2, ensure_ascii=False)
+    with open('data/discoms2.json', 'w', encoding='utf-8') as f:
+        json.dump({
+            'state_order': STATE_ORDER,
+            'canonical_indicators': CANONICAL,
+            'canonical_order': CANONICAL_ORDER,
+            'years': all_years,
+            'discoms': discoms,
+        }, f, indent=2, ensure_ascii=False)
 
-print(f'Extracted {len(discoms)} DISCOMs across {len({d["state"] for d in discoms})} states, years={all_years}')
-for d in discoms:
-    y0 = all_years[0]
-    sc = d['years'].get(y0, {}).get('scoring')
-    print(f"  {d['short_name']:10} ({d['state']:16}) {y0}: score={sc['composite_score'] if sc else 'n/a'}")
+    print(f'Extracted {len(discoms)} DISCOMs across {len({d["state"] for d in discoms})} states, years={all_years}')
+    for d in discoms:
+        y0 = all_years[0]
+        sc = d['years'].get(y0, {}).get('scoring')
+        print(f"  {d['short_name']:10} ({d['state']:16}) {y0}: score={sc['composite_score'] if sc else 'n/a'}")
+
+
+if __name__ == '__main__':
+    main()

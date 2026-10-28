@@ -2,13 +2,12 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { MAP_STATUS_LABEL, stateMapStatus, type StateMapStatus } from '@/lib/computations';
-import type { Discom, StateSpecificData } from '@/lib/types';
+import type { MasterData } from '@/lib/types';
 
 interface Props {
   /** every state/UT on the map (the geojson's own names), in any order, sorted here */
   names: string[];
-  discoms: Discom[];
-  stateSpecific?: StateSpecificData | null;
+  master: MasterData | null;
   compareMode: boolean;
   compareSet: string[];
   /** same handler a map click goes through, navigates, or toggles the comparison in compare mode */
@@ -35,7 +34,7 @@ function norm(s: string) {
  * popup, aria-activedescendant focus) listing every state/UT with its map-legend status dot.
  * Selecting an option goes through exactly the same handler as a map click, and the hovered /
  * keyboard-active option is reported up so the map highlights that region while browsing. */
-export default function StateSearch({ names, discoms, stateSpecific, compareMode, compareSet, onSelect, onHighlight, describedBy }: Props) {
+export default function StateSearch({ names, master, compareMode, compareSet, onSelect, onHighlight, describedBy }: Props) {
   const uid = useId().replace(/:/g, '');
   const inputId = `${uid}-input`;
   const listId = `${uid}-list`;
@@ -49,8 +48,8 @@ export default function StateSearch({ names, discoms, stateSpecific, compareMode
     () =>
       [...names]
         .sort((a, b) => a.localeCompare(b))
-        .map((name) => ({ name, status: stateMapStatus(discoms, name, stateSpecific) })),
-    [names, discoms, stateSpecific],
+        .map((name) => ({ name, status: stateMapStatus(master, name) })),
+    [names, master],
   );
   const filtered = useMemo(() => {
     const q = norm(query);

@@ -6,7 +6,7 @@ import CompareView from '@/components/CompareView';
 
 // `searchParams` as a page prop forces per-request server rendering, which `output: 'export'`
 // can't do, `useSearchParams()` instead resolves on the client, so the page can be pre-built as
-// static HTML and still pick up ?states=&year= at load time. Next requires a Suspense boundary
+// static HTML and still pick up ?states= at load time. Next requires a Suspense boundary
 // around any component that calls it.
 function ComparePageContent() {
   const searchParams = useSearchParams();

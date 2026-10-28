@@ -5,11 +5,10 @@ import { buildIndiaPaths } from '@/lib/geo2d';
 import { stateFillColor, stateMapStatus } from '@/lib/computations';
 import { lerpHex, MAP_BORDER, MAP_WASH } from '@/lib/colors';
 import { formatPopulation } from '@/lib/population';
-import type { Discom, IndiaGeoJSON, StateSpecificData } from '@/lib/types';
+import type { IndiaGeoJSON, MasterData } from '@/lib/types';
 
 interface Props {
-  discoms: Discom[];
-  stateSpecific?: StateSpecificData | null;
+  master: MasterData | null;
   geojson: IndiaGeoJSON;
   compareColorOf: (name: string) => string | null;
   onStateClick: (name: string) => void;
@@ -31,7 +30,7 @@ interface Props {
  * filter never composited back with the map beneath it; a plain <rect> with no explicit fill
  * defaults to opaque black in SVG, and the mix-blend-mode:multiply meant to soften it instead
  * produced a hard-edged box exactly the size of the map's own bounding box.) */
-export default function HeroMap({ discoms, stateSpecific, geojson, compareColorOf, onStateClick, compareMode, highlighted, onCentroids }: Props) {
+export default function HeroMap({ master, geojson, compareColorOf, onStateClick, compareMode, highlighted, onCentroids }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const dotsId = `${useId().replace(/:/g, '')}-dots`;
   const [size, setSize] = useState({ width: 0, height: 0 });
@@ -88,7 +87,7 @@ export default function HeroMap({ discoms, stateSpecific, geojson, compareColorO
   }, [projection, size]);
 
   const hoveredPath = hovered ? projection?.byName[hovered] : null;
-  const hoveredStatus = hovered ? stateMapStatus(discoms, hovered, stateSpecific) : null;
+  const hoveredStatus = hovered ? stateMapStatus(master, hovered) : null;
   // In compare-selection mode, a jurisdiction with no captured evidence in either dataset
   // ('idle') can't be added to a comparison at all, there is nothing to compare, so its tooltip
   // says so explicitly instead of the usual "→" hint appended to the name (see the tooltip's
@@ -142,7 +141,7 @@ export default function HeroMap({ discoms, stateSpecific, geojson, compareColorO
           </defs>
           <g className="hero-map-states">
             {projection.paths.map((p) => {
-              const status = stateMapStatus(discoms, p.name, stateSpecific);
+              const status = stateMapStatus(master, p.name);
               const disabledForCompare = !!compareMode && status === 'idle';
               const selectColor = compareColorOf(p.name);
               const isHovered = hovered === p.name;
@@ -178,7 +177,7 @@ export default function HeroMap({ discoms, stateSpecific, geojson, compareColorO
           {/* drawn over the fills, never hit-tested, so hover and clicks still reach the state */}
           <g className="hero-map-idle-dots" aria-hidden="true">
             {projection.paths
-              .filter((p) => stateMapStatus(discoms, p.name, stateSpecific) === 'idle')
+              .filter((p) => stateMapStatus(master, p.name) === 'idle')
               .map((p) => (
                 <path key={p.name} d={p.d} fill={`url(#${dotsId})`} />
               ))}

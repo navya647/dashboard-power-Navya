@@ -7,14 +7,14 @@ import { slugify } from '@/lib/slug';
 import HeroSection from '@/components/HeroSection';
 
 export default function OverviewPage() {
-  const { discoms, stateSpecific, geojson, loading, error } = useData();
+  const { master, geojson, loading, error } = useData();
   const router = useRouter();
 
   const [compareSet, setCompareSet] = useState<string[]>([]);
   const [compareMode, setCompareMode] = useState(false);
 
   if (loading) return <p className="detail-placeholder">Loading dashboard data…</p>;
-  if (error || !discoms || !geojson) return <p className="detail-placeholder">Could not load dashboard data: {error}</p>;
+  if (error || !master || !geojson) return <p className="detail-placeholder">Could not load dashboard data: {error}</p>;
 
   function removeState(name: string) {
     setCompareSet((prev) => prev.filter((s) => s !== name));
@@ -36,8 +36,7 @@ export default function OverviewPage() {
       {/* HeroSection reads the URL (useSearchParams, /?view=map), which needs a Suspense boundary */}
       <Suspense fallback={null}>
         <HeroSection
-          discoms={discoms.discoms}
-          stateSpecific={stateSpecific}
+          master={master}
           geojson={geojson}
           compareSet={compareSet}
           onToggleState={toggleState}

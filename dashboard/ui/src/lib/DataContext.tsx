@@ -1,18 +1,18 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import type { AccessibilityData, DiscomsData, IndiaGeoJSON, StateSpecificData } from './types';
+import type { AccessibilityData, IndiaGeoJSON, MasterData } from './types';
 
 interface DataState {
-  discoms: DiscomsData | null;
+  /** DISCOM_SoP_master.xlsx, every reported figure and standard on the site */
+  master: MasterData | null;
   geojson: IndiaGeoJSON | null;
   accessibility: AccessibilityData | null;
-  stateSpecific: StateSpecificData | null;
   loading: boolean;
   error: string | null;
 }
 
-const initialState: DataState = { discoms: null, geojson: null, accessibility: null, stateSpecific: null, loading: true, error: null };
+const initialState: DataState = { master: null, geojson: null, accessibility: null, loading: true, error: null };
 
 const DataCtx = createContext<DataState>(initialState);
 
@@ -22,16 +22,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let cancelled = false;
     Promise.all([
-      fetch('/data/discoms2.json').then((r) => r.json()),
+      fetch('/data/sop_master.json').then((r) => r.json()),
       fetch('/data/india-states.geojson').then((r) => r.json()),
       fetch('/data/accessibility.json').then((r) => r.json()),
-      fetch('/data/state_specific.json').then((r) => r.json()),
     ])
-      .then(([discoms, geojson, accessibility, stateSpecific]) => {
-        if (!cancelled) setState({ discoms, geojson, accessibility, stateSpecific, loading: false, error: null });
+      .then(([master, geojson, accessibility]) => {
+        if (!cancelled) setState({ master, geojson, accessibility, loading: false, error: null });
       })
       .catch((err) => {
-        if (!cancelled) setState({ discoms: null, geojson: null, accessibility: null, stateSpecific: null, loading: false, error: String(err) });
+        if (!cancelled) setState({ master: null, geojson: null, accessibility: null, loading: false, error: String(err) });
       });
     return () => {
       cancelled = true;

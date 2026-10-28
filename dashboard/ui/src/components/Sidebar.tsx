@@ -8,15 +8,8 @@ import { MAP_HREF } from '@/lib/routes';
 // Placeholder icons, stand-ins for real ones, swap the path data out once real iconography for
 // each section is settled rather than treating these as final.
 const NAV = [
-  // Home goes to the map explorer, never the landing hero (MAP_HREF, shared with every other
-  // back-to-the-map control)
-  {
-    href: MAP_HREF,
-    label: 'Home',
-    icon: <path d="M4 11 12 4l8 7M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9M10 20v-6h4v6" />,
-  },
-  // At a glance (/glance), the Glossary and International comparison have no entry of their own:
-  // they're reached from the About page's cards, so About stays lit on them
+  // The Glossary and International comparison have no entry of their own: they're reached from
+  // the About page's cards, so About stays lit on them (as on /glance, whose card is hidden for now)
   {
     href: '/about',
     also: ['/glance'],
@@ -27,6 +20,14 @@ const NAV = [
         <path d="M12 8h.01M11 11.5h1v5" />
       </>
     ),
+  },
+  // Explore goes to the map explorer, never the landing hero (MAP_HREF, shared with every other
+  // back-to-the-map control)
+  {
+    href: MAP_HREF,
+    label: 'Explore',
+    // the same folded-map icon as the About page's "Explore the map" card
+    icon: <path d="M9 4.5 3.5 6.5v13l5.5-2 6 2 5.5-2v-13l-5.5 2-6-2ZM9 4.5v13M15 6.5v13" />,
   },
   {
     href: '/accessibility',

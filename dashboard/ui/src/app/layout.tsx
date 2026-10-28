@@ -1,7 +1,9 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { DataProvider } from '@/lib/DataContext';
 import Sidebar from '@/components/Sidebar';
 import PageLogo from '@/components/PageLogo';
+import BackGuard from '@/components/BackGuard';
 import PageBackdrop from '@/components/PageBackdrop';
 import './globals.css';
 
@@ -21,6 +23,10 @@ export const metadata: Metadata = {
 // neither flashes in after hydration; HeroSection keeps them in sync from there.
 const THEME_INIT_SCRIPT = `(function(){try{var d=document.documentElement,s=localStorage.getItem('acpet-theme-v2');var t=s==='light'||s==='dark'?s:'dark';d.setAttribute('data-theme',t);if((location.pathname==='/'||location.pathname==='/index.html')&&!matchMedia('(max-width: 980px)').matches)d.setAttribute(location.search.indexOf('view=map')<0?'data-hero-landing':'data-hero-map','');}catch(e){}})();`;
 
+// BackGuard's popstate trampoline: registered by a plain inline script so it is the first popstate
+// listener on the page, ahead of Next's own (see BackGuard.tsx for why that order matters).
+const BACK_TRAMPOLINE_SCRIPT = `window.addEventListener('popstate',function(e){var f=window.__bgPop;if(f)f(e)},true);`;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     // suppressHydrationWarning: THEME_INIT_SCRIPT sets data-theme before React hydrates, so the
@@ -38,7 +44,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           not ours to reconcile, so it doesn't count as a hydration mismatch */}
       <body suppressHydrationWarning>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: BACK_TRAMPOLINE_SCRIPT }} />
         <DataProvider>
+          <Suspense fallback={null}>
+            <BackGuard />
+          </Suspense>
           <div className="app-shell">
             <Sidebar />
             <main className="app-main">

@@ -6,19 +6,77 @@
   --ic-observed: var(--mv-indicator);
   --ic-grid: color-mix(in srgb, var(--ink) 8%, transparent);
 }
-.ic-purpose {
-  max-width: 1000px;
+/* hero: title + one-line lede, India's weighted benchmark as the one big figure */
+.ic-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px; /* same columns as .ic-body: the stat sits over the card */
+  align-items: end;
+  gap: 24px;
+}
+.ic-lede {
+  max-width: 640px;
   margin: 12px 0 0;
-  font-size: 14.5px;
-  line-height: 1.65;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--text-supporting, var(--muted));
+  cursor: help;
+}
+.ic-hero-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 4px 0 4px 28px;
+  border-left: 3px solid var(--accent-text);
+  cursor: help;
+}
+.ic-hero-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+}
+.ic-hero-note {
+  font-size: 12px;
   color: var(--text-supporting, var(--muted));
 }
+.ic-hero-figs {
+  display: flex;
+  gap: 36px;
+}
+.ic-hero-figs > span {
+  display: grid;
+  grid-template-columns: auto auto;
+  column-gap: 10px;
+  row-gap: 3px;
+  align-items: end;
+  font-size: 13px;
+  line-height: 1.2;
+  color: var(--text-supporting, var(--muted));
+}
+.ic-hero-figs b {
+  grid-row: 1 / 3;
+  font-family: var(--font-display);
+  font-size: 40px;
+  font-weight: 600;
+  line-height: 0.9;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.ic-hero-figs small {
+  grid-column: 2;
+  grid-row: 1;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+}
+
 .ic-body {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 360px;
   gap: 24px;
   align-items: start;
-  margin-top: 28px;
+  margin-top: 44px;
 }
 .ic-chart-wrap {
   padding: 20px 24px 16px;
@@ -29,15 +87,14 @@
 }
 .ic-chart {
   display: grid;
-  grid-template-columns: 128px minmax(0, 1fr) minmax(0, 1fr);
-  column-gap: 32px;
+  grid-template-columns: 172px minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: 52px;
 }
 .ic-head {
   display: flex;
   flex-direction: column;
   gap: 3px;
   padding-bottom: 12px;
-  border-bottom: 1px solid var(--line);
 }
 .ic-head b {
   font-family: var(--font-display);
@@ -63,6 +120,7 @@
   transition: background-color 150ms var(--ease);
 }
 .ic-row--india {
+  border-top: 1px solid var(--line);
   border-bottom-style: solid;
 }
 .ic-row:hover {
@@ -77,10 +135,22 @@
 }
 .ic-geo {
   align-self: center;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   padding-left: 10px;
   font-size: 14px;
   font-weight: 600;
   color: var(--ink);
+}
+.ic-geo small {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--text-supporting, var(--muted));
 }
 .ic-row.is-active .ic-geo {
   color: var(--accent-text);
@@ -145,6 +215,7 @@
 }
 .ic-axis > span {
   position: absolute;
+  margin: 0;
   top: 8px;
   transform: translateX(-50%);
   font-size: 11px;
@@ -274,112 +345,69 @@
   text-decoration-color: currentColor;
 }
 
-/* methodological notes: three columns divided by rules, as the Methodology page's commitments */
-.ic-notes {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin-top: 48px;
+.ic-card-why {
+  margin: 14px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  font-style: italic;
+  color: var(--text-supporting, var(--muted));
+}
+.ic-card-src {
+  margin: 16px 0 0;
+  padding-top: 12px;
   border-top: 1px solid var(--line);
-}
-.ic-notes > div {
-  padding: 24px 28px 0;
-  border-left: 1px solid var(--line);
-}
-.ic-notes > div:first-child {
-  padding-left: 0;
-  border-left: 0;
-}
-.ic-notes h3 {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: 21px;
-  font-weight: 600;
-  color: var(--ink);
-}
-.ic-notes p {
-  margin: 8px 0 0;
-  font-size: 13.5px;
-  line-height: 1.6;
+  font-size: 12.5px;
   color: var(--text-supporting, var(--muted));
 }
 
-/* India's state-wise references: four across */
-.ic-states {
-  margin-top: 52px;
-  scroll-margin-top: 24px;
+/* India weighted benchmark: a tick across the India range */
+.ic-mark {
+  position: absolute;
+  top: 50%;
+  width: 3px;
+  height: 22px;
+  border-radius: 2px;
+  background: var(--ink);
+  transform: translate(-50%, -50%);
 }
-.ic-states-title {
-  margin: 0 0 14px;
-  font-family: var(--font-sans);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--accent-text);
+.ic-key-mark {
+  display: inline-block;
+  width: 3px;
+  height: 13px;
+  border-radius: 2px;
+  background: var(--ink);
 }
-.ic-states ul {
+
+/* footnotes: four one-liners in a row, full wording on hover */
+.ic-notes {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  gap: 24px;
+  margin-top: 28px;
+  padding-top: 16px;
   border-top: 1px solid var(--line);
 }
-.ic-states li {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 16px 22px 18px;
-  border-bottom: 1px solid var(--line);
-  border-left: 1px solid var(--line);
-  font-size: 13px;
+.ic-notes p {
+  margin: 0;
+  font-size: 12.5px;
   line-height: 1.5;
+  color: var(--text-supporting, var(--muted));
+  cursor: help;
 }
-.ic-states li:nth-child(4n + 1) {
-  padding-left: 0;
-  border-left: 0;
-}
-.ic-state-name {
-  font-family: var(--font-display);
-  font-size: 17px;
+.ic-notes b {
+  display: block;
+  margin-bottom: 3px;
+  font-size: 10.5px;
   font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: var(--ink);
-}
-.ic-state-fw {
-  color: var(--ink);
-}
-.ic-state-bm {
-  margin-top: 4px;
-  font-size: 12.5px;
-  font-weight: 500;
-  color: var(--text-supporting, var(--muted));
-}
-.ic-states li.has-benchmark .ic-state-bm {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 7px;
-  font-weight: 700;
-  color: var(--accent-text);
-}
-.ic-states li.has-benchmark .ic-state-bm::before {
-  content: '';
-  flex: none;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--accent-text);
-  transform: translateY(-1px);
-}
-.ic-state-note {
-  font-size: 12.5px;
-  color: var(--text-supporting, var(--muted));
 }
 
 /* ---- light mode: firmer supporting text and opaque cards over the pale backdrop ---- */
-:root:not([data-theme='dark']) .ic-purpose,
+:root:not([data-theme='dark']) .ic-lede,
 :root:not([data-theme='dark']) .ic-notes p,
-:root:not([data-theme='dark']) .ic-state-note,
-:root:not([data-theme='dark']) .ic-state-bm {
+:root:not([data-theme='dark']) .ic-geo small {
   color: #2b2b2b;
 }
 :root:not([data-theme='dark']) .ic-chart-wrap,
@@ -393,25 +421,15 @@
     animation: none;
   }
 }
-@media (max-width: 1300px) {
-  .ic-states ul {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-  .ic-states li:nth-child(4n + 1) {
-    padding-left: 22px;
-    border-left: 1px solid var(--line);
-  }
-  .ic-states li:nth-child(3n + 1) {
-    padding-left: 0;
-    border-left: 0;
-  }
-}
 @media (max-width: 1100px) {
   .ic-body {
     grid-template-columns: minmax(0, 1fr);
   }
   .ic-aside {
     position: static;
+  }
+  .ic-notes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 @media (max-width: 760px) {
@@ -435,17 +453,21 @@
   .ic-notes {
     grid-template-columns: minmax(0, 1fr);
   }
-  .ic-notes > div {
-    padding-left: 0;
-    border-left: 0;
-  }
-  .ic-states ul {
+  .ic-hero {
     grid-template-columns: minmax(0, 1fr);
   }
-  .ic-states li,
-  .ic-states li:nth-child(4n + 1),
-  .ic-states li:nth-child(3n + 1) {
-    padding-left: 0;
-    border-left: 0;
+  .ic-hero-figs b {
+    font-size: 32px;
+  }
+  .ic-head > span,
+  .ic-axis > span:not(:first-child):not(:last-child) {
+    display: none;
+  }
+  .ic-card-figs dd {
+    font-size: 16px;
+    overflow-wrap: anywhere;
+  }
+  .ic-geo small {
+    display: none;
   }
 }

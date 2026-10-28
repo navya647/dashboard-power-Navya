@@ -8,10 +8,12 @@ export default function PageLogo() {
   if (usePathname() === '/') return null;
   return (
     <div className="page-logo">
-      {/* eslint-disable-next-line @next/next/no-img-element -- static export has no Image Optimization API */}
-      <img src="/acpet-logo.png" alt="ACPET" width={208} height={69} className="page-logo-light" />
-      {/* eslint-disable-next-line @next/next/no-img-element -- static export has no Image Optimization API */}
-      <img src="/acpet-logo-white.png" alt="ACPET" width={208} height={69} className="page-logo-dark" />
+      <a href="https://acpet.ashoka.edu.in/" target="_blank" rel="noopener noreferrer" aria-label="ACPET website (opens in a new tab)" className="acpet-link">
+        {/* eslint-disable-next-line @next/next/no-img-element -- static export has no Image Optimization API */}
+        <img src="/acpet-logo.png" alt="ACPET" width={208} height={69} className="page-logo-light" />
+        {/* eslint-disable-next-line @next/next/no-img-element -- static export has no Image Optimization API */}
+        <img src="/acpet-logo-white.png" alt="ACPET" width={208} height={69} className="page-logo-dark" />
+      </a>
     </div>
   );
 }

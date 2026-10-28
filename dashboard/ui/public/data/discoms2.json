@@ -8023,49 +8023,49 @@
           "regulation": "ORISSA ELECTRICITY REGULATORY COMMISSION (LICENSEES' STANDARDS OF PERFORMANCE) REGULATIONS, 2004",
           "indicators": {
             "SAIDI": {
-              "value": 25441,
+              "value": 25441.0,
               "subtypes": {
-                "default": 25441
+                "default": 25441.0
               },
-              "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer.",
-              "standard_specified": "Based on the information provided by the Licensees, the Commission may notify the target levels for these indices annually",
+              "indicator_meaning": "Σ(Bi×Ni) ÷ Nt; Bi = total duration of sustained interruptions on feeder i in the month; Ni = connected load of feeder i affected; Nt = total 11 kV connected load",
+              "standard_specified": "No quantitative benchmark specified (target levels may be notified by the Commission annually under the regulation)",
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
-              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year.",
+              "reported_meaning": "Annual SAIDI (minutes per kW of connected load)",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "No quantitative reliability target applicable to FY 2021-22 is available; the regulation provides for the Commission to notify target levels annually. In addition, the regulation requires the indices to be computed monthly and reported separately for urban and rural feeders, while only a single annual value is reported, without monthly, urban/rural or agricultural-feeder disaggregation."
             },
             "SAIFI": {
-              "value": 600,
+              "value": 600.0,
               "subtypes": {
-                "default": 600
+                "default": 600.0
               },
-              "indicator_meaning": "The average number of sustained power interruptions experienced by a consumer.",
-              "standard_specified": "Based on the information provided by the Licensees, the Commission may notify the target levels for these indices annually",
+              "indicator_meaning": "Σ(Ai×Ni) ÷ Nt; Ai = number of sustained interruptions (each longer than 5 minutes) on feeder i in the month",
+              "standard_specified": "No quantitative benchmark specified (target levels may be notified by the Commission annually under the regulation)",
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
-              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year.",
+              "reported_meaning": "Annual SAIFI (interruptions per kW of connected load)",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "No quantitative reliability target applicable to FY 2021-22 is available; the regulation provides for the Commission to notify target levels annually. In addition, the regulation requires the indices to be computed monthly and reported separately for urban and rural feeders, while only a single annual value is reported, without monthly, urban/rural or agricultural-feeder disaggregation."
             },
             "MAIFI": {
-              "value": 66,
+              "value": 66.0,
               "subtypes": {
-                "default": 66
+                "default": 66.0
               },
-              "indicator_meaning": "The average number of momentary interruptions experienced by a consumer.",
-              "standard_specified": "Based on the information provided by the Licensees, the Commission may notify the target levels for these indices annually",
+              "indicator_meaning": "Σ(Ci×Ni) ÷ Nt; Ci = number of momentary interruptions (each less than or equal to 5 minutes) on feeder i in the month",
+              "standard_specified": "No quantitative benchmark specified (target levels may be notified by the Commission annually under the regulation)",
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
-              "reported_meaning": "Total number of average interruptions for an average consumer over the year.",
+              "reported_meaning": "Annual MAIFI (momentary interruptions per kW of connected load)",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "No quantitative reliability target applicable to FY 2021-22 is available; the regulation provides for the Commission to notify target levels annually. In addition, the regulation requires the indices to be computed monthly and reported separately for urban and rural feeders, while only a single annual value is reported, without monthly, urban/rural or agricultural-feeder disaggregation."
             },
             "CAIDI": {
               "value": null,
@@ -8083,19 +8083,19 @@
               "reason_not_comparable": "Not listed for overall standard reporting in the regulation."
             },
             "VOLTAGE VARIATION": {
-              "value": 0,
+              "value": null,
               "subtypes": {
-                "default": 0
+                "default": null
               },
               "indicator_meaning": "Maintenance of voltage at the point of supply within stipulated limits",
-              "standard_specified": "The distribution licensee must maintain voltage within the prescribed limits: LV: +6%/-6%; HV: +6%/-9%; EHV: +10%/-12.5% of declared voltage. Improve voltage variation within 15 days of the original complaint if no expansion/ enhancement is required. Resolve within 120 days in case upto 11KV, and 180 days in case upto 33KC",
+              "standard_specified": "+6% / −6% (LV); +6% / −9% (HV); +10% / −12.5% (EHV) of declared voltage",
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
-              "reported_meaning": "zero formal consumer complaints recieved",
-              "unit_note": null,
+              "reported_meaning": "N/A",
+              "unit_note": "Not annualised because no reported value is available.",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No complaints were received or registered during the year."
+              "reason_not_comparable": "No reported value is available for FY 2021-22. In addition, the standard applies to the voltage at each consumer's point of supply, and no aggregate threshold for the number of cases outside the limits is specified."
             },
             "HARMONICS": {
               "value": null,
@@ -8113,42 +8113,42 @@
               "reason_not_comparable": "No benchmark defined in regulations."
             },
             "TRANSFORMER FAILURE": {
-              "value": 96.54,
+              "value": 100.0,
               "subtypes": {
-                "Urban": 98.37,
-                "Rural": 94.71
+                "Urban": 100.0,
+                "Rural": 100.0
               },
               "indicator_meaning": "Restoration of power supply by replacing failed distribution transformers within time limits.",
-              "standard_specified": "Replacement of failed distribution transformers within 24 hours in Urban areas .",
-              "benchmark": 95,
+              "standard_specified": "At least 95% of failed distribution transformers replaced within 24 hours (Urban) / 48 hours (Rural) of complaint",
+              "benchmark": 95.0,
               "benchmark_meaning": "Minimum percentage of failed transformers that must be replaced within the specified time.",
               "reported_meaning": "% of cases resolved within specified time/standard during the year.",
-              "unit_note": null,
+              "unit_note": "FY share for urban and rural areas combined derived from the two reported area shares, which are both 100.00%, so the result does not depend on the unreported case counts; reported on an annual basis, so no annualisation was required.",
               "comparison_possible": true,
               "standard_met": true,
-              "reason_not_comparable": "N/A",
+              "reason_not_comparable": "Not applicable.",
               "subtype_records": {
                 "Urban": {
-                  "value": 98.37,
-                  "benchmark": 95,
+                  "value": 100.0,
+                  "benchmark": 95.0,
                   "benchmark_meaning": "Minimum percentage of failed transformers that must be replaced within the specified time.",
-                  "standard_specified": "Replacement of failed distribution transformers within 24 hours in Urban areas .",
+                  "standard_specified": "At least 95% of failed distribution transformers replaced within 24 hours (Urban) / 48 hours (Rural) of complaint",
                   "reported_meaning": "% of cases resolved within specified time/standard during the year.",
                   "comparison_possible": true,
                   "standard_met": true,
-                  "reason_not_comparable": "N/A",
-                  "unit_note": null
+                  "reason_not_comparable": "Not applicable.",
+                  "unit_note": "FY share for urban and rural areas combined derived from the two reported area shares, which are both 100.00%, so the result does not depend on the unreported case counts; reported on an annual basis, so no annualisation was required."
                 },
                 "Rural": {
-                  "value": 94.71,
-                  "benchmark": 95,
+                  "value": 100.0,
+                  "benchmark": 95.0,
                   "benchmark_meaning": "Minimum percentage of failed transformers that must be replaced within the specified time.",
-                  "standard_specified": "Replacement of failed distribution transformers within 48 hours in Rural areas.",
+                  "standard_specified": "At least 95% of failed distribution transformers replaced within 24 hours (Urban) / 48 hours (Rural) of complaint",
                   "reported_meaning": "% of cases resolved within specified time/standard during the year.",
                   "comparison_possible": true,
-                  "standard_met": false,
-                  "reason_not_comparable": "N/A",
-                  "unit_note": null
+                  "standard_met": true,
+                  "reason_not_comparable": "Not applicable.",
+                  "unit_note": "FY share for urban and rural areas combined derived from the two reported area shares, which are both 100.00%, so the result does not depend on the unreported case counts; reported on an annual basis, so no annualisation was required."
                 }
               }
             },
@@ -8171,13 +8171,13 @@
           "scoring": {
             "total_indicators": 8,
             "standards_available_pct": 87.5,
-            "data_reported_pct": 75,
+            "data_reported_pct": 62.5,
             "comparable_pct": 12.5,
-            "compliance_pct": 0,
-            "composite_score": 44.4,
-            "grade": "C",
+            "compliance_pct": 100.0,
+            "composite_score": 61.2,
+            "grade": "B",
             "phantom_comparable_count": 0,
-            "indicators_reported": 6
+            "indicators_reported": 5
           }
         },
         "2025-26": {
@@ -8188,45 +8188,45 @@
               "subtypes": {
                 "default": null
               },
-              "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer.",
-              "standard_specified": "Based on the information provided by the Licensees, the Commission may notify the target levels for these indices annually",
+              "indicator_meaning": "Σ(Bi×Ni) ÷ Nt; Bi = total duration of sustained interruptions on feeder i in the month; Ni = connected load of feeder i affected; Nt = total 11 kV connected load",
+              "standard_specified": "No quantitative benchmark specified (target levels may be notified by the Commission annually under the regulation)",
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
               "reported_meaning": "N/A",
-              "unit_note": null,
+              "unit_note": "Not annualised because no reported value is available.",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "Reported data not available"
+              "reason_not_comparable": "No reported value is available for FY 2025-26. The regulation also specifies no quantitative benchmark for this indicator."
             },
             "SAIFI": {
               "value": null,
               "subtypes": {
                 "default": null
               },
-              "indicator_meaning": "The average number of sustained power interruptions experienced by a consumer.",
-              "standard_specified": "Based on the information provided by the Licensees, the Commission may notify the target levels for these indices annually",
+              "indicator_meaning": "Σ(Ai×Ni) ÷ Nt; Ai = number of sustained interruptions (each longer than 5 minutes) on feeder i in the month",
+              "standard_specified": "No quantitative benchmark specified (target levels may be notified by the Commission annually under the regulation)",
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
               "reported_meaning": "N/A",
-              "unit_note": null,
+              "unit_note": "Not annualised because no reported value is available.",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "Reported data not available"
+              "reason_not_comparable": "No reported value is available for FY 2025-26. The regulation also specifies no quantitative benchmark for this indicator."
             },
             "MAIFI": {
               "value": null,
               "subtypes": {
                 "default": null
               },
-              "indicator_meaning": "The average number of momentary interruptions experienced by a consumer.",
-              "standard_specified": "Based on the information provided by the Licensees, the Commission may notify the target levels for these indices annually",
+              "indicator_meaning": "Σ(Ci×Ni) ÷ Nt; Ci = number of momentary interruptions (each less than or equal to 5 minutes) on feeder i in the month",
+              "standard_specified": "No quantitative benchmark specified (target levels may be notified by the Commission annually under the regulation)",
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
               "reported_meaning": "N/A",
-              "unit_note": null,
+              "unit_note": "Not annualised because no reported value is available.",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "Reported data not available"
+              "reason_not_comparable": "No reported value is available for FY 2025-26. The regulation also specifies no quantitative benchmark for this indicator."
             },
             "CAIDI": {
               "value": null,
@@ -8249,14 +8249,14 @@
                 "default": null
               },
               "indicator_meaning": "Maintenance of voltage at the point of supply within stipulated limits",
-              "standard_specified": "The distribution licensee must maintain voltage within the prescribed limits: LV: +6%/-6%; HV: +6%/-9%; EHV: +10%/-12.5% of declared voltage. Improve voltage variation within 15 days of the original complaint if no expansion/ enhancement is required. Resolve within 120 days in case upto 11KV, and 180 days in case upto 33KC",
+              "standard_specified": "+6% / −6% (LV); +6% / −9% (HV); +10% / −12.5% (EHV) of declared voltage",
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
               "reported_meaning": "N/A",
-              "unit_note": null,
+              "unit_note": "Not annualised because no reported value is available.",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "Reported data not available"
+              "reason_not_comparable": "No reported value is available for FY 2025-26. The regulation also specifies no quantitative benchmark for this indicator."
             },
             "HARMONICS": {
               "value": null,
@@ -8280,36 +8280,36 @@
                 "Rural": null
               },
               "indicator_meaning": "Restoration of power supply by replacing failed distribution transformers within time limits.",
-              "standard_specified": "Replacement of failed distribution transformers within 24 hours in Urban areas .",
-              "benchmark": 95,
+              "standard_specified": "At least 95% of failed distribution transformers replaced within 24 hours (Urban) / 48 hours (Rural) of complaint",
+              "benchmark": 95.0,
               "benchmark_meaning": "Minimum percentage of failed transformers that must be replaced within the specified time.",
               "reported_meaning": "N/A",
-              "unit_note": null,
+              "unit_note": "Not annualised because no reported value is available.",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "Reported data not available",
+              "reason_not_comparable": "No reported value is available for FY 2025-26.",
               "subtype_records": {
                 "Urban": {
                   "value": null,
-                  "benchmark": 95,
+                  "benchmark": 95.0,
                   "benchmark_meaning": "Minimum percentage of failed transformers that must be replaced within the specified time.",
-                  "standard_specified": "Replacement of failed distribution transformers within 24 hours in Urban areas .",
+                  "standard_specified": "At least 95% of failed distribution transformers replaced within 24 hours (Urban) / 48 hours (Rural) of complaint",
                   "reported_meaning": "N/A",
                   "comparison_possible": false,
                   "standard_met": null,
-                  "reason_not_comparable": "Reported data not available",
-                  "unit_note": null
+                  "reason_not_comparable": "No reported value is available for FY 2025-26.",
+                  "unit_note": "Not annualised because no reported value is available."
                 },
                 "Rural": {
                   "value": null,
-                  "benchmark": 95,
+                  "benchmark": 95.0,
                   "benchmark_meaning": "Minimum percentage of failed transformers that must be replaced within the specified time.",
-                  "standard_specified": "Replacement of failed distribution transformers within 48 hours in Rural areas.",
+                  "standard_specified": "At least 95% of failed distribution transformers replaced within 24 hours (Urban) / 48 hours (Rural) of complaint",
                   "reported_meaning": "N/A",
                   "comparison_possible": false,
                   "standard_met": null,
-                  "reason_not_comparable": "Reported data not available",
-                  "unit_note": null
+                  "reason_not_comparable": "No reported value is available for FY 2025-26.",
+                  "unit_note": "Not annualised because no reported value is available."
                 }
               }
             },
@@ -8332,8 +8332,8 @@
           "scoring": {
             "total_indicators": 8,
             "standards_available_pct": 87.5,
-            "data_reported_pct": 0,
-            "comparable_pct": 0,
+            "data_reported_pct": 0.0,
+            "comparable_pct": 0.0,
             "compliance_pct": null,
             "composite_score": 21.9,
             "grade": "C",
@@ -8345,49 +8345,49 @@
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 20684,
+              "value": 20684.0,
               "subtypes": {
-                "default": 20684
+                "default": 20684.0
               },
-              "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer.",
-              "standard_specified": "Target levels to be notified annually by the Commission",
+              "indicator_meaning": "Σ(Bi×Ni) ÷ Nt; Bi = total duration of sustained interruptions on feeder i in the month; Ni = connected load of feeder i affected; Nt = total 11 kV connected load",
+              "standard_specified": "No quantitative benchmark specified (target levels may be notified by the Commission annually under the regulation)",
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
-              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year.",
+              "reported_meaning": "Annual SAIDI (minutes per kW of connected load)",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "No quantitative reliability target applicable to FY 2024-25 is available; the regulation provides for the Commission to notify target levels annually. In addition, the regulation requires the indices to be computed monthly and reported separately for urban and rural feeders, while only a single annual value is reported, without monthly, urban/rural or agricultural-feeder disaggregation."
             },
             "SAIFI": {
-              "value": 424,
+              "value": 424.0,
               "subtypes": {
-                "default": 424
+                "default": 424.0
               },
-              "indicator_meaning": "The average number of sustained power interruptions experienced by a consumer.",
-              "standard_specified": "Target levels to be notified annually by the Commission",
+              "indicator_meaning": "Σ(Ai×Ni) ÷ Nt; Ai = number of sustained interruptions (each longer than 5 minutes) on feeder i in the month",
+              "standard_specified": "No quantitative benchmark specified (target levels may be notified by the Commission annually under the regulation)",
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
-              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year.",
+              "reported_meaning": "Annual SAIFI (interruptions per kW of connected load)",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "No quantitative reliability target applicable to FY 2024-25 is available; the regulation provides for the Commission to notify target levels annually. In addition, the regulation requires the indices to be computed monthly and reported separately for urban and rural feeders, while only a single annual value is reported, without monthly, urban/rural or agricultural-feeder disaggregation."
             },
             "MAIFI": {
-              "value": 62,
+              "value": 62.0,
               "subtypes": {
-                "default": 62
+                "default": 62.0
               },
-              "indicator_meaning": "The average number of momentary interruptions experienced by a consumer.",
-              "standard_specified": "Target levels to be notified annually by the Commission",
+              "indicator_meaning": "Σ(Ci×Ni) ÷ Nt; Ci = number of momentary interruptions (each less than or equal to 5 minutes) on feeder i in the month",
+              "standard_specified": "No quantitative benchmark specified (target levels may be notified by the Commission annually under the regulation)",
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
-              "reported_meaning": "Total number of average interruptions for an average consumer over the year.",
+              "reported_meaning": "Annual MAIFI (momentary interruptions per kW of connected load)",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "No quantitative reliability target applicable to FY 2024-25 is available; the regulation provides for the Commission to notify target levels annually. In addition, the regulation requires the indices to be computed monthly and reported separately for urban and rural feeders, while only a single annual value is reported, without monthly, urban/rural or agricultural-feeder disaggregation."
             },
             "CAIDI": {
               "value": 48.78,
@@ -8410,14 +8410,14 @@
                 "default": 0.08
               },
               "indicator_meaning": "Maintenance of voltage at the point of supply within stipulated limits",
-              "standard_specified": "The distribution licensee must maintain voltage within the prescribed limits: LV: +6%/-6%; HV: +6%/-9%; EHV: +10%/-12.5% of declared voltage. Improve voltage variation within 15 days of the original complaint if no expansion/ enhancement is required. Resolve within 120 days in case upto 11KV, and 180 days in case upto 33KC",
+              "standard_specified": "+6% / −6% (LV); +6% / −9% (HV); +10% / −12.5% (EHV) of declared voltage",
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
-              "reported_meaning": "% cases exceeding voltage limits for EHT and LT.",
-              "unit_note": "A percentage of EHT and LT cases, not a case count like FY23–FY24 (HT only); the two cannot be converted.",
+              "reported_meaning": "Number of cases (HT, FY, annual reporting)",
+              "unit_note": "Unit not established in the source. Listed as a count of cases, but 0.08 is not a whole number. HT value shown; the source also reports an LT value of 0.",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "The reported HT value (0.08) is fractional, so it cannot be confirmed as a count of cases, and no unit could be established from the regulation; in addition, the standard applies to the voltage at each consumer's point of supply, and no aggregate threshold for the number of cases outside the limits is specified."
             },
             "HARMONICS": {
               "value": null,
@@ -8435,42 +8435,42 @@
               "reason_not_comparable": "No benchmark defined in regulations."
             },
             "TRANSFORMER FAILURE": {
-              "value": 90.7,
+              "value": null,
               "subtypes": {
                 "Urban": 96.39,
                 "Rural": 85.01
               },
               "indicator_meaning": "Restoration of power supply by replacing failed distribution transformers within time limits.",
-              "standard_specified": "Replacement within 24 hours in Urban areas.",
-              "benchmark": 95,
+              "standard_specified": "At least 95% of failed distribution transformers replaced within 24 hours (Urban) / 48 hours (Rural) of complaint",
+              "benchmark": 95.0,
               "benchmark_meaning": "% target",
               "reported_meaning": "% of cases resolved within specified time/standard during the year.",
-              "unit_note": null,
-              "comparison_possible": true,
-              "standard_met": false,
-              "reason_not_comparable": "N/A",
+              "unit_note": "Combined urban and rural share not derived because case counts are not reported; reported on an annual basis, so no annualisation was required.",
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "The standard applies to the aggregate share across all failed distribution transformers, while reported data give only separate urban and rural shares; the rural share is below the 95% threshold and the urban share is above it, so whether the aggregate share meets the threshold cannot be determined without case counts, which are not reported.",
               "subtype_records": {
                 "Urban": {
                   "value": 96.39,
-                  "benchmark": 95,
+                  "benchmark": 95.0,
                   "benchmark_meaning": "% target",
-                  "standard_specified": "Replacement within 24 hours in Urban areas.",
+                  "standard_specified": "At least 95% of failed distribution transformers replaced within 24 hours (Urban) / 48 hours (Rural) of complaint",
                   "reported_meaning": "% of cases resolved within specified time/standard during the year.",
-                  "comparison_possible": true,
-                  "standard_met": true,
-                  "reason_not_comparable": "N/A",
-                  "unit_note": null
+                  "comparison_possible": false,
+                  "standard_met": null,
+                  "reason_not_comparable": "The standard applies to the aggregate share across all failed distribution transformers, while reported data give only separate urban and rural shares; the rural share is below the 95% threshold and the urban share is above it, so whether the aggregate share meets the threshold cannot be determined without case counts, which are not reported.",
+                  "unit_note": "Combined urban and rural share not derived because case counts are not reported; reported on an annual basis, so no annualisation was required."
                 },
                 "Rural": {
                   "value": 85.01,
-                  "benchmark": 95,
+                  "benchmark": 95.0,
                   "benchmark_meaning": "% target",
-                  "standard_specified": "Replacement within 48 hours in Rural areas.",
+                  "standard_specified": "At least 95% of failed distribution transformers replaced within 24 hours (Urban) / 48 hours (Rural) of complaint",
                   "reported_meaning": "% of cases resolved within specified time/standard during the year.",
-                  "comparison_possible": true,
-                  "standard_met": false,
-                  "reason_not_comparable": "N/A",
-                  "unit_note": null
+                  "comparison_possible": false,
+                  "standard_met": null,
+                  "reason_not_comparable": "The standard applies to the aggregate share across all failed distribution transformers, while reported data give only separate urban and rural shares; the rural share is below the 95% threshold and the urban share is above it, so whether the aggregate share meets the threshold cannot be determined without case counts, which are not reported.",
+                  "unit_note": "Combined urban and rural share not derived because case counts are not reported; reported on an annual basis, so no annualisation was required."
                 }
               }
             },
@@ -8493,62 +8493,62 @@
           "scoring": {
             "total_indicators": 8,
             "standards_available_pct": 87.5,
-            "data_reported_pct": 87.5,
-            "comparable_pct": 12.5,
-            "compliance_pct": 0,
-            "composite_score": 47.5,
-            "grade": "B",
+            "data_reported_pct": 75.0,
+            "comparable_pct": 0.0,
+            "compliance_pct": null,
+            "composite_score": 40.6,
+            "grade": "C",
             "phantom_comparable_count": 0,
-            "indicators_reported": 7
+            "indicators_reported": 6
           }
         },
         "2023-24": {
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 18312,
+              "value": 18312.0,
               "subtypes": {
-                "default": 18312
+                "default": 18312.0
               },
-              "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer.",
-              "standard_specified": "Target levels to be notified annually by the Commission",
+              "indicator_meaning": "Σ(Bi×Ni) ÷ Nt; Bi = total duration of sustained interruptions on feeder i in the month; Ni = connected load of feeder i affected; Nt = total 11 kV connected load",
+              "standard_specified": "No quantitative benchmark specified (target levels may be notified by the Commission annually under the regulation)",
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
-              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year.",
+              "reported_meaning": "Annual SAIDI (minutes per kW of connected load)",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "No quantitative reliability target applicable to FY 2023-24 is available; the regulation provides for the Commission to notify target levels annually. In addition, the regulation requires the indices to be computed monthly and reported separately for urban and rural feeders, while only a single annual value is reported, without monthly, urban/rural or agricultural-feeder disaggregation."
             },
             "SAIFI": {
-              "value": 428,
+              "value": 428.0,
               "subtypes": {
-                "default": 428
+                "default": 428.0
               },
-              "indicator_meaning": "The average number of sustained power interruptions experienced by a consumer.",
-              "standard_specified": "Target levels to be notified annually by the Commission",
+              "indicator_meaning": "Σ(Ai×Ni) ÷ Nt; Ai = number of sustained interruptions (each longer than 5 minutes) on feeder i in the month",
+              "standard_specified": "No quantitative benchmark specified (target levels may be notified by the Commission annually under the regulation)",
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
-              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year.",
+              "reported_meaning": "Annual SAIFI (interruptions per kW of connected load)",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "No quantitative reliability target applicable to FY 2023-24 is available; the regulation provides for the Commission to notify target levels annually. In addition, the regulation requires the indices to be computed monthly and reported separately for urban and rural feeders, while only a single annual value is reported, without monthly, urban/rural or agricultural-feeder disaggregation."
             },
             "MAIFI": {
-              "value": 43,
+              "value": 43.0,
               "subtypes": {
-                "default": 43
+                "default": 43.0
               },
-              "indicator_meaning": "The average number of momentary interruptions experienced by a consumer.",
-              "standard_specified": "Target levels to be notified annually by the Commission",
+              "indicator_meaning": "Σ(Ci×Ni) ÷ Nt; Ci = number of momentary interruptions (each less than or equal to 5 minutes) on feeder i in the month",
+              "standard_specified": "No quantitative benchmark specified (target levels may be notified by the Commission annually under the regulation)",
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
-              "reported_meaning": "Total number of average interruptions for an average consumer over the year.",
+              "reported_meaning": "Annual MAIFI (momentary interruptions per kW of connected load)",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "No quantitative reliability target applicable to FY 2023-24 is available; the regulation provides for the Commission to notify target levels annually. In addition, the regulation requires the indices to be computed monthly and reported separately for urban and rural feeders, while only a single annual value is reported, without monthly, urban/rural or agricultural-feeder disaggregation."
             },
             "CAIDI": {
               "value": null,
@@ -8566,19 +8566,19 @@
               "reason_not_comparable": "Not listed for overall standard reporting in the regulation."
             },
             "VOLTAGE VARIATION": {
-              "value": 9,
+              "value": 9.0,
               "subtypes": {
-                "default": 9
+                "default": 9.0
               },
               "indicator_meaning": "Maintenance of voltage at the point of supply within stipulated limits",
-              "standard_specified": "The distribution licensee must maintain voltage within the prescribed limits: LV: +6%/-6%; HV: +6%/-9%; EHV: +10%/-12.5% of declared voltage. Improve voltage variation within 15 days of the original complaint if no expansion/ enhancement is required. Resolve within 120 days in case upto 11KV, and 180 days in case upto 33KC",
+              "standard_specified": "+6% / −6% (LV); +6% / −9% (HV); +10% / −12.5% (EHV) of declared voltage",
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
-              "reported_meaning": "Nine cases exceeding voltage limits for HT.",
+              "reported_meaning": "Number of cases (HT, FY, annual reporting)",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations for number of cases."
+              "reason_not_comparable": "The reported count is of cases in which voltage exceeded 3% of the voltage limits, while the regulation sets the voltage limits themselves (+6% / -6% LV; +6% / -9% HV; +10% / -12.5% EHV of declared voltage) and specifies no threshold for the number of cases outside them; in addition, the standard applies at each consumer's point of supply."
             },
             "HARMONICS": {
               "value": null,
@@ -8596,42 +8596,42 @@
               "reason_not_comparable": "No benchmark defined in regulations."
             },
             "TRANSFORMER FAILURE": {
-              "value": 92.225,
+              "value": null,
               "subtypes": {
                 "Urban": 98.7,
                 "Rural": 85.75
               },
               "indicator_meaning": "Restoration of power supply by replacing failed distribution transformers within time limits.",
-              "standard_specified": "Replacement within 24 hours in Urban areas.",
-              "benchmark": 95,
+              "standard_specified": "At least 95% of failed distribution transformers replaced within 24 hours (Urban) / 48 hours (Rural) of complaint",
+              "benchmark": 95.0,
               "benchmark_meaning": "% of cases to be resolved within specified time/standard.",
               "reported_meaning": "% of cases resolved within specified time/standard during the year.",
-              "unit_note": null,
-              "comparison_possible": true,
-              "standard_met": false,
-              "reason_not_comparable": "N/A",
+              "unit_note": "Combined urban and rural share not derived because case counts are not reported; reported on an annual basis, so no annualisation was required.",
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "The standard applies to the aggregate share across all failed distribution transformers, while reported data give only separate urban and rural shares; the rural share is below the 95% threshold and the urban share is above it, so whether the aggregate share meets the threshold cannot be determined without case counts, which are not reported.",
               "subtype_records": {
                 "Urban": {
                   "value": 98.7,
-                  "benchmark": 95,
+                  "benchmark": 95.0,
                   "benchmark_meaning": "% of cases to be resolved within specified time/standard.",
-                  "standard_specified": "Replacement within 24 hours in Urban areas.",
+                  "standard_specified": "At least 95% of failed distribution transformers replaced within 24 hours (Urban) / 48 hours (Rural) of complaint",
                   "reported_meaning": "% of cases resolved within specified time/standard during the year.",
-                  "comparison_possible": true,
-                  "standard_met": true,
-                  "reason_not_comparable": "N/A",
-                  "unit_note": null
+                  "comparison_possible": false,
+                  "standard_met": null,
+                  "reason_not_comparable": "The standard applies to the aggregate share across all failed distribution transformers, while reported data give only separate urban and rural shares; the rural share is below the 95% threshold and the urban share is above it, so whether the aggregate share meets the threshold cannot be determined without case counts, which are not reported.",
+                  "unit_note": "Combined urban and rural share not derived because case counts are not reported; reported on an annual basis, so no annualisation was required."
                 },
                 "Rural": {
                   "value": 85.75,
-                  "benchmark": 95,
+                  "benchmark": 95.0,
                   "benchmark_meaning": "% of cases to be resolved within specified time/standard.",
-                  "standard_specified": "Replacement within 48 hours in Rural areas.",
+                  "standard_specified": "At least 95% of failed distribution transformers replaced within 24 hours (Urban) / 48 hours (Rural) of complaint",
                   "reported_meaning": "% of cases resolved within specified time/standard during the year.",
-                  "comparison_possible": true,
-                  "standard_met": false,
-                  "reason_not_comparable": "N/A",
-                  "unit_note": null
+                  "comparison_possible": false,
+                  "standard_met": null,
+                  "reason_not_comparable": "The standard applies to the aggregate share across all failed distribution transformers, while reported data give only separate urban and rural shares; the rural share is below the 95% threshold and the urban share is above it, so whether the aggregate share meets the threshold cannot be determined without case counts, which are not reported.",
+                  "unit_note": "Combined urban and rural share not derived because case counts are not reported; reported on an annual basis, so no annualisation was required."
                 }
               }
             },
@@ -8654,62 +8654,62 @@
           "scoring": {
             "total_indicators": 8,
             "standards_available_pct": 87.5,
-            "data_reported_pct": 75,
-            "comparable_pct": 12.5,
-            "compliance_pct": 0,
-            "composite_score": 44.4,
+            "data_reported_pct": 62.5,
+            "comparable_pct": 0.0,
+            "compliance_pct": null,
+            "composite_score": 37.5,
             "grade": "C",
             "phantom_comparable_count": 0,
-            "indicators_reported": 6
+            "indicators_reported": 5
           }
         },
         "2022-23": {
           "regulation": "",
           "indicators": {
             "SAIDI": {
-              "value": 19770,
+              "value": 19770.0,
               "subtypes": {
-                "default": 19770
+                "default": 19770.0
               },
-              "indicator_meaning": "The average total duration of all sustained power interruptions experienced by a consumer.",
-              "standard_specified": "Target levels to be notified annually by the Commission",
+              "indicator_meaning": "Σ(Bi×Ni) ÷ Nt; Bi = total duration of sustained interruptions on feeder i in the month; Ni = connected load of feeder i affected; Nt = total 11 kV connected load",
+              "standard_specified": "No quantitative benchmark specified (target levels may be notified by the Commission annually under the regulation)",
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
-              "reported_meaning": "Total minutes of supply interruption for an average consumer over the year.",
+              "reported_meaning": "Annual SAIDI (minutes per kW of connected load)",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "No quantitative reliability target applicable to FY 2022-23 is available; the regulation provides for the Commission to notify target levels annually. In addition, the regulation requires the indices to be computed monthly and reported separately for urban and rural feeders, while only a single annual value is reported, without monthly, urban/rural or agricultural-feeder disaggregation."
             },
             "SAIFI": {
-              "value": 468,
+              "value": 468.0,
               "subtypes": {
-                "default": 468
+                "default": 468.0
               },
-              "indicator_meaning": "The average number of sustained power interruptions experienced by a consumer.",
-              "standard_specified": "Target levels to be notified annually by the Commission",
+              "indicator_meaning": "Σ(Ai×Ni) ÷ Nt; Ai = number of sustained interruptions (each longer than 5 minutes) on feeder i in the month",
+              "standard_specified": "No quantitative benchmark specified (target levels may be notified by the Commission annually under the regulation)",
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
-              "reported_meaning": "Total number of sustained interruptions for an average consumer over the year.",
+              "reported_meaning": "Annual SAIFI (interruptions per kW of connected load)",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "No quantitative reliability target applicable to FY 2022-23 is available; the regulation provides for the Commission to notify target levels annually. In addition, the regulation requires the indices to be computed monthly and reported separately for urban and rural feeders, while only a single annual value is reported, without monthly, urban/rural or agricultural-feeder disaggregation."
             },
             "MAIFI": {
-              "value": 40,
+              "value": 40.0,
               "subtypes": {
-                "default": 40
+                "default": 40.0
               },
-              "indicator_meaning": "The average number of momentary interruptions experienced by a consumer.",
-              "standard_specified": "Target levels to be notified annually by the Commission",
+              "indicator_meaning": "Σ(Ci×Ni) ÷ Nt; Ci = number of momentary interruptions (each less than or equal to 5 minutes) on feeder i in the month",
+              "standard_specified": "No quantitative benchmark specified (target levels may be notified by the Commission annually under the regulation)",
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
-              "reported_meaning": "Total number of average interruptions for an average consumer over the year.",
+              "reported_meaning": "Annual MAIFI (momentary interruptions per kW of connected load)",
               "unit_note": null,
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "No quantitative reliability target applicable to FY 2022-23 is available; the regulation provides for the Commission to notify target levels annually. In addition, the regulation requires the indices to be computed monthly and reported separately for urban and rural feeders, while only a single annual value is reported, without monthly, urban/rural or agricultural-feeder disaggregation."
             },
             "CAIDI": {
               "value": null,
@@ -8732,14 +8732,14 @@
                 "default": 1.5
               },
               "indicator_meaning": "Maintenance of voltage at the point of supply within stipulated limits",
-              "standard_specified": "The distribution licensee must maintain voltage within the prescribed limits: LV: +6%/-6%; HV: +6%/-9%; EHV: +10%/-12.5% of declared voltage. Improve voltage variation within 15 days of the original complaint if no expansion/ enhancement is required. Resolve within 120 days in case upto 11KV, and 180 days in case upto 33KC",
+              "standard_specified": "+6% / −6% (LV); +6% / −9% (HV); +10% / −12.5% (EHV) of declared voltage",
               "benchmark": "N/A",
               "benchmark_meaning": "N/A",
-              "reported_meaning": "Cases exceeding voltage limits for HT were reported.",
-              "unit_note": "Unit unclear in the source: listed as a count of HT cases, but 1.5 is not a whole number of cases.",
+              "reported_meaning": "Number of cases (HT, FY, annual reporting)",
+              "unit_note": "Unit not established in the source. Listed as a count of cases, but 1.5 is not a whole number.",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations for case quantity."
+              "reason_not_comparable": "The reported HT value (1.5) is fractional, so it cannot be confirmed as a count of cases, and no unit could be established from the regulation; in addition, the standard applies to the voltage at each consumer's point of supply, and no aggregate threshold for the number of cases outside the limits is specified."
             },
             "HARMONICS": {
               "value": null,
@@ -8757,42 +8757,42 @@
               "reason_not_comparable": "No benchmark defined in regulations."
             },
             "TRANSFORMER FAILURE": {
-              "value": 98.205,
+              "value": null,
               "subtypes": {
                 "Urban": 99.08,
                 "Rural": 97.33
               },
               "indicator_meaning": "Restoration of power supply by replacing failed distribution transformers within time limits.",
-              "standard_specified": "Replacement within 24 hours in Urban areas",
-              "benchmark": 95,
+              "standard_specified": "At least 95% of failed distribution transformers replaced within 24 hours (Urban) / 48 hours (Rural) of complaint",
+              "benchmark": 95.0,
               "benchmark_meaning": "% of cases to be resolved within specified time/standard",
               "reported_meaning": "% of cases resolved within specified time/standard during the year.",
-              "unit_note": null,
+              "unit_note": "Combined urban and rural share not derived because case counts are not reported; compliance established because both area shares exceed the 95% threshold, so any combination of them also exceeds it; reported on an annual basis, so no annualisation was required.",
               "comparison_possible": true,
               "standard_met": true,
-              "reason_not_comparable": "N/A",
+              "reason_not_comparable": "Not applicable.",
               "subtype_records": {
                 "Urban": {
                   "value": 99.08,
-                  "benchmark": 95,
+                  "benchmark": 95.0,
                   "benchmark_meaning": "% of cases to be resolved within specified time/standard",
-                  "standard_specified": "Replacement within 24 hours in Urban areas",
+                  "standard_specified": "At least 95% of failed distribution transformers replaced within 24 hours (Urban) / 48 hours (Rural) of complaint",
                   "reported_meaning": "% of cases resolved within specified time/standard during the year.",
                   "comparison_possible": true,
                   "standard_met": true,
-                  "reason_not_comparable": "N/A",
-                  "unit_note": null
+                  "reason_not_comparable": "Not applicable.",
+                  "unit_note": "Combined urban and rural share not derived because case counts are not reported; compliance established because both area shares exceed the 95% threshold, so any combination of them also exceeds it; reported on an annual basis, so no annualisation was required."
                 },
                 "Rural": {
                   "value": 97.33,
-                  "benchmark": 95,
+                  "benchmark": 95.0,
                   "benchmark_meaning": "% of cases to be resolved within specified time/standard",
-                  "standard_specified": "Replacement within 48 hours in Rural areas",
+                  "standard_specified": "At least 95% of failed distribution transformers replaced within 24 hours (Urban) / 48 hours (Rural) of complaint",
                   "reported_meaning": "% of cases resolved within specified time/standard during the year.",
                   "comparison_possible": true,
                   "standard_met": true,
-                  "reason_not_comparable": "N/A",
-                  "unit_note": null
+                  "reason_not_comparable": "Not applicable.",
+                  "unit_note": "Combined urban and rural share not derived because case counts are not reported; compliance established because both area shares exceed the 95% threshold, so any combination of them also exceeds it; reported on an annual basis, so no annualisation was required."
                 }
               }
             },
@@ -8815,13 +8815,13 @@
           "scoring": {
             "total_indicators": 8,
             "standards_available_pct": 87.5,
-            "data_reported_pct": 75,
-            "comparable_pct": 12.5,
-            "compliance_pct": 100,
-            "composite_score": 64.4,
-            "grade": "B",
-            "phantom_comparable_count": 0,
-            "indicators_reported": 6
+            "data_reported_pct": 62.5,
+            "comparable_pct": 0.0,
+            "compliance_pct": null,
+            "composite_score": 37.5,
+            "grade": "C",
+            "phantom_comparable_count": 1,
+            "indicators_reported": 5
           }
         }
       }

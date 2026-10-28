@@ -105,7 +105,7 @@
   .street-layer { opacity: 0.45; }
 }
 
-/* ---------- sunset photo: the landing page's current background ----------
+/* ---------- night photo (India Gate): the landing page's current background ----------
    Reuses .street-layer's positioning and mobile dimming; the animated street
    (StreetHero.tsx) is no longer rendered. The layer itself is a fill sampled from the photo's own
    sky (deeper at the bottom, like the photo); the photo sits on the right side only (::after) and
@@ -113,13 +113,13 @@
    headline stays on a calm, matching surface. Same in both themes (see the light-theme text
    overrides below). */
 .street-layer.hero-photo-layer {
-  background: linear-gradient(to bottom, #b0480e 0%, #9a3d0c 55%, #5c2209 100%);
+  background: linear-gradient(to bottom, #08121a 0%, #09141d 55%, #08111a 100%);
 }
 .street-layer.hero-photo-layer::after {
   content: '';
   position: absolute;
   inset: 0 0 0 40%;
-  background: url('/hero-sunset.jpg') 50% 40% / cover no-repeat;
+  background: url('/hero-gate.jpg') 55% 50% / cover no-repeat;
   -webkit-mask-image: linear-gradient(to right, transparent 0, #000 35%);
   mask-image: linear-gradient(to right, transparent 0, #000 35%);
 }

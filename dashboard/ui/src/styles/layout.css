@@ -395,6 +395,11 @@ main.app-main {
   line-height: 0;
   pointer-events: none;
 }
+/* the logo links to ACPET's site; the wrapper ignores the pointer so only the link catches it */
+.acpet-link {
+  display: block;
+  pointer-events: auto;
+}
 .page-logo img {
   width: 230px;
   height: auto;
@@ -428,3 +433,4 @@ html[data-no-scrollbar]::-webkit-scrollbar {
     margin-top: 0;
   }
 }
+

@@ -1,43 +1,71 @@
-import type { Discom, DiscomsData } from './types';
-import type { CardSeries } from './indicatorContext';
-import { benchmarkLine } from './benchmarkLine';
-import { directionForMeaning, type Direction } from './indicatorDirection';
-import { displayUnitForMeaning, type DisplayUnit } from './indicatorUnits';
+import type { MasterRow } from './types';
+import type { Direction } from './indicatorDirection';
+import type { DisplayUnit } from './indicatorUnits';
+import { quarterVerdicts } from './master';
+import { plotBenchmark, plotFigure, quarterFigures, standardLimit } from './plotFigures';
 
-/** The At a glance page: one reliability indicator, one year, every DISCOM's reported figure side
- * by side. Nothing is computed beyond sorting, each bar is a figure exactly as reported, each
- * benchmark the one the state page draws (`benchmarkLine`), each verdict the source's own
- * `standard_met`. Figures only share a chart when they share a display unit AND a direction
- * (`indicatorUnits.ts`, `indicatorDirection.ts`): the same canonical indicator is reported on
- * different bases by different states (Transformer Failure: Gujarat's % failure rate vs. everyone
- * else's % replaced in time), and those are never put on one axis or ranked together. */
+/** Quick comparison (/glance): one indicator, one year, every DISCOM's figure side by side, in the
+ * page design first built on the earlier reliability dataset (GlanceView.tsx, kept as it was), now
+ * fed from DISCOM_SoP_master.xlsx. Each figure is the number the row states (`plotFigure`, read
+ * out of the sentence where needed), each benchmark the row's own standard, each verdict the
+ * sheet's own. Figures are compared in the period their standard is set for, never annualised
+ * (user, 28 Oct 2026): a row the sheet assesses quarter by quarter (standard_met_q1–q4) or whose
+ * standard is a per-quarter limit shows the chosen quarter's figure from its reported data, that
+ * quarter's verdict and the per-quarter limit; every other row its year figure. Nothing else is
+ * computed.
+ * Figures share a chart only when they share a unit; the six indicators are the ones most DISCOMs
+ * report a figure for. */
+
+export const GLANCE_FAMILIES = [
+  'SAIDI',
+  'SAIFI',
+  'Distribution transformer failure - replacement & restoration',
+  'Overhead line/cable breakdown restoration',
+  'Restoration after LT-side DT fuse / consumer-end fault',
+  'Reconnection after payment of dues',
+];
+
+/** tab names; the full family name is on hover */
+export const GLANCE_SHORT: Record<string, string> = {
+  'Distribution transformer failure - replacement & restoration': 'Transformer Failure',
+  'Overhead line/cable breakdown restoration': 'Line Breakdown',
+  'Restoration after LT-side DT fuse / consumer-end fault': 'Transformer Fuse',
+  'Reconnection after payment of dues': 'Reconnection',
+};
+
+/** the DISCOM a bar belongs to, in the shape the page draws */
+export interface GlanceDiscom {
+  /** unique per bar (a DISCOM with urban and rural figures has two) */
+  sheet: string;
+  short_name: string;
+  full_name: string;
+  state: string;
+}
 
 export interface GlanceRow {
-  discom: Discom;
+  discom: GlanceDiscom;
   value: number;
-  /** the record's own source wording of what the figure measures */
+  /** the row's own sentence the figure was read from */
+  text: string | null;
   meaning: string | null;
-  /** the state's benchmark on this chart's scale, or null where there is none to draw */
   benchmark: number | null;
   benchmarkNote: string | null;
-  /** the regulation's standard for this indicator, in the source's words */
   standard: string | null;
   standardMet: boolean | null;
   reasonNotComparable: string | null;
   note: string | null;
-  /** this figure's own wording, only where it differs from the chart's title (the most common
-   * wording on the chart), e.g. HT vs EHT/LT cases, a 30-day vs the usual time standard */
   ownWording: string | null;
 }
 
+export type GlancePeriod = 'year' | 'quarter';
+
 export interface GlanceGroup {
   key: string;
+  period: GlancePeriod;
   unit: DisplayUnit | null;
   direction: Direction;
-  /** the most common source wording among the group's figures */
   wording: string | null;
   rows: GlanceRow[];
-  /** right end of the bars' scale, and the axis's labelled gridlines (0 … scaleMax) */
   scaleMax: number;
   ticks: number[];
 }
@@ -46,34 +74,54 @@ export interface Glance {
   groups: GlanceGroup[];
 }
 
-const hasFigure = (d: Discom, indicator: string, year: string) => typeof d.years[year]?.indicators[indicator]?.value === 'number';
-
-/** Indicators with enough reported figures in some year for a side-by-side view to say anything
- * (Harmonics has one or two a year). */
-export function glanceIndicators(data: DiscomsData, minFigures = 3): string[] {
-  return data.canonical_order.filter((ind) => data.years.some((y) => data.discoms.filter((d) => hasFigure(d, ind, y)).length >= minFigures));
+/** the unit a row's figures are in: its year figure's, else what its quarter list says */
+export function unitOf(r: MasterRow): string | null {
+  const u = plotFigure(r)?.unit;
+  if (u) return u;
+  const t = r.reported_data ?? '';
+  return /\d\s*%/.test(t) ? '%' : /minutes per consumer/i.test(t) ? 'minutes per consumer' : /interruptions per consumer/i.test(t) ? 'interruptions per consumer' : null;
 }
 
-/** Years (newest first, as in the data) with at least one reported figure for the indicator. */
-export function glanceYears(data: DiscomsData, indicator: string): string[] {
-  return data.years.filter((y) => data.discoms.some((d) => hasFigure(d, indicator, y)));
+/** compared quarter by quarter: assessed so by the sheet, or held to a per-quarter limit, and the
+ * reported data lists quarter figures */
+export function isQuarterly(r: MasterRow): boolean {
+  const u = unitOf(r);
+  if (!u || !quarterFigures(r)) return false;
+  return quarterVerdicts(r) != null || standardLimit(r, u)?.period === 'quarter';
 }
 
-function mostCommon(counts: Map<string, number>): string | null {
-  let best: string | null = null;
-  let n = 0;
-  for (const [k, c] of counts) if (c > n) [best, n] = [k, c];
-  return best;
+const hasFigure = (r: MasterRow) => (isQuarterly(r) ? true : plotFigure(r)?.unit != null);
+const inFamily = (rows: MasterRow[], family: string) => rows.filter((r) => r.indicator_family === family && hasFigure(r));
+
+/** Years (newest first) with at least one figure for the indicator. */
+export function glanceYears(rows: MasterRow[], family: string): string[] {
+  return [...new Set(inFamily(rows, family).map((r) => r.financial_year))].sort().reverse();
 }
 
-/** A tidy right end for the scale: 100 for a percentage that fits in it, else the largest figure or
- * benchmark rounded up to a 1/2/2.5/5 step, so no bar runs to the very edge by accident. */
-/** The chart's axis: round tick values from 0, the last one at or just past the largest figure or
- * benchmark, so the scale ends on a labelled gridline. 0–100 for a percentage that fits in it. */
+const yesNo = (v: string | null | undefined): boolean | null => {
+  const t = (v ?? '').trim().toLowerCase();
+  return t === 'yes' ? true : t === 'no' ? false : null;
+};
+
+/** what tells a DISCOM's rows apart ("Urban", "Rural areas"): the words that differ between their
+ * indicator names, when short enough to read; '' otherwise */
+function distinguish(names: string[]): string[] {
+  if (names.length < 2) return names.map(() => '');
+  let pre = 0;
+  while (pre < names[0].length && names.every((n) => n[pre] === names[0][pre])) pre++;
+  let suf = 0;
+  while (suf < names[0].length - pre && names.every((n) => n[n.length - 1 - suf] === names[0][names[0].length - 1 - suf])) suf++;
+  while (pre > 0 && /\w/.test(names[0][pre - 1])) pre--;
+  while (suf > 0 && /\w/.test(names[0][names[0].length - suf])) suf--;
+  return names.map((n) => {
+    const t = n.slice(pre, n.length - suf).replace(/^[\s:,(–-]+|[\s:,)–-]+$/g, '').trim();
+    return t.length >= 3 && t.length <= 22 ? t : '';
+  });
+}
+
 function niceScale(max: number, unit: DisplayUnit | null): { scaleMax: number; ticks: number[] } {
   if (unit?.format === 'percent' && max <= 100) return { scaleMax: 100, ticks: [0, 25, 50, 75, 100] };
   if (max <= 0) return { scaleMax: 1, ticks: [0, 1] };
-  // the smallest round step that covers the range in at most 5 intervals
   const p = Math.max(1, 10 ** Math.floor(Math.log10(max / 5)));
   const step = [1, 2, 2.5, 5, 10].map((s) => s * p).filter(Number.isInteger).find((s) => Math.ceil(max / s) <= 5) ?? 10 * p;
   const scaleMax = Math.ceil(max / step) * step;
@@ -82,135 +130,91 @@ function niceScale(max: number, unit: DisplayUnit | null): { scaleMax: number; t
   return { scaleMax, ticks };
 }
 
-export function buildGlance(data: DiscomsData, indicator: string, year: string): Glance {
-  const reported = data.discoms.filter((d) => hasFigure(d, indicator, year));
+export function buildGlance(all: MasterRow[], family: string, year: string, stateOrder: string[], quarter: number): Glance {
+  const rows = inFamily(all, family).filter((r) => r.financial_year === year);
 
-  const byKey = new Map<string, { unit: DisplayUnit | null; direction: Direction; discoms: Discom[] }>();
-  for (const d of reported) {
-    const meaning = d.years[year].indicators[indicator].reported_meaning;
-    const unit = displayUnitForMeaning(meaning);
-    const direction = directionForMeaning(meaning);
-    const key = `${unit?.label ?? 'unstated'}|${direction}`;
-    if (!byKey.has(key)) byKey.set(key, { unit, direction, discoms: [] });
-    byKey.get(key)!.discoms.push(d);
+  const byKey = new Map<string, { unit: string; period: GlancePeriod; rows: MasterRow[] }>();
+  for (const r of rows) {
+    const unit = unitOf(r)!;
+    const period: GlancePeriod = isQuarterly(r) ? 'quarter' : 'year';
+    // a quarter group only holds rows that give the chosen quarter
+    if (period === 'quarter' && quarterFigures(r)![quarter] == null) continue;
+    const key = `${unit}|${period}`;
+    (byKey.get(key) ?? byKey.set(key, { unit, period, rows: [] }).get(key)!).rows.push(r);
   }
 
   const groups: GlanceGroup[] = [];
   for (const [key, g] of byKey) {
-    // benchmarks are set per state, so each state's is resolved once, from its own DISCOMs on this
-    // chart, exactly as the state page's benchmark line does
-    const benchByState = new Map<string, { value: number | null; note: string | null }>();
-    for (const state of new Set(g.discoms.map((d) => d.state))) {
-      const series: CardSeries[] = g.discoms
-        .filter((d) => d.state === state)
-        .map((d) => {
-          const ind = d.years[year].indicators[indicator];
-          const num = ind.benchmark != null && !Number.isNaN(parseFloat(ind.benchmark)) ? parseFloat(ind.benchmark) : null;
-          return {
-            label: d.short_name,
-            color: '',
-            points: [
-              {
-                year,
-                value: ind.value,
-                benchmark: num,
-                benchmarkMeaning: ind.benchmark_meaning,
-                reportedMeaning: ind.reported_meaning,
-                standardSpecified: ind.standard_specified,
-                comparisonPossible: ind.comparison_possible,
-                standardMet: ind.standard_met,
-                reasonNotComparable: ind.reason_not_comparable,
-                regulation: d.years[year].regulation || null,
-                benchmarkRaw: ind.benchmark == null ? null : String(ind.benchmark),
-              },
-            ],
-          };
-        });
-      const line = benchmarkLine(series, [year], g.unit);
-      benchByState.set(state, { value: line.values[0], note: line.values[0] != null ? line.note : null });
+    const u = g.unit;
+    // the period is always named, so an annual chart and a quarterly one can't be mistaken for each other
+    const when = g.period === 'quarter' ? 'quarterly' : 'annual';
+    const unit: DisplayUnit = u === '%' ? { label: `${when} share, per cent`, format: 'percent' } : { label: `${u}, ${when}`, format: 'number' };
+    const direction: Direction = u === '%' ? 'higher_is_better' : 'lower_is_better';
+
+    const tags = new Map<string, string>();
+    const byDiscom = new Map<string, MasterRow[]>();
+    for (const r of g.rows) (byDiscom.get(r.discom_code) ?? byDiscom.set(r.discom_code, []).get(r.discom_code)!).push(r);
+    for (const ds of byDiscom.values()) {
+      const t = distinguish(ds.map((r) => r.indicator));
+      // rows about agricultural feeders (SAIDI/SAIFI: "… Excluding agricultural feeders", "… Agricultural
+      // feeders", "… for predominantly agricultural feeders") are always named the same way, in the
+      // user's wording, whatever else tells the DISCOM's rows apart
+      const agri = (r: MasterRow) => (/excluding agricultur/i.test(r.indicator) ? 'Excluding agriculture' : /agricultur/i.test(r.indicator) ? 'Predominantly agriculture' : '');
+      ds.forEach((r, i) => tags.set(r.id, agri(r) || (ds.length > 1 ? t[i] : '')));
     }
 
-    const wordings = new Map<string, number>();
-    const rows: GlanceRow[] = g.discoms.map((d) => {
-      const ind = d.years[year].indicators[indicator];
-      const wording = ind.reported_meaning?.trim().replace(/\.+$/, '') ?? null;
-      if (wording) wordings.set(wording, (wordings.get(wording) ?? 0) + 1);
-      const b = benchByState.get(d.state)!;
+    const out: GlanceRow[] = g.rows.map((r) => {
+      const tag = tags.get(r.id) ?? '';
+      let value: number;
+      let benchmark: number | null;
+      let met: boolean | null;
+      if (g.period === 'quarter') {
+        value = quarterFigures(r)![quarter]!;
+        benchmark = u === '%' ? (plotBenchmark(r, { value, unit: '%', text: '' })?.value ?? null) : (standardLimit(r, u)?.period === 'quarter' ? standardLimit(r, u)!.value : null);
+        const qv = quarterVerdicts(r);
+        met = qv ? yesNo(qv[quarter]) : null;
+      } else {
+        const fig = plotFigure(r)!;
+        value = fig.value;
+        benchmark = plotBenchmark(r, fig)?.value ?? null;
+        met = yesNo(r.standard_met);
+      }
       return {
-        discom: d,
-        value: ind.value as number,
-        meaning: ind.reported_meaning,
-        benchmark: b.value,
-        benchmarkNote: b.note,
-        standard: ind.standard_specified,
-        standardMet: ind.standard_met,
-        reasonNotComparable: ind.reason_not_comparable,
-        note: ind.unit_note,
+        discom: { sheet: r.id, short_name: tag ? `${r.discom_code} · ${tag}` : r.discom_code, full_name: r.discom_name, state: r.state },
+        value,
+        text: g.period === 'quarter' ? r.reported_data : (r.standardised_data ?? r.reported_data),
+        meaning: r.indicator,
+        benchmark,
+        benchmarkNote: null,
+        standard: r.standard,
+        // no benchmark on the chart means nothing to judge the bar against: N/A, never "Not met" (user, 28 Oct 2026)
+        standardMet: benchmark == null ? null : met,
+        reasonNotComparable: r.why_not_comparable,
+        note: null,
         ownWording: null,
       };
     });
-    // a state's DISCOMs stay together: states ordered by their largest figure (ties keep the
-    // dashboard's state order), then each state's DISCOMs largest first
-    const stateMax = new Map<string, number>();
-    for (const r of rows) stateMax.set(r.discom.state, Math.max(stateMax.get(r.discom.state) ?? -Infinity, r.value));
-    const stateIdx = (s: string) => data.state_order.indexOf(s);
-    rows.sort(
+
+    // a state's DISCOMs stay together: states ordered by their best figure, then each state's bars
+    // best first (bars sharing a benchmark kept next to each other)
+    const better = (a: number, b: number) => (direction === 'lower_is_better' ? a - b : b - a);
+    const best = new Map<string, number>();
+    for (const r of out) {
+      const cur = best.get(r.discom.state);
+      if (cur == null || better(r.value, cur) < 0) best.set(r.discom.state, r.value);
+    }
+    const idx = (s: string) => stateOrder.indexOf(s);
+    out.sort(
       (a, b) =>
-        stateMax.get(b.discom.state)! - stateMax.get(a.discom.state)! ||
-        stateIdx(a.discom.state) - stateIdx(b.discom.state) ||
-        b.value - a.value,
+        better(best.get(a.discom.state)!, best.get(b.discom.state)!) ||
+        idx(a.discom.state) - idx(b.discom.state) ||
+        (a.benchmark ?? -1) - (b.benchmark ?? -1) ||
+        better(a.value, b.value),
     );
 
-    const max = Math.max(...rows.map((r) => r.value), ...rows.map((r) => r.benchmark ?? 0));
-    const wording = mostCommon(wordings);
-    // a figure worded differently from the chart's title keeps its own wording, shown beside it
-    const same = (t: string | null) => (t ?? '').trim().replace(/\s+/g, ' ').replace(/\.+$/, '').toLowerCase();
-    for (const r of rows) if (wording && r.meaning && same(r.meaning) !== same(wording)) r.ownWording = r.meaning.trim().replace(/\.+$/, '');
-    groups.push({ key, unit: g.unit, direction: g.direction, wording, rows, ...niceScale(max, g.unit) });
+    const max = Math.max(...out.map((r) => r.value), ...out.map((r) => r.benchmark ?? 0));
+    groups.push({ key, period: g.period, unit, direction, wording: u === '%' ? 'Share within the time allowed' : unit.label, rows: out, ...niceScale(max, unit) });
   }
-  // the chart most DISCOMs share comes first
   groups.sort((a, b) => b.rows.length - a.rows.length);
   return { groups };
-}
-
-/** The data with every Urban/Rural-reporting indicator split into two: "TRANSFORMER FAILURE" becomes
- * "TRANSFORMER FAILURE (URBAN)" and "(RURAL)" for the DISCOMs whose sheet gives them as separate
- * rows, each carrying its own figure, benchmark and verdict. DISCOMs that report one figure keep the
- * original key. Nothing is averaged. */
-export function splitSubtypes(data: DiscomsData): DiscomsData {
-  const subs = ['Urban', 'Rural'] as const;
-  const split = new Set<string>();
-  const discoms = data.discoms.map((d) => ({
-    ...d,
-    years: Object.fromEntries(
-      Object.entries(d.years).map(([y, yd]) => {
-        const indicators: typeof yd.indicators = {};
-        for (const [k, ind] of Object.entries(yd.indicators)) {
-          if (!ind.subtype_records) {
-            indicators[k] = ind;
-            continue;
-          }
-          split.add(k);
-          for (const s of subs) {
-            const rec = ind.subtype_records[s];
-            indicators[`${k} (${s.toUpperCase()})`] = { ...ind, ...rec, comparison_possible: rec.comparison_possible ?? false };
-          }
-        }
-        return [y, { ...yd, indicators }];
-      }),
-    ),
-  }));
-  const canonical_order: string[] = [];
-  const canonical_indicators = { ...data.canonical_indicators };
-  for (const k of data.canonical_order) {
-    canonical_order.push(k);
-    if (split.has(k)) {
-      for (const s of subs) {
-        const name = `${k} (${s.toUpperCase()})`;
-        canonical_order.push(name);
-        canonical_indicators[name] = data.canonical_indicators[k];
-      }
-    }
-  }
-  return { ...data, discoms, canonical_order, canonical_indicators };
 }

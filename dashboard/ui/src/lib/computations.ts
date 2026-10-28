@@ -1,13 +1,6 @@
 import { CATEGORICAL, MAP_STATUS } from './colors';
-import type { AccessibilityData, Discom, DiscomAccessibility, DiscomsData, StateSpecificData } from './types';
-
-export function indicatorsInScope(discoms: DiscomsData, group: string, indicator: string): string[] {
-  return discoms.canonical_order.filter((k) => {
-    if (indicator !== 'all') return k === indicator;
-    if (group !== 'all') return discoms.canonical_indicators[k].group === group;
-    return true;
-  });
-}
+import { rowHasReportedFigure } from './master';
+import type { AccessibilityData, DiscomAccessibility, MasterData } from './types';
 
 /** Color assigned to a state currently in the comparison set, by selection order (null if not selected). */
 export function compareColor(compareSet: string[], name: string): string | null {
@@ -15,49 +8,30 @@ export function compareColor(compareSet: string[], name: string): string | null 
   return idx === -1 ? null : CATEGORICAL[idx % CATEGORICAL.length];
 }
 
-/** Whether the Standards-of-Performance dataset has anything at all to show for this state, a
- * per-DISCOM sheet with its own SoP indicators, or (for the 5 states with no reported SoP figures
- * at all) the regulatory-framework listing. Either is real page content, even when every reported
- * value in it is null. Used only to widen "in scope", see stateIsTracked, never treated as
- * "has reported data" on its own (a framework listing has no reported figures by definition). */
-export function stateHasSopData(stateSpecific: StateSpecificData | null | undefined, state: string): boolean {
-  if (!stateSpecific) return false;
-  return stateSpecific.discoms.some((d) => d.state === state) || stateSpecific.frameworks.some((f) => f.state === state);
+/** Whether DISCOM_SoP_master.xlsx has any row for this state, gates whether it's on the map as
+ * anything but "Coming soon". True even when none of its rows carries a reported figure (see
+ * stateMapStatus for the "tracked but no data" split). */
+export function stateIsTracked(master: MasterData | null | undefined, state: string): boolean {
+  return !!master && master.rows.some((r) => r.state === state);
 }
 
-/** Whether this state is in ACPET's scope at all (year-independent), gates whether it's on the
- * map as anything but "Coming soon". True if either dataset tracks it, even if neither has a
- * reported figure yet (see stateMapStatus for the "tracked but no data" split). */
-export function stateIsTracked(discoms: Discom[], state: string, stateSpecific?: StateSpecificData | null): boolean {
-  return discoms.some((d) => d.state === state) || stateHasSopData(stateSpecific, state);
-}
-
-/** Whether this state has an actual reported figure anywhere, a reliability indicator value, or
- * a SoP indicator's reported value, in any year, in either dataset. A SoP regulatory-framework
- * listing alone (standards and benchmarks with no reported data by definition) does NOT count:
- * this specifically answers "is there real performance data to explore", which is what
+/** Whether any of this state's rows carries a reported figure (rowHasReportedFigure), what
  * distinguishes the map's "Tracked, Data Reported" fill from "Tracked, Data Not Reported". */
-export function stateHasReportedData(discoms: Discom[], state: string, stateSpecific?: StateSpecificData | null): boolean {
-  return stateReportedYears(discoms, state, stateSpecific).length > 0;
+export function stateHasReportedData(master: MasterData | null | undefined, state: string): boolean {
+  return stateReportedYears(master, state).length > 0;
 }
 
-/** The fiscal years (raw "2023-24" keys, unordered) in which this state has an actual reported
- * figure, by the same rule as stateHasReportedData, so a state page's "Reported data FY22–FY24"
- * covers the years with real figures, not the dashboard-wide year list every sheet has rows for. */
-export function stateReportedYears(discoms: Discom[], state: string, stateSpecific?: StateSpecificData | null): string[] {
+/** The fiscal years (raw "2023-24" keys) in which this state has a reported figure, by the same
+ * rule as stateHasReportedData. */
+export function stateReportedYears(master: MasterData | null | undefined, state: string): string[] {
   const years = new Set<string>();
-  for (const d of discoms) {
-    if (d.state !== state) continue;
-    for (const [y, yd] of Object.entries(d.years)) if (Object.values(yd.indicators).some((i) => i.value != null)) years.add(y);
-  }
-  for (const d of stateSpecific?.discoms ?? []) {
-    if (d.state !== state) continue;
-    for (const [y, yd] of Object.entries(d.years)) if (yd.indicators.some((i) => i.reported != null)) years.add(y);
-  }
-  return [...years];
+  for (const r of master?.rows ?? []) if (r.state === state && rowHasReportedFigure(r)) years.add(r.financial_year);
+  return [...years].sort();
 }
 
 export type StateMapStatus = 'tracked' | 'no-data' | 'idle';
+
+const statusCache = new WeakMap<MasterData, Map<string, StateMapStatus>>();
 
 /** The one wording for each map status, the home map legend and the state search list (visible
  * swatch labels and screen-reader text) both read from here so they can never drift apart. */
@@ -67,13 +41,22 @@ export const MAP_STATUS_LABEL: Record<StateMapStatus, string> = {
   idle: 'Coming soon',
 };
 
-/** Three-way map status for a state: 'idle' (outside ACPET's scope in both datasets, "Coming
- * soon", not clickable), 'no-data' (in scope, but no reported figure anywhere yet, still
- * clickable, since a SoP framework listing or an all-null DISCOM sheet is real content worth
- * seeing, just not performance data), or 'tracked' (has an actual reported figure somewhere). */
-export function stateMapStatus(discoms: Discom[], state: string, stateSpecific?: StateSpecificData | null): StateMapStatus {
-  if (!stateIsTracked(discoms, state, stateSpecific)) return 'idle';
-  return stateHasReportedData(discoms, state, stateSpecific) ? 'tracked' : 'no-data';
+/** Three-way map status for a state: 'idle' (no rows in the master sheet, "Coming soon", not
+ * clickable), 'no-data' (has rows, but none with a reported figure, still clickable, since its
+ * standards and the sheet's notes are real content), or 'tracked' (has a reported figure). */
+export function stateMapStatus(master: MasterData | null | undefined, state: string): StateMapStatus {
+  if (!master) return 'idle';
+  // the map asks for every state on every render, so the 12k-row scan runs once per dataset
+  let byState = statusCache.get(master);
+  if (!byState) {
+    byState = new Map();
+    for (const r of master.rows) {
+      if (rowHasReportedFigure(r)) byState.set(r.state, 'tracked');
+      else if (!byState.has(r.state)) byState.set(r.state, 'no-data');
+    }
+    statusCache.set(master, byState);
+  }
+  return byState.get(state) ?? 'idle';
 }
 
 /** Map fill by status, a muted terracotta/clay for states with reported data, a lighter tint of

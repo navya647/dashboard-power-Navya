@@ -10,6 +10,83 @@ this app.
 
 ## Pipeline: Excel → JSON → React
 
+**Since 27 Oct 2026 the site's performance data comes from one workbook,
+`DISCOM_SoP_master.xlsx`** (repo root; one sheet, one row per DISCOM × FY × indicator,
+27 columns, 13 states incl. Assam and Telangana). It replaces `discoms2.json` and
+`state_specific.json` in the UI. `accessibility.json` is unchanged and still feeds the
+Accessibility page.
+
+- `cd dashboard && python extraction_master.py` → `ui/public/data/sop_master.json`
+  (`MasterData` in `lib/types.ts`). Every cell is written **as Excel displays it** (number
+  formats applied: 0.9981 formatted `0.00%` → `"99.81%"`). Text is untouched (the literal
+  `"None"`/`"N/A"` strings are kept), blank → `null`. The only added field is
+  `standardised_num`: `standardised_data` as a number, present only when that cell is
+  itself a number or a bare number/percentage. It's for plotting only; numbers are never
+  pulled out of sentences.
+- `python verify_master.py` independently re-reads the workbook and diffs all 27 columns
+  of every row. It must exit 0 after every extraction.
+- **Show the sheet exactly as written: no imputation, no reinterpretation, no
+  reconciling** (user, 27 Oct 2026). Standards can differ between DISCOMs of one state and
+  year, and the sheet's per-DISCOM standard is shown as is. One indicator family can sit
+  under two categories, and each row keeps its own `category`. 138 DISCOM × FY × indicator
+  keys have two rows (a regulation change mid-year). Both rows are shown.
+- UI: `lib/master.ts` (lookups only) and `lib/computations.ts` (map gating: a state is
+  `'tracked'` when a row has `standardised_num` or a Yes/No `standard_met`, `'no-data'`
+  when it has rows but none of those, `'idle'` with no rows). The State page (`StateDetail.tsx`)
+  shows one `MasterIndicator.tsx` per selected indicator, **with no tables anywhere** (user,
+  27 Oct 2026). The trend chart (where `lib/plotFigures.ts` finds figures) sits directly on the
+  DISCOM tracks. Each DISCOM is a line with one stop per FY (two stops where a year is split),
+  filled by `standard_met`, with its figure underneath. The chart's y-axis is fixed at the
+  tracks' name-column width so years line up. Beside them, the evidence trail shows the
+  selected row as a chain (Regulation → Standard → Reported data → Standardised data → Standard
+  met), with every column of the row on one step, verbatim. Clicking a stop or a chart point
+  selects the row.
+- **Quarterly-assessed standards show quarters only, never a yearly verdict** (user, 27 Oct
+  2026). A row is quarterly when any of `standard_met_q1–q4` is filled (`quarterVerdicts()` in
+  `lib/master.ts`). For those rows, the track stop is four quarter marks (green / red / grey =
+  not reported), the chart point is hollow with Q1–Q4 in its tooltip, and the verdict step
+  lists Q1–Q4. The row's `standard_met` and the "(FY: …)" in `standard_met_detail` aren't shown. The dropdown groups by the sheet's
+  `category`. Glossary reads the master rows.
+- **Numbers may be read out of sentences for charts** (user, 28 Oct 2026: "you need to pull numbers out of the
+  sentences - otherwise what's the point of the dashboard"). `lib/headlineFigure.ts` returns the one written headline
+  figure + unit of a row (from `standardised_data`, else `reported_data`), or null when the unit/basis is unclear or the
+  year isn't annualised. Never converts or sums; the sentence stays on hover. Used everywhere since 28 Oct 2026:
+  `plotFigure` (State page trend + track figures, default indicator) falls back to it for every state (the old
+  Rajasthan-only `PARSE_STATES` trial is gone), and `rowHasReportedFigure` (map 'tracked' status) counts it. The State
+  page chart plots one unit only, the one most of the indicator's figures use; y-axis starts at 0.
+- Quick comparison (`/glance`): the ORIGINAL design is kept (`GlanceView.tsx` + `styles/glance.css`, restored from git
+  28 Oct 2026 at the user's request: one CSS grid, state blocks, benchmark line per block, verdict colours, DISCOM card).
+  Only the data layer changed: `lib/glance.ts` builds the groups from the master sheet for `GLANCE_FAMILIES` (SAIDI,
+  SAIFI, DT failure, line breakdown, DT fuse, reconnection) via `plotFigure` / `plotBenchmark`; a state block splits
+  where its rows' benchmarks differ (state name written once); several rows of one DISCOM get one bar each.
+  **Never annualise** (user, 28 Oct 2026): figures are compared in the period their standard is set for. Rows the sheet
+  assesses by quarter, or held to a per-quarter limit, go in a separate "… per quarter" chart with a Q1–Q4 picker:
+  the quarter's figure from `reported_data` (`quarterFigures`), that quarter's verdict, the per-quarter limit
+  (`standardLimit`). `plotBenchmark` (also the State page) draws only per-year limits or % shares. **No benchmark on
+  the chart → verdict shown as N/A, never "Not met"** (user, 28 Oct 2026).
+  State page (`MasterTrend` in `MasterIndicator.tsx`): the chart is always annual (user, 28 Oct 2026: "the graph
+  should be annual and below that the quarterly data should be there as it is now"): each row's FY figure only, no
+  Q1–Q4 slots; a quarter-assessed row's point stays hollow (no yearly verdict) while its track stop keeps the four
+  quarter marks; points are filled only where a benchmark is drawn. The header
+  also shows the family's signed-off plain definition ("In short", `lib/familyDefinitions.ts`).
+- Compare (`/compare?states=`, `CompareView.tsx`) is back since 28 Oct 2026 at the user's request, read from the
+  master sheet: the map's View/Compare switch picks states; the page has one DISCOM picker per state and an indicator
+  picker over the `indicator_family` values every selected state has (states word indicators differently); each pick is
+  one `MasterIndicator` over all selected states' rows, DISCOMs coloured from one `CATEGORICAL` run.
+  Compare is annual only (user, 28 Oct 2026: "lose granularity and use annual data where defensibly possible"): rows
+  with a year figure (`plotFigure`) only, `annualOnly` (no Q1–Q4 slots) and `hideTimes` (no merged time-limit list) on
+  `MasterIndicator`; a DISCOM-year with several rows keeps only the one worded "Overall …" / "All feeder …" /
+  "… combined" when exactly one is, else all of them (`annualView` in `CompareView.tsx`).
+- The Methodology page is kept exactly as it was (user, 27 Oct 2026). It loads
+  `discoms2.json` and `state_specific.json` itself (`useEarlierData` in
+  `MethodologyView.tsx`), so those two files must stay in `ui/public/data/`.
+
+The sections below describe the **previous** three-dataset setup. The extraction
+scripts and JSON files still exist (other extractors read `data/discoms2.json` for DISCOM
+names), but the UI no longer loads `discoms2.json` or `state_specific.json`. Rules that
+reference them (composite score, `withStandardOrFigures`, `IndicatorModule`, Glance) are
+historical unless they're revived.
+
 Each dataset is `data/<workbook>.xlsx` → `extraction_*.py` (repo root, run manually,
 `cd dashboard && python3 extraction_*.py`) → `dashboard/ui/public/data/*.json` →
 fetched client-side in `lib/DataContext.tsx` → consumed via `useData()`.
@@ -144,7 +221,7 @@ to have zero reported figures in any of them.
   their eyebrow is `AboutKicker`); "Why this dashboard" (five consumer questions); problem chips beside "what you can
   examine"; a six-node evidence trail; closing statement beside the 12 coverage states (read from the data, Odisha JV
   footnote). Every section = small-caps eyebrow + serif heading. International comparison (`InternationalView.tsx`, data in
-  `lib/international.ts`) is transcribed from `international saidi_saifi(updated).pdf` — India is a range of state
+  `lib/international.ts`) is transcribed from `international saidi_saifi (2).pdf` plus the user's context text (28 Oct 2026: why each comparator; India's weighted benchmark ≈6,600 min / 152 as a tick on its range; no state-by-state list) — India is a range of state
   regulatory benchmarks, the rest observed performance; drawn differently (bar vs dot), log-scale axes, never presented as
   like-for-like.
   Reached from the landing view: scroll down / ArrowDown / swipe up / the Explore button play `to-about` in `HeroSection.tsx`

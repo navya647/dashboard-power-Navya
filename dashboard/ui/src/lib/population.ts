@@ -1,5 +1,5 @@
 import { stateIsTracked } from './computations';
-import type { Discom, StateSpecificData } from './types';
+import type { MasterData } from './types';
 
 /** 2026 population estimates, keyed by the geojson's `st_nm` state name. Union territories and
  * any state absent from this table simply get no population line in the map tooltip. */
@@ -66,12 +66,12 @@ export function formatPopulation(name: string): string | null {
  * (reused from stateIsTracked, same reliability/SoP scope the map's fill color is built from,
  * see stateMapStatus in computations.ts). The denominator is the sum of this table's 28 states,
  * not an official all-India total (which also includes UTs not in this table). */
-export function populationCoveragePercent(discoms: Discom[], stateSpecific?: StateSpecificData | null): number {
+export function populationCoveragePercent(master: MasterData | null): number {
   let covered = 0;
   let total = 0;
   for (const [state, population] of Object.entries(STATE_POPULATION_2026)) {
     total += population;
-    if (stateIsTracked(discoms, state, stateSpecific)) covered += population;
+    if (stateIsTracked(master, state)) covered += population;
   }
   return total === 0 ? 0 : (covered / total) * 100;
 }

@@ -9639,79 +9639,79 @@
               "type": "Restoration of Supply",
               "indicator": "Fuse-off calls: Urban",
               "meaning": "Restoration of supply for normal fuse-off calls, involving replacement of HG or LT fuses at the distribution transformer or consumer premises.",
-              "standard_specified": "The distribution licensee must restore power supply following normal fuse-off calls within 6 hours in urban areas.",
+              "standard_specified": "At least 90% of fuse-off calls rectified within 6 hours (Urban) / 24 hours (Rural) of complaint",
               "benchmark": 90.0,
               "benchmark_meaning": "% of calls to be rectified within the specified time limits",
               "reported": 100.0,
               "reported_meaning": "% of calls rectified within the specified time limits",
               "comparison_possible": true,
               "standard_met": true,
-              "reason_not_comparable": "N/A"
+              "reason_not_comparable": "Not applicable."
             },
             {
               "type": "Restoration of Supply",
               "indicator": "Fuse-off calls: Rural",
               "meaning": "Restoration of supply for normal fuse-off calls, involving replacement of HG or LT fuses at the distribution transformer or consumer premises.",
-              "standard_specified": "The distribution licensee must restore power supply following normal fuse-off calls within 24 hours in rural areas.",
+              "standard_specified": "At least 90% of fuse-off calls rectified within 6 hours (Urban) / 24 hours (Rural) of complaint",
               "benchmark": 90.0,
               "benchmark_meaning": "% of calls to be rectified within the specified time limits",
               "reported": 100.0,
               "reported_meaning": "% of calls rectified within the specified time limits",
               "comparison_possible": true,
               "standard_met": true,
-              "reason_not_comparable": "N/A"
+              "reason_not_comparable": "Not applicable."
             },
             {
               "type": "Restoration of Supply",
               "indicator": "Line breakdown: Urban",
               "meaning": "Restoration of power supply following an overhead line/cable breakdown.",
-              "standard_specified": "The distribution licensee must restore power supply following line breakdowns within 12 working hours in urban areas.",
+              "standard_specified": "At least 95% of line breakdowns restored within 12 hours (Urban) / 24 hours (Rural) of occurrence of the breakdown",
               "benchmark": 95.0,
               "benchmark_meaning": "% of cases to be resolved within the specified time limit",
               "reported": 100.0,
               "reported_meaning": "% of cases resolved within the specified time limit",
-              "comparison_possible": true,
-              "standard_met": true,
-              "reason_not_comparable": "N/A"
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "The standard measures restoration time from the occurrence of the breakdown, while the reported share measures it from receipt of the complaint, which may be later; the reported share therefore does not measure performance against the regulatory time limit."
             },
             {
               "type": "Restoration of Supply",
               "indicator": "Line breakdown: Rural",
               "meaning": "Restoration of power supply following an overhead line/cable breakdown.",
-              "standard_specified": "The distribution licensee must restore power supply following line breakdowns within 24 hours in rural areas.",
+              "standard_specified": "At least 95% of line breakdowns restored within 12 hours (Urban) / 24 hours (Rural) of occurrence of the breakdown",
               "benchmark": 95.0,
               "benchmark_meaning": "% of cases to be resolved within the specified time limit",
               "reported": 100.0,
               "reported_meaning": "% of cases resolved within the specified time limit",
-              "comparison_possible": true,
-              "standard_met": true,
-              "reason_not_comparable": "N/A"
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "The standard measures restoration time from the occurrence of the breakdown, while the reported share measures it from receipt of the complaint, which may be later; the reported share therefore does not measure performance against the regulatory time limit."
             },
             {
               "type": "Scheduled Outage",
               "indicator": "Scheduled Outage: Restoration of Supply by 6:00 PM",
               "meaning": "Restoration of supply following a scheduled outage.",
-              "standard_specified": "Maximum 12 hours in a day; supply must be restored by 6:00 PM during summer and 5:00PM during winter.",
+              "standard_specified": "At least 90% of scheduled outages notified in advance (at least 24 hours), not exceeding 12 hours a day, and with supply restored by 6 p.m. (summer) / 5 p.m. (winter)",
               "benchmark": 90.0,
               "benchmark_meaning": "% of cases to comply with the specified maximum-duration standard",
               "reported": null,
               "reported_meaning": "% of cases complying with the specified maximum-duration standard",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "Reported data incomplete."
+              "reason_not_comparable": "No reported value is available for FY 2021-22."
             },
             {
               "type": "Power Supply Quality",
               "indicator": "Supply frequency",
               "meaning": "Frequency of electricity supplied to consumers.",
-              "standard_specified": "Maintain supply frequency within +/-3% of nominal frequency (50Hz)",
+              "standard_specified": "Licensee to endeavour to maintain supply frequency within ±3% of 50 Hz and report the number of hourly measurements outside this range; no numerical target specified",
               "benchmark": null,
               "benchmark_meaning": "N/A",
               "reported": null,
               "reported_meaning": "No. of hourly measurement in which the supply frequency went beyond + 3%",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "Reported data incomplete."
+              "reason_not_comparable": "The regulation does not specify a quantitative benchmark for the number of supply-frequency excursions, and no reported value is available for FY 2021-22."
             },
             {
               "type": "Power Supply Quality",
@@ -9730,92 +9730,92 @@
               "type": "Street Light Faults",
               "indicator": "Street light fault",
               "meaning": "Rectification of line faults.",
-              "standard_specified": "N/A",
+              "standard_specified": "At least 90% of street-light faults rectified within 6 hours of detection or complaint, whichever is earlier",
               "benchmark": 90.0,
               "benchmark_meaning": "% of cases to be resolved within the specified time limit",
               "reported": 90.0,
               "reported_meaning": "% of cases resolved within the specified time limit",
-              "comparison_possible": true,
-              "standard_met": true,
-              "reason_not_comparable": "N/A"
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "The standard measures rectification time from detection of the fault or receipt of the complaint, whichever is earlier, while the reported share measures it from receipt of the complaint only."
             },
             {
               "type": "Metering Performance",
               "indicator": "Faulty bills",
               "meaning": "Percentage of bills requiring modification following complaints relative to the total number of bills issued.",
-              "standard_specified": "N/A",
-              "benchmark": null,
+              "standard_specified": "Bills requiring rectification following complaints not more than 0.1% of bills issued",
+              "benchmark": 0.1,
               "benchmark_meaning": "% of bills requiring modifications following complaints to the total number of bills issued.",
               "reported": 0.1,
               "reported_meaning": "No. of faulty bills prepared as a percentage of total no. of bills issued",
               "comparison_possible": true,
               "standard_met": true,
-              "reason_not_comparable": "N/A"
+              "reason_not_comparable": "Not applicable."
             },
             {
               "type": "Restoration of Supply",
               "indicator": "Faulty/defective meters",
               "meaning": "Percentage of defective meters relative to the total number of meters in service.",
-              "standard_specified": "The licensee must inspect the meter within 7 working days; replace a defective meter within 30 days, a burnt meter not attributable to the consumer within 30 working days, and a consumer-caused burnt meter within 15 days of payment after notifying the consumer within 7 days.",
-              "benchmark": null,
+              "standard_specified": "Defective meters not more than 5% of meters in service",
+              "benchmark": 5.0,
               "benchmark_meaning": "% of faulty/ defective meters to the total number of meters in service,",
               "reported": 5.0,
               "reported_meaning": "No. of faulty/defective meters as a percentage of total no. of existing meters",
               "comparison_possible": true,
               "standard_met": true,
-              "reason_not_comparable": "N/A"
+              "reason_not_comparable": "Not applicable."
             },
             {
               "type": "Accidents",
               "indicator": "Fatal Human Accidents",
               "meaning": "Electrical accidents involving humans that result in fatality.",
-              "standard_specified": "The Licensee shall endeavour to minimize electrical accidents in the distribution system. Increase or decrease in no. of electrical accidents compared over a period of time will be an indicator of the Licensee’s performance",
+              "standard_specified": "No quantitative benchmark specified",
               "benchmark": null,
               "benchmark_meaning": "N/A",
               "reported": 2.0,
               "reported_meaning": "No. of accident cases",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "The applicable regulation does not specify a quantitative benchmark for the number of electrical accidents; it identifies the change in the number of accidents over time as an indicator of performance, without a target."
             },
             {
               "type": "Accidents",
               "indicator": "Fatal Animal Accidents",
               "meaning": "Electrical accidents involving animals that result in death.",
-              "standard_specified": "The Licensee shall endeavour to minimize electrical accidents in the distribution system. Increase or decrease in no. of electrical accidents compared over a period of time will be an indicator of the Licensee’s performance",
+              "standard_specified": "No quantitative benchmark specified",
               "benchmark": null,
               "benchmark_meaning": "N/A",
               "reported": 53.0,
               "reported_meaning": "No. of accident cases",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "The applicable regulation does not specify a quantitative benchmark for the number of electrical accidents; it identifies the change in the number of accidents over time as an indicator of performance, without a target."
             },
             {
               "type": "Accidents",
               "indicator": "Non-fatal Human Accidents",
               "meaning": "Electrical accidents involving humans that do not result in fatality.",
-              "standard_specified": "The Licensee shall endeavour to minimize electrical accidents in the distribution system. Increase or decrease in no. of electrical accidents compared over a period of time will be an indicator of the Licensee’s performance",
+              "standard_specified": "No quantitative benchmark specified",
               "benchmark": null,
               "benchmark_meaning": "N/A",
               "reported": 16.0,
               "reported_meaning": "No. of accident cases",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "The applicable regulation does not specify a quantitative benchmark for the number of electrical accidents; it identifies the change in the number of accidents over time as an indicator of performance, without a target."
             },
             {
               "type": "Accidents",
               "indicator": "Non-fatal Animal Accidents",
               "meaning": "Electrical accidents involving animals that do not result in death",
-              "standard_specified": "The Licensee shall endeavour to minimize electrical accidents in the distribution system. Increase or decrease in no. of electrical accidents compared over a period of time will be an indicator of the Licensee’s performance",
+              "standard_specified": "No quantitative benchmark specified",
               "benchmark": null,
               "benchmark_meaning": "N/A",
               "reported": 0.0,
               "reported_meaning": "No. of accident cases",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "The applicable regulation does not specify a quantitative benchmark for the number of electrical accidents; it identifies the change in the number of accidents over time as an indicator of performance, without a target."
             }
           ]
         },
@@ -9826,79 +9826,79 @@
               "type": "Restoration of Supply",
               "indicator": "Fuse-off calls: Urban",
               "meaning": "Restoration of supply for normal fuse-off calls, involving replacement of HG or LT fuses at the distribution transformer or consumer premises.",
-              "standard_specified": "The distribution licensee must restore power supply following normal fuse-off calls within 6 hours in urban areas.",
+              "standard_specified": "At least 90% of fuse-off calls rectified within 6 hours (Urban) / 24 hours (Rural) of complaint",
               "benchmark": 90.0,
               "benchmark_meaning": "% of calls to be rectified within the specified time limits",
               "reported": 100.0,
               "reported_meaning": "% of calls rectified within the specified time limits",
               "comparison_possible": true,
               "standard_met": true,
-              "reason_not_comparable": "N/A"
+              "reason_not_comparable": "Not applicable."
             },
             {
               "type": "Restoration of Supply",
               "indicator": "Fuse-off calls: Rural",
               "meaning": "Restoration of supply for normal fuse-off calls, involving replacement of HG or LT fuses at the distribution transformer or consumer premises.",
-              "standard_specified": "The distribution licensee must restore power supply following normal fuse-off calls within 24 hours in rural areas.",
+              "standard_specified": "At least 90% of fuse-off calls rectified within 6 hours (Urban) / 24 hours (Rural) of complaint",
               "benchmark": 90.0,
               "benchmark_meaning": "% of calls to be rectified within the specified time limits",
               "reported": 100.0,
               "reported_meaning": "% of calls rectified within the specified time limits",
               "comparison_possible": true,
               "standard_met": true,
-              "reason_not_comparable": "N/A"
+              "reason_not_comparable": "Not applicable."
             },
             {
               "type": "Restoration of Supply",
               "indicator": "Line breakdown: Urban",
               "meaning": "Restoration of power supply following an overhead line/cable breakdown.",
-              "standard_specified": "The distribution licensee must restore power supply following line breakdowns within 12 working hours in urban areas.",
+              "standard_specified": "At least 95% of line breakdowns restored within 12 hours (Urban) / 24 hours (Rural) of occurrence of the breakdown",
               "benchmark": 95.0,
               "benchmark_meaning": "% of cases to be resolved within the specified time limit",
               "reported": 100.0,
               "reported_meaning": "% of cases resolved within the specified time limit",
-              "comparison_possible": true,
-              "standard_met": true,
-              "reason_not_comparable": "N/A"
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "The standard measures restoration time from the occurrence of the breakdown, while the reported share measures it from receipt of the complaint, which may be later; the reported share therefore does not measure performance against the regulatory time limit."
             },
             {
               "type": "Restoration of Supply",
               "indicator": "Line breakdown: Rural",
               "meaning": "Restoration of power supply following an overhead line/cable breakdown.",
-              "standard_specified": "The distribution licensee must restore power supply following line breakdowns within 24 hours in rural areas.",
+              "standard_specified": "At least 95% of line breakdowns restored within 12 hours (Urban) / 24 hours (Rural) of occurrence of the breakdown",
               "benchmark": 95.0,
               "benchmark_meaning": "% of cases to be resolved within the specified time limit",
               "reported": 100.0,
               "reported_meaning": "% of cases resolved within the specified time limit",
-              "comparison_possible": true,
-              "standard_met": true,
-              "reason_not_comparable": "N/A"
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "The standard measures restoration time from the occurrence of the breakdown, while the reported share measures it from receipt of the complaint, which may be later; the reported share therefore does not measure performance against the regulatory time limit."
             },
             {
               "type": "Scheduled Outage",
               "indicator": "Scheduled Outage: Restoration of Supply by 6:00 PM",
               "meaning": "Restoration of supply following a scheduled outage.",
-              "standard_specified": "Maximum 12 hours in a day; supply must be restored by 6:00 PM during summer and 5:00PM during winter.",
+              "standard_specified": "At least 90% of scheduled outages notified in advance (at least 24 hours), not exceeding 12 hours a day, and with supply restored by 6 p.m. (summer) / 5 p.m. (winter)",
               "benchmark": 90.0,
               "benchmark_meaning": "% of cases to comply with the specified maximum-duration standard",
               "reported": 100.0,
               "reported_meaning": "% of cases complying with the specified maximum-duration standard",
-              "comparison_possible": true,
-              "standard_met": true,
-              "reason_not_comparable": "N/A"
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "The standard requires advance notice (at least 24 hours), a duration of not more than 12 hours a day and restoration by 6 p.m. (summer) / 5 p.m. (winter), each in at least 90% of cases, while the reported share is defined only as work completed within 12 hours of the scheduled outage before 5 p.m. / 6 p.m.; it does not cover advance notice or state the season-specific restoration time."
             },
             {
               "type": "Power Supply Quality",
               "indicator": "Supply frequency",
               "meaning": "Frequency of electricity supplied to consumers.",
-              "standard_specified": "Maintain supply frequency within +/-3% of nominal frequency (50Hz)",
+              "standard_specified": "Licensee to endeavour to maintain supply frequency within ±3% of 50 Hz and report the number of hourly measurements outside this range; no numerical target specified",
               "benchmark": null,
               "benchmark_meaning": "N/A",
               "reported": null,
               "reported_meaning": "No. of hourly measurement in which the supply frequency went beyond + 3%",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "The regulation does not specify a quantitative benchmark for the number of supply-frequency excursions, and no reported value is available for FY 2022-23."
             },
             {
               "type": "Power Supply Quality",
@@ -9917,92 +9917,92 @@
               "type": "Street Light Faults",
               "indicator": "Street light fault",
               "meaning": "Rectification of line faults.",
-              "standard_specified": "N/A",
+              "standard_specified": "At least 90% of street-light faults rectified within 6 hours of detection or complaint, whichever is earlier",
               "benchmark": 90.0,
               "benchmark_meaning": "% of cases to be resolved within the specified time limit",
               "reported": null,
               "reported_meaning": "% of cases resolved within the specified time limit",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "Reported data incomplete."
+              "reason_not_comparable": "No reported value is available for FY 2022-23."
             },
             {
               "type": "Metering Performance",
               "indicator": "Faulty bills",
               "meaning": "Percentage of bills requiring modification following complaints relative to the total number of bills issued.",
-              "standard_specified": "N/A",
-              "benchmark": null,
+              "standard_specified": "Bills requiring rectification following complaints not more than 0.1% of bills issued",
+              "benchmark": 0.1,
               "benchmark_meaning": "% of bills requiring modifications following complaints to the total number of bills issued.",
-              "reported": 0.0,
+              "reported": 0.0004,
               "reported_meaning": "No. of faulty bills prepared as a percentage of total no. of bills issued",
               "comparison_possible": true,
               "standard_met": true,
-              "reason_not_comparable": "N/A"
+              "reason_not_comparable": "Not applicable."
             },
             {
               "type": "Restoration of Supply",
               "indicator": "Faulty/defective meters",
               "meaning": "Percentage of defective meters relative to the total number of meters in service.",
-              "standard_specified": "The licensee must inspect the meter within 7 working days; replace a defective meter within 30 days, a burnt meter not attributable to the consumer within 30 working days, and a consumer-caused burnt meter within 15 days of payment after notifying the consumer within 7 days.",
-              "benchmark": null,
+              "standard_specified": "Defective meters not more than 5% of meters in service",
+              "benchmark": 5.0,
               "benchmark_meaning": "% of faulty/ defective meters to the total number of meters in service,",
-              "reported": 0.0,
+              "reported": 0.0013,
               "reported_meaning": "No. of faulty/defective meters as a percentage of total no. of existing meters",
               "comparison_possible": true,
               "standard_met": true,
-              "reason_not_comparable": "N/A"
+              "reason_not_comparable": "Not applicable."
             },
             {
               "type": "Accidents",
               "indicator": "Fatal Human Accidents",
               "meaning": "Electrical accidents involving humans that result in fatality.",
-              "standard_specified": "The Licensee shall endeavour to minimize electrical accidents in the distribution system. Increase or decrease in no. of electrical accidents compared over a period of time will be an indicator of the Licensee’s performance",
+              "standard_specified": "No quantitative benchmark specified",
               "benchmark": null,
               "benchmark_meaning": "N/A",
               "reported": 2.0,
               "reported_meaning": "No. of accident cases",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "The applicable regulation does not specify a quantitative benchmark for the number of electrical accidents; it identifies the change in the number of accidents over time as an indicator of performance, without a target."
             },
             {
               "type": "Accidents",
               "indicator": "Fatal Animal Accidents",
               "meaning": "Electrical accidents involving animals that result in death.",
-              "standard_specified": "The Licensee shall endeavour to minimize electrical accidents in the distribution system. Increase or decrease in no. of electrical accidents compared over a period of time will be an indicator of the Licensee’s performance",
+              "standard_specified": "No quantitative benchmark specified",
               "benchmark": null,
               "benchmark_meaning": "N/A",
               "reported": 24.0,
               "reported_meaning": "No. of accident cases",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "The applicable regulation does not specify a quantitative benchmark for the number of electrical accidents; it identifies the change in the number of accidents over time as an indicator of performance, without a target."
             },
             {
               "type": "Accidents",
               "indicator": "Non-fatal Human Accidents",
               "meaning": "Electrical accidents involving humans that do not result in fatality.",
-              "standard_specified": "The Licensee shall endeavour to minimize electrical accidents in the distribution system. Increase or decrease in no. of electrical accidents compared over a period of time will be an indicator of the Licensee’s performance",
+              "standard_specified": "No quantitative benchmark specified",
               "benchmark": null,
               "benchmark_meaning": "N/A",
               "reported": 24.0,
               "reported_meaning": "No. of accident cases",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "The applicable regulation does not specify a quantitative benchmark for the number of electrical accidents; it identifies the change in the number of accidents over time as an indicator of performance, without a target."
             },
             {
               "type": "Accidents",
               "indicator": "Non-fatal Animal Accidents",
               "meaning": "Electrical accidents involving animals that do not result in death",
-              "standard_specified": "The Licensee shall endeavour to minimize electrical accidents in the distribution system. Increase or decrease in no. of electrical accidents compared over a period of time will be an indicator of the Licensee’s performance",
+              "standard_specified": "No quantitative benchmark specified",
               "benchmark": null,
               "benchmark_meaning": "N/A",
               "reported": 0.0,
               "reported_meaning": "No. of accident cases",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "The applicable regulation does not specify a quantitative benchmark for the number of electrical accidents; it identifies the change in the number of accidents over time as an indicator of performance, without a target."
             }
           ]
         },
@@ -10013,79 +10013,79 @@
               "type": "Restoration of Supply",
               "indicator": "Fuse-off calls: Urban",
               "meaning": "Restoration of supply for normal fuse-off calls, involving replacement of HG or LT fuses at the distribution transformer or consumer premises.",
-              "standard_specified": "The distribution licensee must restore power supply following normal fuse-off calls within 6 hours in urban areas.",
+              "standard_specified": "At least 90% of fuse-off calls rectified within 6 hours (Urban) / 24 hours (Rural) of complaint",
               "benchmark": 90.0,
               "benchmark_meaning": "% of calls to be rectified within the specified time limits",
               "reported": 100.0,
               "reported_meaning": "% of calls rectified within the specified time limits",
               "comparison_possible": true,
               "standard_met": true,
-              "reason_not_comparable": "N/A"
+              "reason_not_comparable": "Not applicable."
             },
             {
               "type": "Restoration of Supply",
               "indicator": "Fuse-off calls: Rural",
               "meaning": "Restoration of supply for normal fuse-off calls, involving replacement of HG or LT fuses at the distribution transformer or consumer premises.",
-              "standard_specified": "The distribution licensee must restore power supply following normal fuse-off calls within 24 hours in rural areas.",
+              "standard_specified": "At least 90% of fuse-off calls rectified within 6 hours (Urban) / 24 hours (Rural) of complaint",
               "benchmark": 90.0,
               "benchmark_meaning": "% of calls to be rectified within the specified time limits",
               "reported": 100.0,
               "reported_meaning": "% of calls rectified within the specified time limits",
               "comparison_possible": true,
               "standard_met": true,
-              "reason_not_comparable": "N/A"
+              "reason_not_comparable": "Not applicable."
             },
             {
               "type": "Restoration of Supply",
               "indicator": "Line breakdown: Urban",
               "meaning": "Restoration of power supply following an overhead line/cable breakdown.",
-              "standard_specified": "The distribution licensee must restore power supply following line breakdowns within 12 working hours in urban areas.",
+              "standard_specified": "At least 95% of line breakdowns restored within 12 hours (Urban) / 24 hours (Rural) of occurrence of the breakdown",
               "benchmark": 95.0,
               "benchmark_meaning": "% of cases to be resolved within the specified time limit",
               "reported": 99.96,
               "reported_meaning": "% of cases resolved within the specified time limit",
-              "comparison_possible": true,
-              "standard_met": true,
-              "reason_not_comparable": "N/A"
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "The standard measures restoration time from the occurrence of the breakdown, while the reported share measures it from receipt of the complaint, which may be later; the reported share therefore does not measure performance against the regulatory time limit."
             },
             {
               "type": "Restoration of Supply",
               "indicator": "Line breakdown: Rural",
               "meaning": "Restoration of power supply following an overhead line/cable breakdown.",
-              "standard_specified": "The distribution licensee must restore power supply following line breakdowns within 24 hours in rural areas.",
+              "standard_specified": "At least 95% of line breakdowns restored within 12 hours (Urban) / 24 hours (Rural) of occurrence of the breakdown",
               "benchmark": 95.0,
               "benchmark_meaning": "% of cases to be resolved within the specified time limit",
               "reported": 100.0,
               "reported_meaning": "% of cases resolved within the specified time limit",
-              "comparison_possible": true,
-              "standard_met": true,
-              "reason_not_comparable": "N/A"
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "The standard measures restoration time from the occurrence of the breakdown, while the reported share measures it from receipt of the complaint, which may be later; the reported share therefore does not measure performance against the regulatory time limit."
             },
             {
               "type": "Scheduled Outage",
               "indicator": "Scheduled Outage: Restoration of Supply by 6:00 PM",
               "meaning": "Restoration of supply following a scheduled outage.",
-              "standard_specified": "Maximum 12 hours in a day; supply must be restored by 6:00 PM during summer and 5:00PM during winter.",
+              "standard_specified": "At least 90% of scheduled outages notified in advance (at least 24 hours), not exceeding 12 hours a day, and with supply restored by 6 p.m. (summer) / 5 p.m. (winter)",
               "benchmark": 90.0,
               "benchmark_meaning": "% of cases to comply with the specified maximum-duration standard",
               "reported": 100.0,
               "reported_meaning": "% of cases complying with the specified maximum-duration standard",
-              "comparison_possible": true,
-              "standard_met": true,
-              "reason_not_comparable": "N/A"
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "The standard requires advance notice (at least 24 hours), a duration of not more than 12 hours a day and restoration by 6 p.m. (summer) / 5 p.m. (winter), each in at least 90% of cases, while the reported share is defined only as work completed within 12 hours of the scheduled outage before 5 p.m. / 6 p.m.; it does not cover advance notice or state the season-specific restoration time."
             },
             {
               "type": "Power Supply Quality",
               "indicator": "Supply frequency",
               "meaning": "Frequency of electricity supplied to consumers.",
-              "standard_specified": "Maintain supply frequency within +/-3% of nominal frequency (50Hz)",
+              "standard_specified": "Licensee to endeavour to maintain supply frequency within ±3% of 50 Hz and report the number of hourly measurements outside this range; no numerical target specified",
               "benchmark": null,
               "benchmark_meaning": "N/A",
               "reported": null,
               "reported_meaning": "No. of hourly measurement in which the supply frequency went beyond + 3%",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "Reported data incomplete."
+              "reason_not_comparable": "The regulation does not specify a quantitative benchmark for the number of supply-frequency excursions, and no reported value is available for FY 2023-24."
             },
             {
               "type": "Power Supply Quality",
@@ -10104,92 +10104,92 @@
               "type": "Street Light Faults",
               "indicator": "Street light fault",
               "meaning": "Rectification of line faults.",
-              "standard_specified": "N/A",
+              "standard_specified": "At least 90% of street-light faults rectified within 6 hours of detection or complaint, whichever is earlier",
               "benchmark": 90.0,
               "benchmark_meaning": "% of cases to be resolved within the specified time limit",
               "reported": null,
               "reported_meaning": "% of cases resolved within the specified time limit",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "Reported data incomplete."
+              "reason_not_comparable": "No reported value is available for FY 2023-24."
             },
             {
               "type": "Metering Performance",
               "indicator": "Faulty bills",
               "meaning": "Percentage of bills requiring modification following complaints relative to the total number of bills issued.",
-              "standard_specified": "N/A",
-              "benchmark": null,
+              "standard_specified": "Bills requiring rectification following complaints not more than 0.1% of bills issued",
+              "benchmark": 0.1,
               "benchmark_meaning": "% of bills requiring modifications following complaints to the total number of bills issued.",
-              "reported": 0.0,
+              "reported": 0.0005,
               "reported_meaning": "No. of faulty bills prepared as a percentage of total no. of bills issued",
               "comparison_possible": true,
               "standard_met": true,
-              "reason_not_comparable": "N/A"
+              "reason_not_comparable": "Not applicable."
             },
             {
               "type": "Restoration of Supply",
               "indicator": "Faulty/defective meters",
               "meaning": "Percentage of defective meters relative to the total number of meters in service.",
-              "standard_specified": "The licensee must inspect the meter within 7 working days; replace a defective meter within 30 days, a burnt meter not attributable to the consumer within 30 working days, and a consumer-caused burnt meter within 15 days of payment after notifying the consumer within 7 days.",
-              "benchmark": null,
+              "standard_specified": "Defective meters not more than 5% of meters in service",
+              "benchmark": 5.0,
               "benchmark_meaning": "% of faulty/ defective meters to the total number of meters in service,",
-              "reported": 0.08,
+              "reported": 0.0836,
               "reported_meaning": "No. of faulty/defective meters as a percentage of total no. of existing meters",
               "comparison_possible": true,
               "standard_met": true,
-              "reason_not_comparable": "N/A"
+              "reason_not_comparable": "Not applicable."
             },
             {
               "type": "Accidents",
               "indicator": "Fatal Human Accidents",
               "meaning": "Electrical accidents involving humans that result in fatality.",
-              "standard_specified": "The Licensee shall endeavour to minimize electrical accidents in the distribution system. Increase or decrease in no. of electrical accidents compared over a period of time will be an indicator of the Licensee’s performance",
+              "standard_specified": "No quantitative benchmark specified",
               "benchmark": null,
               "benchmark_meaning": "N/A",
               "reported": 46.0,
               "reported_meaning": "No. of accident cases",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "The applicable regulation does not specify a quantitative benchmark for the number of electrical accidents; it identifies the change in the number of accidents over time as an indicator of performance, without a target."
             },
             {
               "type": "Accidents",
               "indicator": "Fatal Animal Accidents",
               "meaning": "Electrical accidents involving animals that result in death.",
-              "standard_specified": "The Licensee shall endeavour to minimize electrical accidents in the distribution system. Increase or decrease in no. of electrical accidents compared over a period of time will be an indicator of the Licensee’s performance",
+              "standard_specified": "No quantitative benchmark specified",
               "benchmark": null,
               "benchmark_meaning": "N/A",
               "reported": 46.0,
               "reported_meaning": "No. of accident cases",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "The applicable regulation does not specify a quantitative benchmark for the number of electrical accidents; it identifies the change in the number of accidents over time as an indicator of performance, without a target."
             },
             {
               "type": "Accidents",
               "indicator": "Non-fatal Human Accidents",
               "meaning": "Electrical accidents involving humans that do not result in fatality.",
-              "standard_specified": "The Licensee shall endeavour to minimize electrical accidents in the distribution system. Increase or decrease in no. of electrical accidents compared over a period of time will be an indicator of the Licensee’s performance",
+              "standard_specified": "No quantitative benchmark specified",
               "benchmark": null,
               "benchmark_meaning": "N/A",
               "reported": 44.0,
               "reported_meaning": "No. of accident cases",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "The applicable regulation does not specify a quantitative benchmark for the number of electrical accidents; it identifies the change in the number of accidents over time as an indicator of performance, without a target."
             },
             {
               "type": "Accidents",
               "indicator": "Non-fatal Animal Accidents",
               "meaning": "Electrical accidents involving animals that do not result in death",
-              "standard_specified": "The Licensee shall endeavour to minimize electrical accidents in the distribution system. Increase or decrease in no. of electrical accidents compared over a period of time will be an indicator of the Licensee’s performance",
+              "standard_specified": "No quantitative benchmark specified",
               "benchmark": null,
               "benchmark_meaning": "N/A",
               "reported": 0.0,
               "reported_meaning": "No. of accident cases",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "The applicable regulation does not specify a quantitative benchmark for the number of electrical accidents; it identifies the change in the number of accidents over time as an indicator of performance, without a target."
             }
           ]
         },
@@ -10200,79 +10200,79 @@
               "type": "Restoration of Supply",
               "indicator": "Fuse-off calls: Urban",
               "meaning": "Restoration of supply for normal fuse-off calls, involving replacement of HG or LT fuses at the distribution transformer or consumer premises.",
-              "standard_specified": "The distribution licensee must restore power supply following normal fuse-off calls within 6 hours in urban areas.",
+              "standard_specified": "At least 90% of fuse-off calls rectified within 6 hours (Urban) / 24 hours (Rural) of complaint",
               "benchmark": 90.0,
               "benchmark_meaning": "% of calls to be rectified within the specified time limits",
               "reported": 100.0,
               "reported_meaning": "% of calls rectified within the specified time limits",
               "comparison_possible": true,
               "standard_met": true,
-              "reason_not_comparable": "N/A"
+              "reason_not_comparable": "Not applicable."
             },
             {
               "type": "Restoration of Supply",
               "indicator": "Fuse-off calls: Rural",
               "meaning": "Restoration of supply for normal fuse-off calls, involving replacement of HG or LT fuses at the distribution transformer or consumer premises.",
-              "standard_specified": "The distribution licensee must restore power supply following normal fuse-off calls within 24 hours in rural areas.",
+              "standard_specified": "At least 90% of fuse-off calls rectified within 6 hours (Urban) / 24 hours (Rural) of complaint",
               "benchmark": 90.0,
               "benchmark_meaning": "% of calls to be rectified within the specified time limits",
               "reported": 100.0,
               "reported_meaning": "% of calls rectified within the specified time limits",
               "comparison_possible": true,
               "standard_met": true,
-              "reason_not_comparable": "N/A"
+              "reason_not_comparable": "Not applicable."
             },
             {
               "type": "Restoration of Supply",
               "indicator": "Line breakdown: Urban",
               "meaning": "Restoration of power supply following an overhead line/cable breakdown.",
-              "standard_specified": "The distribution licensee must restore power supply following line breakdowns within 12 working hours in urban areas.",
+              "standard_specified": "At least 95% of line breakdowns restored within 12 hours (Urban) / 24 hours (Rural) of occurrence of the breakdown",
               "benchmark": 95.0,
               "benchmark_meaning": "% of cases to be resolved within the specified time limit",
               "reported": 100.0,
               "reported_meaning": "% of cases resolved within the specified time limit",
-              "comparison_possible": true,
+              "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "N/A"
+              "reason_not_comparable": "The standard measures restoration time from the occurrence of the breakdown, while the reported share measures it from receipt of the complaint, which may be later; the reported share therefore does not measure performance against the regulatory time limit."
             },
             {
               "type": "Restoration of Supply",
               "indicator": "Line breakdown: Rural",
               "meaning": "Restoration of power supply following an overhead line/cable breakdown.",
-              "standard_specified": "The distribution licensee must restore power supply following line breakdowns within 24 hours in rural areas.",
+              "standard_specified": "At least 95% of line breakdowns restored within 12 hours (Urban) / 24 hours (Rural) of occurrence of the breakdown",
               "benchmark": 95.0,
               "benchmark_meaning": "% of cases to be resolved within the specified time limit",
               "reported": 100.0,
               "reported_meaning": "% of cases resolved within the specified time limit",
-              "comparison_possible": true,
-              "standard_met": true,
-              "reason_not_comparable": "N/A"
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "The standard measures restoration time from the occurrence of the breakdown, while the reported share measures it from receipt of the complaint, which may be later; the reported share therefore does not measure performance against the regulatory time limit."
             },
             {
               "type": "Scheduled Outage",
               "indicator": "Scheduled Outage: Restoration of Supply by 6:00 PM",
               "meaning": "Restoration of supply following a scheduled outage.",
-              "standard_specified": "Maximum 12 hours in a day; supply must be restored by 6:00 PM during summer and 5:00PM during winter.",
+              "standard_specified": "At least 90% of scheduled outages notified in advance (at least 24 hours), not exceeding 12 hours a day, and with supply restored by 6 p.m. (summer) / 5 p.m. (winter)",
               "benchmark": 90.0,
               "benchmark_meaning": "% of cases to comply with the specified maximum-duration standard",
               "reported": 100.0,
               "reported_meaning": "% of cases complying with the specified maximum-duration standard",
-              "comparison_possible": true,
-              "standard_met": true,
-              "reason_not_comparable": "N/A"
+              "comparison_possible": false,
+              "standard_met": null,
+              "reason_not_comparable": "The standard requires advance notice (at least 24 hours), a duration of not more than 12 hours a day and restoration by 6 p.m. (summer) / 5 p.m. (winter), each in at least 90% of cases, while the reported share is defined only as work completed within 12 hours of the scheduled outage before 5 p.m. / 6 p.m.; it does not cover advance notice or state the season-specific restoration time."
             },
             {
               "type": "Power Supply Quality",
               "indicator": "Supply frequency",
               "meaning": "Frequency of electricity supplied to consumers.",
-              "standard_specified": "Maintain supply frequency within +/-3% of nominal frequency (50Hz)",
+              "standard_specified": "Licensee to endeavour to maintain supply frequency within ±3% of 50 Hz and report the number of hourly measurements outside this range; no numerical target specified",
               "benchmark": null,
               "benchmark_meaning": "N/A",
               "reported": null,
               "reported_meaning": "No. of hourly measurement in which the supply frequency went beyond + 3%",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "Reported data incomplete."
+              "reason_not_comparable": "The regulation does not specify a quantitative benchmark for the number of supply-frequency excursions, and no reported value is available for FY 2024-25."
             },
             {
               "type": "Power Supply Quality",
@@ -10291,92 +10291,92 @@
               "type": "Street Light Faults",
               "indicator": "Street light fault",
               "meaning": "Rectification of line faults.",
-              "standard_specified": "N/A",
+              "standard_specified": "At least 90% of street-light faults rectified within 6 hours of detection or complaint, whichever is earlier",
               "benchmark": 90.0,
               "benchmark_meaning": "% of cases to be resolved within the specified time limit",
               "reported": null,
               "reported_meaning": "% of cases resolved within the specified time limit",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "Reported data incomplete."
+              "reason_not_comparable": "No reported value is available for FY 2024-25."
             },
             {
               "type": "Metering Performance",
               "indicator": "Faulty bills",
               "meaning": "Percentage of bills requiring modification following complaints relative to the total number of bills issued.",
-              "standard_specified": "N/A",
-              "benchmark": null,
+              "standard_specified": "Bills requiring rectification following complaints not more than 0.1% of bills issued",
+              "benchmark": 0.1,
               "benchmark_meaning": "% of bills requiring modifications following complaints to the total number of bills issued.",
               "reported": 0.0,
               "reported_meaning": "No. of faulty bills prepared as a percentage of total no. of bills issued",
               "comparison_possible": true,
               "standard_met": true,
-              "reason_not_comparable": "N/A"
+              "reason_not_comparable": "Not applicable."
             },
             {
               "type": "Restoration of Supply",
               "indicator": "Faulty/defective meters",
               "meaning": "Percentage of defective meters relative to the total number of meters in service.",
-              "standard_specified": "The licensee must inspect the meter within 7 working days; replace a defective meter within 30 days, a burnt meter not attributable to the consumer within 30 working days, and a consumer-caused burnt meter within 15 days of payment after notifying the consumer within 7 days.",
-              "benchmark": null,
+              "standard_specified": "Defective meters not more than 5% of meters in service",
+              "benchmark": 5.0,
               "benchmark_meaning": "% of faulty/ defective meters to the total number of meters in service,",
               "reported": 0.05,
               "reported_meaning": "No. of faulty/defective meters as a percentage of total no. of existing meters",
               "comparison_possible": true,
               "standard_met": true,
-              "reason_not_comparable": "N/A"
+              "reason_not_comparable": "Not applicable."
             },
             {
               "type": "Accidents",
               "indicator": "Fatal Human Accidents",
               "meaning": "Electrical accidents involving humans that result in fatality.",
-              "standard_specified": "The Licensee shall endeavour to minimize electrical accidents in the distribution system. Increase or decrease in no. of electrical accidents compared over a period of time will be an indicator of the Licensee’s performance",
+              "standard_specified": "No quantitative benchmark specified",
               "benchmark": null,
               "benchmark_meaning": "N/A",
               "reported": 8.0,
               "reported_meaning": "No. of accident cases",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "The applicable regulation does not specify a quantitative benchmark for the number of electrical accidents; it identifies the change in the number of accidents over time as an indicator of performance, without a target."
             },
             {
               "type": "Accidents",
               "indicator": "Fatal Animal Accidents",
               "meaning": "Electrical accidents involving animals that result in death.",
-              "standard_specified": "The Licensee shall endeavour to minimize electrical accidents in the distribution system. Increase or decrease in no. of electrical accidents compared over a period of time will be an indicator of the Licensee’s performance",
+              "standard_specified": "No quantitative benchmark specified",
               "benchmark": null,
               "benchmark_meaning": "N/A",
               "reported": 28.0,
               "reported_meaning": "No. of accident cases",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "The applicable regulation does not specify a quantitative benchmark for the number of electrical accidents; it identifies the change in the number of accidents over time as an indicator of performance, without a target."
             },
             {
               "type": "Accidents",
               "indicator": "Non-fatal Human Accidents",
               "meaning": "Electrical accidents involving humans that do not result in fatality.",
-              "standard_specified": "The Licensee shall endeavour to minimize electrical accidents in the distribution system. Increase or decrease in no. of electrical accidents compared over a period of time will be an indicator of the Licensee’s performance",
+              "standard_specified": "No quantitative benchmark specified",
               "benchmark": null,
               "benchmark_meaning": "N/A",
               "reported": 12.0,
               "reported_meaning": "No. of accident cases",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "The applicable regulation does not specify a quantitative benchmark for the number of electrical accidents; it identifies the change in the number of accidents over time as an indicator of performance, without a target."
             },
             {
               "type": "Accidents",
               "indicator": "Non-fatal Animal Accidents",
               "meaning": "Electrical accidents involving animals that do not result in death",
-              "standard_specified": "The Licensee shall endeavour to minimize electrical accidents in the distribution system. Increase or decrease in no. of electrical accidents compared over a period of time will be an indicator of the Licensee’s performance",
+              "standard_specified": "No quantitative benchmark specified",
               "benchmark": null,
               "benchmark_meaning": "N/A",
               "reported": 0.0,
               "reported_meaning": "No. of accident cases",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "No benchmark defined in regulations."
+              "reason_not_comparable": "The applicable regulation does not specify a quantitative benchmark for the number of electrical accidents; it identifies the change in the number of accidents over time as an indicator of performance, without a target."
             }
           ]
         },
@@ -10387,79 +10387,79 @@
               "type": "Restoration of Supply",
               "indicator": "Fuse-off calls: Urban",
               "meaning": "Restoration of supply for normal fuse-off calls, involving replacement of HG or LT fuses at the distribution transformer or consumer premises.",
-              "standard_specified": "The distribution licensee must restore power supply following normal fuse-off calls within 6 hours in urban areas.",
+              "standard_specified": "At least 90% of fuse-off calls rectified within 6 hours (Urban) / 24 hours (Rural) of complaint",
               "benchmark": 90.0,
               "benchmark_meaning": "% of calls to be rectified within the specified time limits",
               "reported": null,
               "reported_meaning": "N/A",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "Reported data not available."
+              "reason_not_comparable": "No reported value is available for FY 2025-26."
             },
             {
               "type": "Restoration of Supply",
               "indicator": "Fuse-off calls: Rural",
               "meaning": "Restoration of supply for normal fuse-off calls, involving replacement of HG or LT fuses at the distribution transformer or consumer premises.",
-              "standard_specified": "The distribution licensee must restore power supply following normal fuse-off calls within 24 hours in rural areas.",
+              "standard_specified": "At least 90% of fuse-off calls rectified within 6 hours (Urban) / 24 hours (Rural) of complaint",
               "benchmark": 90.0,
               "benchmark_meaning": "% of calls to be rectified within the specified time limits",
               "reported": null,
               "reported_meaning": "N/A",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "Reported data not available."
+              "reason_not_comparable": "No reported value is available for FY 2025-26."
             },
             {
               "type": "Restoration of Supply",
               "indicator": "Line breakdown: Urban",
               "meaning": "Restoration of power supply following an overhead line/cable breakdown.",
-              "standard_specified": "The distribution licensee must restore power supply following line breakdowns within 12 working hours in urban areas.",
+              "standard_specified": "At least 95% of line breakdowns restored within 12 hours (Urban) / 24 hours (Rural) of occurrence of the breakdown",
               "benchmark": 95.0,
               "benchmark_meaning": "% of cases to be resolved within the specified time limit",
               "reported": null,
               "reported_meaning": "N/A",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "Reported data not available."
+              "reason_not_comparable": "No reported value is available for FY 2025-26."
             },
             {
               "type": "Restoration of Supply",
               "indicator": "Line breakdown: Rural",
               "meaning": "Restoration of power supply following an overhead line/cable breakdown.",
-              "standard_specified": "The distribution licensee must restore power supply following line breakdowns within 24 hours in rural areas.",
+              "standard_specified": "At least 95% of line breakdowns restored within 12 hours (Urban) / 24 hours (Rural) of occurrence of the breakdown",
               "benchmark": 95.0,
               "benchmark_meaning": "% of cases to be resolved within the specified time limit",
               "reported": null,
               "reported_meaning": "N/A",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "Reported data not available."
+              "reason_not_comparable": "No reported value is available for FY 2025-26."
             },
             {
               "type": "Scheduled Outage",
               "indicator": "Scheduled Outage: Restoration of Supply by 6:00 PM",
               "meaning": "Restoration of supply following a scheduled outage.",
-              "standard_specified": "Maximum 12 hours in a day; supply must be restored by 6:00 PM during summer and 5:00PM during winter.",
+              "standard_specified": "At least 90% of scheduled outages notified in advance (at least 24 hours), not exceeding 12 hours a day, and with supply restored by 6 p.m. (summer) / 5 p.m. (winter)",
               "benchmark": 90.0,
               "benchmark_meaning": "% of cases to comply with the specified maximum-duration standard",
               "reported": null,
               "reported_meaning": "N/A",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "Reported data not available."
+              "reason_not_comparable": "No reported value is available for FY 2025-26."
             },
             {
               "type": "Power Supply Quality",
               "indicator": "Supply frequency",
               "meaning": "Frequency of electricity supplied to consumers.",
-              "standard_specified": "Maintain supply frequency within +/-3% of nominal frequency (50Hz)",
+              "standard_specified": "Licensee to endeavour to maintain supply frequency within ±3% of 50 Hz and report the number of hourly measurements outside this range; no numerical target specified",
               "benchmark": null,
               "benchmark_meaning": "N/A",
               "reported": null,
               "reported_meaning": "N/A",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "Reported data not available."
+              "reason_not_comparable": "No reported value is available for FY 2025-26. The regulation also specifies no quantitative benchmark for this indicator."
             },
             {
               "type": "Power Supply Quality",
@@ -10478,92 +10478,92 @@
               "type": "Street Light Faults",
               "indicator": "Street light fault",
               "meaning": "Rectification of line faults.",
-              "standard_specified": "N/A",
+              "standard_specified": "At least 90% of street-light faults rectified within 6 hours of detection or complaint, whichever is earlier",
               "benchmark": 90.0,
               "benchmark_meaning": "% of cases to be resolved within the specified time limit",
               "reported": null,
               "reported_meaning": "N/A",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "Reported data not available."
+              "reason_not_comparable": "No reported value is available for FY 2025-26."
             },
             {
               "type": "Metering Performance",
               "indicator": "Faulty bills",
               "meaning": "Percentage of bills requiring modification following complaints relative to the total number of bills issued.",
-              "standard_specified": "N/A",
-              "benchmark": null,
+              "standard_specified": "Bills requiring rectification following complaints not more than 0.1% of bills issued",
+              "benchmark": 0.1,
               "benchmark_meaning": "% of bills requiring modifications following complaints to the total number of bills issued.",
               "reported": null,
               "reported_meaning": "N/A",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "Reported data not available."
+              "reason_not_comparable": "No reported value is available for FY 2025-26."
             },
             {
               "type": "Restoration of Supply",
               "indicator": "Faulty/defective meters",
               "meaning": "Percentage of defective meters relative to the total number of meters in service.",
-              "standard_specified": "The licensee must inspect the meter within 7 working days; replace a defective meter within 30 days, a burnt meter not attributable to the consumer within 30 working days, and a consumer-caused burnt meter within 15 days of payment after notifying the consumer within 7 days.",
-              "benchmark": null,
+              "standard_specified": "Defective meters not more than 5% of meters in service",
+              "benchmark": 5.0,
               "benchmark_meaning": "% of faulty/ defective meters to the total number of meters in service,",
               "reported": null,
               "reported_meaning": "N/A",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "Reported data not available."
+              "reason_not_comparable": "No reported value is available for FY 2025-26."
             },
             {
               "type": "Accidents",
               "indicator": "Fatal Human Accidents",
               "meaning": "Electrical accidents involving humans that result in fatality.",
-              "standard_specified": "The Licensee shall endeavour to minimize electrical accidents in the distribution system. Increase or decrease in no. of electrical accidents compared over a period of time will be an indicator of the Licensee’s performance",
+              "standard_specified": "No quantitative benchmark specified",
               "benchmark": null,
               "benchmark_meaning": "N/A",
               "reported": null,
               "reported_meaning": "N/A",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "Reported data not available."
+              "reason_not_comparable": "No reported value is available for FY 2025-26. The regulation also specifies no quantitative benchmark for this indicator."
             },
             {
               "type": "Accidents",
               "indicator": "Fatal Animal Accidents",
               "meaning": "Electrical accidents involving animals that result in death.",
-              "standard_specified": "The Licensee shall endeavour to minimize electrical accidents in the distribution system. Increase or decrease in no. of electrical accidents compared over a period of time will be an indicator of the Licensee’s performance",
+              "standard_specified": "No quantitative benchmark specified",
               "benchmark": null,
               "benchmark_meaning": "N/A",
               "reported": null,
               "reported_meaning": "N/A",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "Reported data not available."
+              "reason_not_comparable": "No reported value is available for FY 2025-26. The regulation also specifies no quantitative benchmark for this indicator."
             },
             {
               "type": "Accidents",
               "indicator": "Non-fatal Human Accidents",
               "meaning": "Electrical accidents involving humans that do not result in fatality.",
-              "standard_specified": "The Licensee shall endeavour to minimize electrical accidents in the distribution system. Increase or decrease in no. of electrical accidents compared over a period of time will be an indicator of the Licensee’s performance",
+              "standard_specified": "No quantitative benchmark specified",
               "benchmark": null,
               "benchmark_meaning": "N/A",
               "reported": null,
               "reported_meaning": "N/A",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "Reported data not available."
+              "reason_not_comparable": "No reported value is available for FY 2025-26. The regulation also specifies no quantitative benchmark for this indicator."
             },
             {
               "type": "Accidents",
               "indicator": "Non-fatal Animal Accidents",
               "meaning": "Electrical accidents involving animals that do not result in death",
-              "standard_specified": "The Licensee shall endeavour to minimize electrical accidents in the distribution system. Increase or decrease in no. of electrical accidents compared over a period of time will be an indicator of the Licensee’s performance",
+              "standard_specified": "No quantitative benchmark specified",
               "benchmark": null,
               "benchmark_meaning": "N/A",
               "reported": null,
               "reported_meaning": "N/A",
               "comparison_possible": false,
               "standard_met": null,
-              "reason_not_comparable": "Reported data not available."
+              "reason_not_comparable": "No reported value is available for FY 2025-26. The regulation also specifies no quantitative benchmark for this indicator."
             }
           ]
         }

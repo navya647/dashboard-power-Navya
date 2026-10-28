@@ -14,6 +14,8 @@ interface Props {
   onClearAll: () => void;
   compareMode: boolean;
   onCompareModeChange: (on: boolean) => void;
+  /** false hides the View / Compare switch and the compare footer (Compare is paused) */
+  canCompare?: boolean;
 }
 
 /** The home page's one map tool, "Explore the data". A View / Compare segmented control decides
@@ -21,7 +23,7 @@ interface Props {
  * Compare adds/removes it from the comparison set. The chips + Compare footer exists only in
  * Compare mode (collapsed away in View so the card stays compact), and the selection survives
  * switching back to View so it's never lost by accident. */
-export default function ComparePanel({ renderSearch, colorOf, compareSet, onRemove, onCompare, onClearAll, compareMode, onCompareModeChange }: Props) {
+export default function ComparePanel({ renderSearch, colorOf, compareSet, onRemove, onCompare, onClearAll, compareMode, onCompareModeChange, canCompare = true }: Props) {
   const uid = useId().replace(/:/g, '');
   const hintId = `${uid}-hint`;
   const n = compareSet.length;
@@ -41,23 +43,25 @@ export default function ComparePanel({ renderSearch, colorOf, compareSet, onRemo
         Explore the data
       </h3>
 
-      <div className="explore-mode" role="radiogroup" aria-label="Mode">
-        {[
-          { on: false, label: 'View' },
-          { on: true, label: 'Compare' },
-        ].map((m) => (
-          <label key={m.label} className="explore-mode-option" data-checked={compareMode === m.on}>
-            <input
-              type="radio"
-              name={`${uid}-mode`}
-              className="explore-mode-input"
-              checked={compareMode === m.on}
-              onChange={() => onCompareModeChange(m.on)}
-            />
-            <span>{m.label}</span>
-          </label>
-        ))}
-      </div>
+      {canCompare && (
+        <div className="explore-mode" role="radiogroup" aria-label="Mode">
+          {[
+            { on: false, label: 'View' },
+            { on: true, label: 'Compare' },
+          ].map((m) => (
+            <label key={m.label} className="explore-mode-option" data-checked={compareMode === m.on}>
+              <input
+                type="radio"
+                name={`${uid}-mode`}
+                className="explore-mode-input"
+                checked={compareMode === m.on}
+                onChange={() => onCompareModeChange(m.on)}
+              />
+              <span>{m.label}</span>
+            </label>
+          ))}
+        </div>
+      )}
 
       {renderSearch(hintId)}
       <p className="control-hint explore-hint" id={hintId}>
@@ -69,33 +73,35 @@ export default function ComparePanel({ renderSearch, colorOf, compareSet, onRemo
       </p>
 
       {/* collapsed (and inert, so nothing inside is focusable) in View mode */}
-      <div className="explore-footer-wrap" data-open={compareMode} inert={!compareMode}>
-        <div className="explore-footer">
-          {n > 0 && (
-            <ul className="multiselect-chips explore-chips" aria-label="Selected for comparison">
-              {compareSet.map((name) => (
-                <li className="multiselect-chip" key={name}>
-                  <span className="dot" style={{ background: colorOf(name) ?? '#999' }} aria-hidden="true" />
-                  {name}
-                  <button type="button" aria-label={`Remove ${name}`} onClick={() => onRemove(name)}>
-                    ×
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-          <div className="explore-actions">
-            <button type="button" className="control-compare-btn" disabled={n < 2} onClick={onCompare}>
-              {n < 2 ? 'Select at least 2 to compare' : `Compare (${n})`}
-            </button>
+      {canCompare && (
+        <div className="explore-footer-wrap" data-open={compareMode} inert={!compareMode}>
+          <div className="explore-footer">
             {n > 0 && (
-              <button type="button" className="explore-clear" onClick={onClearAll}>
-                Clear
-              </button>
+              <ul className="multiselect-chips explore-chips" aria-label="Selected for comparison">
+                {compareSet.map((name) => (
+                  <li className="multiselect-chip" key={name}>
+                    <span className="dot" style={{ background: colorOf(name) ?? '#999' }} aria-hidden="true" />
+                    {name}
+                    <button type="button" aria-label={`Remove ${name}`} onClick={() => onRemove(name)}>
+                      ×
+                    </button>
+                  </li>
+                ))}
+              </ul>
             )}
+            <div className="explore-actions">
+              <button type="button" className="control-compare-btn" disabled={n < 2} onClick={onCompare}>
+                {n < 2 ? 'Select at least 2 to compare' : `Compare (${n})`}
+              </button>
+              {n > 0 && (
+                <button type="button" className="explore-clear" onClick={onClearAll}>
+                  Clear
+                </button>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </aside>
   );
 }

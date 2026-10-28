@@ -3,122 +3,132 @@
 import '@/lib/chartSetup';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { bucketFor, BUCKET_ORDER, UNMAPPED_BUCKET } from '@/lib/indicatorBuckets';
 import { MAP_HREF } from '@/lib/routes';
 import { useData } from '@/lib/DataContext';
+import { CATEGORICAL } from '@/lib/colors';
 import { compareColor, stateHasReportedData } from '@/lib/computations';
-import {
-  buildMultiDiscomAtoms,
-  buildMultiDiscomComparableCards,
-  indicatorOptions,
-  jurisdictionDiscomOptions,
-  matchesFilters,
-  multiDiscomLegend,
-} from '@/lib/unifiedIndicators';
+import { masterYears, rowsForState, stateDiscoms, type MasterDiscom } from '@/lib/master';
+import { plotFigure } from '@/lib/plotFigures';
+import type { MasterRow } from '@/lib/types';
 import DiscomMultiSelect from './DiscomMultiSelect';
-import IndicatorVisualCard from './IndicatorVisualCard';
+import IndicatorSelect, { type IndicatorOption } from './IndicatorSelect';
+import MasterIndicator from './MasterIndicator';
 import StateShape from './StateShape';
+
+// a row the sheet itself words as the whole DISCOM's figure ("Overall standard", "All feeder
+// categories", "… combined") rather than one area's or class's
+const OVERALL = /\boverall\b|\ball feeder|\bcombined\b/i;
+
+/** One family's rows, at most one per DISCOM × year where the sheet defensibly gives one: when a
+ * DISCOM-year has several rows (urban / rural / overall …) and exactly one is worded as the
+ * overall figure, keep only that one; otherwise keep them all, since picking one would be a guess. */
+function annualView(rows: MasterRow[]): MasterRow[] {
+  const groups = new Map<string, MasterRow[]>();
+  for (const r of rows) {
+    const k = `${r.indicator_family}|${r.discom_code}|${r.financial_year}`;
+    (groups.get(k) ?? groups.set(k, []).get(k)!).push(r);
+  }
+  const keep = new Set<MasterRow>();
+  for (const g of groups.values()) {
+    const overall = g.filter((r) => OVERALL.test(r.indicator));
+    (g.length > 1 && overall.length === 1 ? overall : g).forEach((r) => keep.add(r));
+  }
+  return rows.filter((r) => keep.has(r));
+}
 
 interface Props {
   states: string[];
 }
 
 /** "One selected jurisdiction has nothing reported" / "none of them do", phrased as *currently*
- * unavailable (data may arrive later) and never as "they don't overlap", which would misattribute
- * a missing-reported-data situation to some sort of mismatch between the jurisdictions. */
+ * unavailable (data may arrive later), never as "they don't overlap". */
 function dataAvailabilityMessage(jurisdictions: string[], lacking: string[]): string | null {
   if (lacking.length === 0) return null;
   if (lacking.length === jurisdictions.length) {
     return jurisdictions.length === 2
-      ? 'Reported performance data is currently unavailable for both selected jurisdictions. Standards and benchmarks are shown where available.'
-      : 'Reported performance data is currently unavailable for all selected jurisdictions. Standards and benchmarks are shown where available.';
+      ? 'Reported performance data is currently unavailable for both selected jurisdictions. Standards are shown where available.'
+      : 'Reported performance data is currently unavailable for all selected jurisdictions. Standards are shown where available.';
   }
   const names = lacking.length === 1 ? lacking[0] : lacking.slice(0, -1).join(', ') + ' and ' + lacking[lacking.length - 1];
-  return `Reported performance data is currently unavailable for ${names}. Available standards and benchmarks are shown where captured.`;
+  return `Reported performance data is currently unavailable for ${names}. Available standards are shown where captured.`;
 }
 
-/** The Compare results view, same page architecture as the State Performance page: one chart
- * gallery (always the full FY-axis trend, never re-scoped by a year control). Each selected state gets its own tickable DISCOM picker (`DiscomMultiSelect`)
- *, no "whole state" option, so every line on the chart is always a specific, real DISCOM's own
- * reported figures, never an invented cross-DISCOM average (see CLAUDE.md).
- * `buildMultiDiscomComparableCards` matches indicators captured by at least one ticked DISCOM in
- * EVERY selected state, never on whether a reported value exists, see CLAUDE.md and the unified
- * State page this mirrors. */
+/** The Compare results view, read from DISCOM_SoP_master.xlsx like the State page. States name
+ * their indicators differently, so they're matched on the sheet's `indicator_family`: an indicator
+ * is offered only when every selected state has rows for it (among its ticked DISCOMs). Each
+ * selected indicator is one MasterIndicator (the State page's module) over every selected state's
+ * rows, so every line is a real DISCOM's own figures, shown exactly as the sheet has them. */
 export default function CompareView({ states }: Props) {
-  const { discoms, stateSpecific, geojson, loading, error } = useData();
+  const { master, geojson, loading, error } = useData();
   const router = useRouter();
+  // per state; an empty list means all of that state's DISCOMs
   const [selectedDiscoms, setSelectedDiscoms] = useState<Record<string, string[]>>({});
-  // Same cascading Indicator Category / Indicator narrowing as the State Performance
-  // page's toolbar (StateDetail.tsx), DISCOM selection is handled per-jurisdiction by the
-  // pickers below instead, so there's no "Discom" filter here.
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedIndicator, setSelectedIndicator] = useState('all');
+  // null until the viewer picks, meaning "the default indicator"
+  const [selectedFamilies, setSelectedFamilies] = useState<string[] | null>(null);
 
   if (loading) return <p className="detail-placeholder">Loading…</p>;
-  if (error || !discoms || !geojson) return <p className="detail-placeholder">Could not load dashboard data.</p>;
+  if (error || !master) return <p className="detail-placeholder">Could not load dashboard data.</p>;
+
+  const back = (
+    <button type="button" className="back-btn" onClick={() => router.push(MAP_HREF)}>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M19 12H5M12 19l-7-7 7-7" />
+      </svg>
+      Back to Home
+    </button>
+  );
 
   if (states.length < 2) {
     return (
       <div className="state-page">
         <p className="detail-placeholder">Pick at least 2 jurisdictions to compare from the map explorer.</p>
-        <button type="button" className="back-btn" onClick={() => router.push(MAP_HREF)}>
-          Back to Home
-        </button>
+        {back}
       </div>
     );
   }
 
-  const YEARS_ASC = [...discoms.years].reverse();
-  const activeYear = discoms.years.includes('2023-24') ? '2023-24' : discoms.years[0];
+  const YEARS_ASC = masterYears(master);
 
-  // ticked DISCOMs default to "every DISCOM this state has" until the viewer narrows a state's
-  // own picker, never a state-level median, just every real DISCOM line shown at once.
-  const discomOptsByState = new Map(states.map((name) => [name, jurisdictionDiscomOptions(discoms, stateSpecific, name)]));
-  const selection = states.map((name) => ({
-    state: name,
-    discomKeys: selectedDiscoms[name] ?? discomOptsByState.get(name)?.map((o) => o.key) ?? [],
-  }));
+  // every selected state's DISCOMs as one list, each with its own fixed hue
+  const discomsByState = new Map(states.map((s) => [s, stateDiscoms(master, s)]));
+  const allDiscoms: MasterDiscom[] = states.flatMap((s) => discomsByState.get(s) ?? []).map((d, i) => ({ ...d, color: CATEGORICAL[i % CATEGORICAL.length] }));
 
-  const atomsByState = buildMultiDiscomAtoms(discoms, stateSpecific, selection, YEARS_ASC);
+  const ticked = (s: string) => selectedDiscoms[s] ?? [];
+  const rowsByState = new Map<string, MasterRow[]>(
+    states.map((s) => {
+      const keys = ticked(s);
+      // only rows with a year figure to chart (user: "lose granularity and use annual data where
+      // defensibly possible"), narrowed to the sheet's overall row where it has one
+      return [s, annualView(rowsForState(master, s).filter((r) => (keys.length === 0 || keys.includes(r.discom_code)) && plotFigure(r) != null))];
+    }),
+  );
 
-  // Category/Type/Indicator option lists cascade off the ticked-DISCOM atoms across every
-  // selected jurisdiction combined, same narrowing pattern as StateDetail.tsx's toolbar.
-  const allAtoms = atomsByState.flatMap(({ atoms }) => atoms);
-  const categoryOf = (a: { category: string; type: string; indicator: string }) => bucketFor(a.category, a.type, a.indicator);
-  const presentCategories = new Set<string>(allAtoms.map(categoryOf));
-  const categoryOpts = [...BUCKET_ORDER, UNMAPPED_BUCKET].filter((c) => presentCategories.has(c as string));
-  const categoryScope = allAtoms.filter((a) => selectedCategory === 'all' || categoryOf(a) === selectedCategory);
-  const indicatorOpts = indicatorOptions(categoryScope);
+  // families every selected state has, in the first state's sheet order, grouped by the sheet's category
+  const familiesOf = (rows: MasterRow[]) => new Set(rows.map((r) => r.indicator_family));
+  const common = [...familiesOf(rowsByState.get(states[0]) ?? [])].filter((f) => states.every((s) => familiesOf(rowsByState.get(s) ?? []).has(f)));
+  const allRows = states.flatMap((s) => rowsByState.get(s) ?? []);
+  const familyRows = (f: string) => allRows.filter((r) => r.indicator_family === f);
+  const indicatorOpts: IndicatorOption[] = common.map((f) => ({ indicator: f, category: familyRows(f)[0].category, type: f }));
 
-  const filteredAtomsByState = atomsByState.map(({ state, atoms }) => ({
-    state,
-    atoms: atoms.filter(
-      (a) =>
-        (selectedCategory === 'all' || categoryOf(a) === selectedCategory) &&
-        matchesFilters(a, {
-          discoms: [],
-          categories: [],
-          types: [],
-          indicators: selectedIndicator === 'all' ? [] : [selectedIndicator],
-        })
-    ),
-  }));
-  const cards = buildMultiDiscomComparableCards(filteredAtomsByState);
+  // default: the common family with the most chart figures
+  const defaultFamily = common.reduce<string | null>((best, f) => {
+    const n = familyRows(f).filter((r) => plotFigure(r) != null).length;
+    return best == null || n > familyRows(best).filter((r) => plotFigure(r) != null).length ? f : best;
+  }, null);
+  const shownFamilies = (selectedFamilies ?? (defaultFamily ? [defaultFamily] : [])).filter((f) => common.includes(f));
 
-  const lacking = states.filter((name) => !stateHasReportedData(discoms.discoms, name, stateSpecific));
+  const shownDiscoms = allDiscoms.filter((d) => {
+    const s = states.find((st) => (discomsByState.get(st) ?? []).some((x) => x.code === d.code))!;
+    return ticked(s).length === 0 || ticked(s).includes(d.code);
+  });
+
+  const lacking = states.filter((s) => !stateHasReportedData(master, s));
   const availabilityMessage = dataAvailabilityMessage(states, lacking);
-  const emptyPicks = selection.filter((s) => s.discomKeys.length === 0).map((s) => s.state);
-  const legend = multiDiscomLegend(filteredAtomsByState);
 
   return (
     <div className="state-page">
       <div className="state-topbar">
-        <button type="button" className="back-btn" onClick={() => router.push(MAP_HREF)}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
-          Back to Home
-        </button>
+        {back}
         <div className="breadcrumb">
           India Power Supply, Service Quality and Safety Dashboard <span>/</span> <b>Compare</b>
         </div>
@@ -127,27 +137,34 @@ export default function CompareView({ states }: Props) {
       <div className="state-hero">
         <div>
           <h1>Performance comparison</h1>
-          <div className="compare-shapes">
-            {states.map((name) => (
-              <div className="compare-shape" key={name}>
-                <StateShape geojson={geojson} name={name} color={compareColor(states, name) ?? '#999'} />
-                <span>{name}</span>
-              </div>
-            ))}
-          </div>
+          {geojson && (
+            <div className="compare-shapes">
+              {states.map((name) => (
+                <div className="compare-shape" key={name}>
+                  <StateShape geojson={geojson} name={name} color={compareColor(states, name) ?? '#999'} />
+                  <span>{name}</span>
+                </div>
+              ))}
+            </div>
+          )}
           <p className="control-hint">{states.length} jurisdictions selected</p>
         </div>
       </div>
 
       <div className="toolbar toolbar--raised">
         {states.map((name) => {
-          const discomOpts = discomOptsByState.get(name) ?? [];
+          const opts = (discomsByState.get(name) ?? []).map((d) => ({ key: d.code, label: d.code }));
           return (
             <div className="toolbar-field" key={name}>
               <label>{name}</label>
               <DiscomMultiSelect
-                options={discomOpts}
-                selected={selectedDiscoms[name] ?? discomOpts.map((o) => o.key)}
+                options={opts}
+                selected={ticked(name)}
+                label={`${name} DISCOM`}
+                allLabel="All DISCOMs"
+                summaryText={(sel, o) =>
+                  sel.length === 0 || sel.length === o.length ? 'All DISCOMs' : sel.length === 1 ? (o.find((x) => x.key === sel[0])?.label ?? '1 DISCOM') : `${sel.length} DISCOMs`
+                }
                 onChange={(next) => setSelectedDiscoms((prev) => ({ ...prev, [name]: next }))}
               />
             </div>
@@ -156,53 +173,11 @@ export default function CompareView({ states }: Props) {
       </div>
 
       <div className="toolbar">
-        <div className="toolbar-field">
-          <label>Indicator Category</label>
-          <select
-            value={selectedCategory}
-            onChange={(e) => {
-              setSelectedCategory(e.target.value);
-              setSelectedIndicator('all');
-            }}
-          >
-            <option value="all">All Indicator Categories</option>
-            {categoryOpts.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="toolbar-field">
-          <label>Indicator</label>
-          <select value={selectedIndicator} onChange={(e) => setSelectedIndicator(e.target.value)}>
-            <option value="all">All Indicators</option>
-            {indicatorOpts.map((i) => (
-              <option key={i} value={i}>
-                {i}
-              </option>
-            ))}
-          </select>
+        <div className="toolbar-field toolbar-field--indicator">
+          <label>Select Indicator</label>
+          <IndicatorSelect options={indicatorOpts} selected={shownFamilies} onChange={setSelectedFamilies} />
         </div>
       </div>
-
-      {legend.length > 0 && (
-        <div className="discom-legend">
-          {legend.map((l) => (
-            <span className="discom-legend-item" key={l.label}>
-              <span className="discom-legend-dot" style={{ background: l.color }} />
-              {l.label}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {emptyPicks.length > 0 && (
-        <div className="no-data-box" style={{ marginTop: 12 }}>
-          Tick at least one DISCOM for {emptyPicks.join(', ')} to see comparable indicators.
-        </div>
-      )}
 
       {availabilityMessage && (
         <div className="no-data-box" style={{ marginTop: 12 }}>
@@ -210,61 +185,17 @@ export default function CompareView({ states }: Props) {
         </div>
       )}
 
-      {cards.length === 0 ? (
-        <>
-          <div className="section-header">
-            <span className="section-label">Comparable Indicators</span>
-            <span className="section-title">Regulatory standards, benchmarks and targets, reported performance, compliance, and year-wise trends</span>
-          </div>
-          <p className="detail-placeholder">No comparable indicator is currently captured across every selected jurisdiction.</p>
-        </>
+      {common.length === 0 ? (
+        <p className="detail-placeholder">No indicator has reported figures for every selected jurisdiction yet.</p>
+      ) : shownFamilies.length === 0 ? (
+        <p className="detail-placeholder">Select at least one indicator above to compare what the sheet reports for it.</p>
       ) : (
-        <>
-          <div className="section-header">
-            <span className="section-label">Comparable Indicators</span>
-            <span className="section-title">Regulatory Standards &amp; Compliance</span>
-          </div>
-          <div className="chart-grid">
-            {cards.map((c, idx) => (
-              <IndicatorVisualCard
-                key={c.id}
-                section="compliance"
-                title={c.indicator}
-                typeLabel={bucketFor(c.category, c.type, c.indicator)}
-                meaning={c.meaning}
-                unitSuffix={c.unitSuffix}
-                yAxisLabel={c.yAxisLabel}
-                yearsAsc={YEARS_ASC}
-                activeYear={activeYear}
-                series={c.series}
-                animationDelay={idx * 60}
-              />
-            ))}
-          </div>
-
-          <div className="section-header">
-            <span className="section-title">Year-wise Trends</span>
-          </div>
-          <div className="chart-grid">
-            {cards.map((c, idx) => (
-              <IndicatorVisualCard
-                key={c.id}
-                section="trends"
-                title={c.indicator}
-                typeLabel={bucketFor(c.category, c.type, c.indicator)}
-                meaning={c.meaning}
-                unitSuffix={c.unitSuffix}
-                yAxisLabel={c.yAxisLabel}
-                yearsAsc={YEARS_ASC}
-                activeYear={activeYear}
-                series={c.series}
-                animationDelay={idx * 60}
-              />
-            ))}
-          </div>
-        </>
+        <div className="im-stack">
+          {shownFamilies.map((f) => (
+            <MasterIndicator key={f} indicator={f} rows={familyRows(f)} discoms={shownDiscoms} yearsAsc={YEARS_ASC} hideTimes annualOnly chartOnly states={states} />
+          ))}
+        </div>
       )}
-
     </div>
   );
 }

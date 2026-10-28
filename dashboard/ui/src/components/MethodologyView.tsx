@@ -1,11 +1,26 @@
 'use client';
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { useData } from '@/lib/DataContext';
 import { fyLabel } from '@/lib/format';
 import { animateScrollTo } from '@/lib/scroll';
 import { assessYearOverYear, YOY_META } from '@/lib/trend';
-import type { SopIndicator, StateSpecificData } from '@/lib/types';
+import type { DiscomsData, SopIndicator, StateSpecificData } from '@/lib/types';
+
+/** This page is kept exactly as it was before the site moved to DISCOM_SoP_master.xlsx, so it
+ * still reads the two earlier datasets itself (the rest of the site no longer loads them). */
+function useEarlierData(): { discoms: DiscomsData | null; stateSpecific: StateSpecificData | null } {
+  const [data, setData] = useState<{ discoms: DiscomsData | null; stateSpecific: StateSpecificData | null }>({ discoms: null, stateSpecific: null });
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([fetch('/data/discoms2.json').then((r) => r.json()), fetch('/data/state_specific.json').then((r) => r.json())])
+      .then(([discoms, stateSpecific]) => !cancelled && setData({ discoms, stateSpecific }))
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  return data;
+}
 
 /** The worked example: one real indicator for one DISCOM, read live off the data so every number
  * on the page is the one the dashboard itself shows. Chosen because its run of years shows the
@@ -82,7 +97,7 @@ const show = (v: number | null) => (v == null ? 'N/A' : v.toLocaleString(undefin
  * clickable walkthrough whose card builds up step by step), then the commitments behind every
  * view, then the limits. */
 export default function MethodologyView() {
-  const { discoms, stateSpecific } = useData();
+  const { discoms, stateSpecific } = useEarlierData();
   const example = useMemo(() => findExample(stateSpecific), [stateSpecific]);
   const [step, setStep] = useState(0);
   // no auto-advance for reduced motion. Safe to read on first render: the walkthrough (and its

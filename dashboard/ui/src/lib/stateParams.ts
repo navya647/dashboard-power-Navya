@@ -1,8 +1,8 @@
 import { readFileSync } from 'fs';
 import path from 'path';
-import { stateHasSopData } from './computations';
+import { stateIsTracked } from './computations';
 import { slugify } from './slug';
-import type { DiscomsData, StateSpecificData } from './types';
+import type { MasterData } from './types';
 
 /** Build-time (server-only) helpers shared by the /state/[name] overview and /state/[name]/data
  * routes, both need every state slug known up front for the static export. */
@@ -27,10 +27,8 @@ export function stateNameForSlug(slug: string): string | undefined {
   return loadAllStateNames().find((s) => slugify(s) === slug);
 }
 
-/** True when a state has nothing in either dataset, the same check the pages use to show the
+/** True when the master sheet has no row for a state, the same check the pages use to show the
  * "data being compiled" view. */
 export function stateIsEmpty(name: string): boolean {
-  const discoms = readJson<DiscomsData>('discoms2.json');
-  const stateSpecific = readJson<StateSpecificData>('state_specific.json');
-  return !discoms.discoms.some((d) => d.state === name) && !stateHasSopData(stateSpecific, name);
+  return !stateIsTracked(readJson<MasterData>('sop_master.json'), name);
 }

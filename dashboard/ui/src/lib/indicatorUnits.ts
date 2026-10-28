@@ -52,6 +52,10 @@ const MEANING_UNIT: Record<string, DisplayUnit> = {
   // Odisha's MAIFI rows say "average interruptions"; MAIFI is the momentary-interruption index, so
   // it shares the other DISCOMs' label (the source wording stays visible as the metric text)
   'total number of average interruptions for an average consumer over the year': num('momentary interruptions / consumer / year'),
+  // TPWODL (Pass 1 Main sheet): Odisha's regulation weights the indices by connected load, not consumers
+  'annual saidi (minutes per kw of connected load)': num('minutes / kW / year'),
+  'annual saifi (interruptions per kw of connected load)': num('interruptions / kW / year'),
+  'annual maifi (momentary interruptions per kw of connected load)': num('momentary interruptions / kW / year'),
   'average minutes taken to restore supply for each interruption event over the year': num('minutes'),
   'average minutes taken to restore supply for each interruption event over two quarters': num('minutes'),
   'average restoration time (minutes) for interrupted consumers over the year': num('minutes'),
@@ -83,6 +87,7 @@ const MEANING_UNIT: Record<string, DisplayUnit> = {
   'zero cases exceeding voltage limits for eht and lt': num('number of cases'),
   'zero cases exceeding voltage limits for eht and lt were reported': num('number of cases'),
   'nine cases exceeding voltage limits for ht': num('number of cases'),
+  'number of cases (ht, fy, annual reporting)': num('number of cases'),
   'cases exceeding voltage limits for ht were reported': num('number of cases'),
   'zero formal consumer complaints recieved': num('number of cases'),
   'no. of deviation of results from the sample test': num('number of deviations'),

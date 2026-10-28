@@ -9,6 +9,8 @@
 
 .glc {
   max-width: 1240px;
+  /* one text size for every control on the page: indicator tabs, years, quarters, Reported as */
+  --glc-control-fs: clamp(12.5px, 1vw, 14px);
   --glc-line: color-mix(in srgb, var(--line) 85%, transparent);
   --glc-meta: color-mix(in srgb, var(--accent-text) 38%, var(--text-supporting, var(--muted)));
   --glc-accent: var(--accent-hover);
@@ -64,7 +66,7 @@
   padding: 11px clamp(7px, 0.9vw, 13px) 9px;
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
-  font-size: clamp(12.5px, 1vw, 14px);
+  font-size: var(--glc-control-fs);
   font-weight: 500;
   white-space: nowrap;
   color: var(--glc-meta);
@@ -92,7 +94,7 @@
   all: unset;
   padding: 4px 11px;
   border-radius: var(--radius-pill);
-  font-size: 12.5px;
+  font-size: var(--glc-control-fs);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--glc-meta);
@@ -166,7 +168,7 @@
 }
 .glc-reps-label {
   margin-right: 4px;
-  font-size: 12.5px;
+  font-size: var(--glc-control-fs);
   color: var(--text-supporting, var(--muted));
 }
 .glc-rep {
@@ -177,7 +179,7 @@
   padding: 5px 8px 5px 12px;
   border: 1px solid var(--glc-line);
   border-radius: var(--radius-pill);
-  font-size: 13px;
+  font-size: var(--glc-control-fs);
   font-weight: 600;
   white-space: nowrap;
   color: var(--glc-meta);
@@ -341,7 +343,6 @@
   font-size: min(13.5px, calc(var(--glc-row-h) * 0.7));
   font-weight: 600;
   white-space: nowrap;
-  text-overflow: ellipsis;
   color: var(--ink);
 }
 .glc-fig {
@@ -479,8 +480,8 @@
 }
 .glc-card-value {
   display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
+  flex-direction: column; /* the figure on its own line, its unit and year under it */
+  align-items: flex-start;
   gap: 4px 10px;
   margin: 18px 0 0;
 }
@@ -727,4 +728,29 @@
   border-color: rgba(0, 0, 0, 0.16);
   background: #ffffff;
   box-shadow: 0 24px 56px rgba(40, 30, 20, 0.14), 0 2px 8px rgba(40, 30, 20, 0.08);
+}
+
+/* the DISCOM's own sentence the figure was read from (master sheet), under the big figure */
+.glc-card-text {
+  margin: -4px 0 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-supporting, var(--muted));
+}
+/* one line under the tabs saying what the indicator is */
+.glc-about {
+  margin: 10px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-supporting, var(--muted));
+}
+.glc-about b {
+  font-weight: 600;
+  color: var(--ink);
+}
+.glc-about a {
+  margin-left: 4px;
+  color: var(--accent-text, var(--ink));
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }

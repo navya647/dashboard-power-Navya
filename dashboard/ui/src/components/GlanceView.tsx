@@ -4,14 +4,15 @@ import Link from 'next/link';
 import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type RefObject } from 'react';
 import { useData } from '@/lib/DataContext';
 import { fyLabel } from '@/lib/format';
-import { indicatorLabel } from '@/lib/glossary';
 import { axisTitleForUnit, formatInUnit } from '@/lib/indicatorUnits';
 import { slugify } from '@/lib/slug';
 import { useNoScrollbar } from '@/lib/useNoScrollbar';
-import { buildGlance, glanceIndicators, glanceYears, splitSubtypes, type GlanceGroup, type GlanceRow } from '@/lib/glance';
+import { buildGlance, glanceYears, GLANCE_FAMILIES, GLANCE_SHORT, type GlanceGroup, type GlanceRow } from '@/lib/glance';
+import { FAMILY_DEFINITIONS } from '@/lib/familyDefinitions';
 import AboutKicker from './AboutKicker';
 
-/** The At a glance page: one reliability indicator, one year, every DISCOM's reported figure.
+/** The Quick comparison page: one indicator, one year, every DISCOM's reported figure. Design
+ * kept from the earlier reliability-dataset version; data now from the master sheet (lib/glance.ts).
  *
  * Each chart is one CSS grid, state | DISCOM | figure | plot, so every part lines up by
  * construction: the axis and its gridlines sit in the plot column, each state's benchmark is one
@@ -36,21 +37,25 @@ interface Props {
 }
 
 export default function GlanceView({ initialIndicator, initialYear }: Props) {
-  const { discoms: rawDiscoms, loading, error } = useData();
-  const data = useMemo(() => (rawDiscoms ? splitSubtypes(rawDiscoms) : null), [rawDiscoms]);
-  const indicators = useMemo(() => (data ? glanceIndicators(data) : []), [data]);
+  const { master, loading, error } = useData();
+  const rows = useMemo(() => master?.rows ?? [], [master]);
+  const allYears = useMemo(() => [...new Set(rows.map((r) => r.financial_year))].sort().reverse(), [rows]);
+  const stateOrder = useMemo(() => [...new Set(rows.map((r) => r.state))], [rows]);
+  const indicators = useMemo(() => GLANCE_FAMILIES.filter((f) => glanceYears(rows, f).length > 0), [rows]);
   const [indicator, setIndicator] = useState<string | null>(initialIndicator);
   const [year, setYear] = useState<string | null>(initialYear);
   const [selected, setSelected] = useState<string | null>(null);
   const [rep, setRep] = useState<string | null>(null);
+  // the quarter shown for figures whose standard is set per quarter (never annualised)
+  const [quarter, setQuarter] = useState(3);
   useNoScrollbar();
 
   // the indicator/year actually shown: a requested one that has figures, else the first
   // indicator and its latest year with figures
   const ind = indicator && indicators.includes(indicator) ? indicator : (indicators[0] ?? null);
-  const years = useMemo(() => (data && ind ? glanceYears(data, ind) : []), [data, ind]);
+  const years = useMemo(() => (ind ? glanceYears(rows, ind) : []), [rows, ind]);
   const yr = year && years.includes(year) ? year : (years[0] ?? null);
-  const glance = useMemo(() => (data && ind && yr ? buildGlance(data, ind, yr) : null), [data, ind, yr]);
+  const glance = useMemo(() => (ind && yr ? buildGlance(rows, ind, yr, stateOrder, quarter) : null), [rows, ind, yr, stateOrder, quarter]);
 
   // shareable URL (?indicator=&year=), kept in sync without a navigation
   useEffect(() => {
@@ -60,23 +65,23 @@ export default function GlanceView({ initialIndicator, initialYear }: Props) {
   }, [ind, yr]);
 
   // a selection only means something on the chart it was made on
-  useEffect(() => setSelected(null), [ind, yr, rep]);
+  useEffect(() => setSelected(null), [ind, yr, rep, quarter]);
   // a picked representation carries across years of the same indicator, not to another indicator
   useEffect(() => setRep(null), [ind]);
 
   if (loading) return <p className="detail-placeholder">Loading dashboard data…</p>;
-  if (error || !data || !glance || !ind || !yr) return <p className="detail-placeholder">Could not load dashboard data: {error}</p>;
+  if (error || !master || !glance || !ind || !yr) return <p className="detail-placeholder">Could not load dashboard data: {error}</p>;
 
   // one way of reporting the indicator on screen at a time: the one most DISCOMs use, unless
   // another was picked
   const group = glance.groups.find((g) => g.key === rep) ?? glance.groups[0];
   const sel = group.rows.find((r) => rowKey(r) === selected) ?? null;
-  const label = indicatorLabel(ind);
+  const label = GLANCE_SHORT[ind] ?? ind;
   const toggle = (k: string) => setSelected((cur) => (cur === k ? null : k));
 
   const yearSwitch = (
       <div className="glc-years" role="radiogroup" aria-label="Financial year">
-        {[...data.years].reverse().map((y) => {
+        {[...allYears].reverse().map((y) => {
           const has = years.includes(y);
           return (
             <button
@@ -98,28 +103,35 @@ export default function GlanceView({ initialIndicator, initialYear }: Props) {
 
   return (
     <div className="methodology-page about-page glc">
-      <AboutKicker here="At a glance" />
+      <AboutKicker here="Quick comparison" />
       <h1 className="method-hero-title">Quick Comparison Across DISCOMs</h1>
 
       <div className="glc-bar">
         <div className="glc-tabs" role="tablist" aria-label="Indicator">
           {indicators.map((i) => (
-            <button key={i} type="button" role="tab" aria-selected={i === ind} title={indicatorLabel(i)} className={`glc-tab${i === ind ? ' is-active' : ''}`} onClick={() => setIndicator(i)}>
-              {indicatorLabel(i).replace('Transformer Failure (', 'Transformer (')}
+            <button key={i} type="button" role="tab" aria-selected={i === ind} title={i} className={`glc-tab${i === ind ? ' is-active' : ''}`} onClick={() => setIndicator(i)}>
+              {GLANCE_SHORT[i] ?? i}
             </button>
           ))}
         </div>
       </div>
 
+      {/* what the indicator is: the sheet's own name and the signed-off plain definition (Glossary) */}
+      <p className="glc-about">
+        <b>{ind}</b>
+        {FAMILY_DEFINITIONS[ind] && <> · {FAMILY_DEFINITIONS[ind]}</>}{' '}
+        <Link href="/about/glossary">Glossary</Link>
+      </p>
+
       <div className="glc-yearrow">{yearSwitch}</div>
 
       <div className={`glc-body${sel ? ' has-card' : ''}`}>
         <div className="glc-main" key={`${ind}|${yr}|${group.key}`}>
-          <Chart group={group} groups={glance.groups} onPickGroup={setRep} selected={selected} onSelect={toggle} />
+          <Chart group={group} groups={glance.groups} onPickGroup={setRep} selected={selected} onSelect={toggle} quarter={quarter} onQuarter={setQuarter} />
         </div>
         {sel && (
           <aside className="glc-aside">
-            <DetailCard key={rowKey(sel)} row={sel} group={group} year={yr} onClose={() => setSelected(null)} />
+            <DetailCard key={rowKey(sel)} row={sel} group={group} year={group.period === 'quarter' ? `Q${quarter + 1} ${fyLabel(yr)}` : yr} onClose={() => setSelected(null)} />
           </aside>
         )}
       </div>
@@ -130,6 +142,8 @@ export default function GlanceView({ initialIndicator, initialYear }: Props) {
 /** A state's DISCOMs, consecutive on the chart, sharing the state's one benchmark. */
 interface Block {
   state: string;
+  /** false for a second block of the same state (another benchmark, e.g. urban vs rural) */
+  first: boolean;
   benchmark: number | null;
   rows: GlanceRow[];
 }
@@ -138,8 +152,8 @@ function blocksOf(rows: GlanceRow[]): Block[] {
   const out: Block[] = [];
   for (const r of rows) {
     const last = out[out.length - 1];
-    if (last && last.state === r.discom.state) last.rows.push(r);
-    else out.push({ state: r.discom.state, benchmark: r.benchmark, rows: [r] });
+    if (last && last.state === r.discom.state && last.benchmark === r.benchmark) last.rows.push(r);
+    else out.push({ state: r.discom.state, first: !last || last.state !== r.discom.state, benchmark: r.benchmark, rows: [r] });
   }
   return out;
 }
@@ -177,18 +191,41 @@ function useFitRowHeight(chart: RefObject<HTMLElement | null>, grid: RefObject<H
   return rowH;
 }
 
+// DISCOM names are always written in full: the name column widens to the longest one in the
+// chart (never narrower than its CSS width), and the plot column gives up the room
+function useNameColumnWidth(grid: RefObject<HTMLElement | null>, group: GlanceGroup, quarter: number) {
+  const [w, setW] = useState<number | null>(null);
+  useLayoutEffect(() => {
+    const g = grid.current;
+    if (!g) return;
+    // the CSS width, read above the chart so this hook's own override doesn't count
+    const host = g.closest('.glc-chart')?.parentElement ?? g;
+    const base = parseFloat(getComputedStyle(host).getPropertyValue('--glc-name-w')) || 0;
+    let max = 0;
+    g.querySelectorAll<HTMLElement>('.glc-name').forEach((el) => {
+      max = Math.max(max, el.scrollWidth);
+    });
+    setW(max > base ? Math.ceil(max) + 6 : null);
+  }, [grid, group, quarter]);
+  return w;
+}
+
 function Chart({
   group,
   groups,
   onPickGroup,
   selected,
   onSelect,
+  quarter,
+  onQuarter,
 }: {
   group: GlanceGroup;
   groups: GlanceGroup[];
   onPickGroup: (key: string) => void;
   selected: string | null;
   onSelect: (k: string) => void;
+  quarter: number;
+  onQuarter: (q: number) => void;
 }) {
   const dir = DIRECTION_TEXT[group.direction];
   const pct = (v: number) => `${Math.max(0, Math.min(100, (v / group.scaleMax) * 100))}%`;
@@ -197,6 +234,7 @@ function Chart({
   const chartRef = useRef<HTMLElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const rowH = useFitRowHeight(chartRef, gridRef, group.rows.length, blocks.length - 1);
+  const nameW = useNameColumnWidth(gridRef, group, quarter);
   const hasNote = group.rows.some((r) => r.note);
   // grid rows: the axis, then each DISCOM's row, with a spacer row between states (the rule
   // between them sits in it), so state blocks get air without the rows themselves changing size
@@ -208,7 +246,7 @@ function Chart({
   let line = 2; // grid line the next row starts on (line 1 is the axis)
 
   return (
-    <section className="glc-chart" aria-label={title} ref={chartRef} style={rowH ? ({ '--glc-row-h': `${rowH}px` } as CSSProperties) : undefined}>
+    <section className="glc-chart" aria-label={title} ref={chartRef} style={{ ...(rowH ? { '--glc-row-h': `${rowH}px` } : {}), ...(nameW ? { '--glc-name-w': `${nameW}px` } : {}) } as CSSProperties}>
       <header className="glc-chart-head">
         {/* the unit, short; the source's own full wording on hover. Where DISCOMs report the
             indicator in more than one way, one at a time, picked here */}
@@ -234,6 +272,16 @@ function Chart({
           <h2 title={group.wording ?? undefined}>{title}</h2>
         )}
         {dir && <span className="glc-dir">{dir}</span>}
+        {/* the standard is set per quarter: one quarter at a time, never added up to a year */}
+        {group.period === 'quarter' && (
+          <div className="glc-years glc-quarters" role="radiogroup" aria-label="Quarter">
+            {[0, 1, 2, 3].map((q) => (
+              <button key={q} type="button" role="radio" aria-checked={q === quarter} className={`glc-year${q === quarter ? ' is-active' : ''}`} onClick={() => onQuarter(q)}>
+                Q{q + 1}
+              </button>
+            ))}
+          </div>
+        )}
       </header>
 
       <div className="glc-grid" ref={gridRef} style={{ gridTemplateRows: tracks.join(' ') }}>
@@ -258,9 +306,9 @@ function Chart({
           const span = `${start} / span ${b.rows.length}`;
           return (
             <Fragment key={b.state}>
-              {bi > 0 && <div className="glc-sep" style={{ gridRow: start - 1 }} aria-hidden="true" />}
+              {bi > 0 && b.first && <div className="glc-sep" style={{ gridRow: start - 1 }} aria-hidden="true" />}
               <div className="glc-state" style={{ gridRow: span }}>
-                {b.state}
+                {b.first ? b.state : ''}
               </div>
               {b.rows.map((r, i) => {
                 const k = rowKey(r);
@@ -346,7 +394,6 @@ function Legend({ note }: { note: boolean }) {
 function DetailCard({ row, group, year, onClose }: { row: GlanceRow; group: GlanceGroup; year: string; onClose: () => void }) {
   const d = row.discom;
   const verdict = verdictOf(row);
-  const reason = row.reasonNotComparable && row.reasonNotComparable !== 'N/A' ? row.reasonNotComparable : null;
   const standard = row.standard && row.standard.trim() && !/^n\/?a\.?$/i.test(row.standard.trim()) ? row.standard.trim() : null;
   const notes = [row.benchmarkNote, row.note].filter(
     Boolean,
@@ -397,12 +444,11 @@ function DetailCard({ row, group, year, onClose }: { row: GlanceRow; group: Glan
       <p className="glc-card-value">
         <b>{formatInUnit(row.value, group.unit, row.benchmark)}</b>
         <span>
-          {axisTitleForUnit(group.unit)} · {fyLabel(year)}
+          {axisTitleForUnit(group.unit)} · {year.startsWith('Q') ? year : fyLabel(year)}
         </span>
       </p>
 
-      {/* boxed facts: the standard, then the benchmark beside whether it was met; the reason only
-          where "Standard Met?" is N/A */}
+      {/* boxed facts: the standard, then the benchmark beside whether it was met */}
       <div className="glc-boxes">
         <div className="glc-box glc-box--wide">
           <span className="glc-box-label">Standard</span>
@@ -416,12 +462,6 @@ function DetailCard({ row, group, year, onClose }: { row: GlanceRow; group: Glan
           <span className="glc-box-label">Standard Met?</span>
           <p className="glc-box-val">{verdict === 'none' ? 'N/A' : <span className={`mj-chip mj-chip--${verdict}`}>{verdict === 'met' ? 'Met' : 'Not met'}</span>}</p>
         </div>
-        {verdict === 'none' && reason && (
-          <div className="glc-box glc-box--wide">
-            <span className="glc-box-label">Why standard met is N/A?</span>
-            <p>{reason}</p>
-          </div>
-        )}
       </div>
 
       {notes.length > 0 && (

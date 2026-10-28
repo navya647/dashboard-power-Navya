@@ -1,9 +1,8 @@
 'use client';
 
-import { useEffect, type PointerEvent, type ReactNode } from 'react';
+import type { PointerEvent, ReactNode } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { LANDING_HREF, MAP_HREF } from '@/lib/routes';
+import { MAP_HREF } from '@/lib/routes';
 
 /** The About page. Same shell as the Methodology and Accessibility pages (`methodology-page
  * about-page`: kicker, hero title, then wide ruled sections). Text is the project's About copy
@@ -52,8 +51,8 @@ const CARDS = [
 
 /** the pages that back the data, linked at the foot */
 const BACKING = [
-  { href: '/methodology', head: 'Methodology', body: 'How indicators are defined, compared and interpreted.' },
-  { href: '/accessibility', head: 'Accessibility', body: 'The availability of standards and reported data.' },
+  { href: '/methodology', head: 'Methodology', body: 'How the evidence base was built: one figure followed from regulation to verdict, and the limits.' },
+  { href: '/accessibility', head: 'Accessibility', body: 'Regulatory and data transparency: which states publish their SoP regulations and performance data, and how accessible it is.' },
 ];
 
 const SOURCES = ['Regulatory standards', 'Utility reports', 'Other public documents'];
@@ -85,76 +84,6 @@ const Icon = ({ children }: { children: ReactNode }) => (
   </svg>
 );
 
-/** The mirror of the landing view's scroll-down hand-off (HeroSection): an upward wheel / swipe /
- * "scroll up" key with the About page already at its top goes back to the landing view. A wheel
- * gesture only counts if it began at the top (after a quiet gap), so the momentum of scrolling
- * up the page can never carry straight on into a navigation. Desktop only, like the hand-off. */
-const MOBILE_QUERY = '(max-width: 980px)'; // same breakpoint as HeroSection
-const BACK_WHEEL_PX = 40;
-const BACK_GESTURE_GAP_MS = 250;
-function useScrollUpToLanding() {
-  const router = useRouter();
-  useEffect(() => {
-    const desktop = () => !window.matchMedia(MOBILE_QUERY).matches;
-    let last = 0;
-    let armed = false;
-    let accum = 0;
-    let leaving = false;
-    const leave = () => {
-      if (leaving) return;
-      leaving = true;
-      router.push(LANDING_HREF);
-    };
-    const atTop = () => window.scrollY <= 0;
-    const onWheel = (e: WheelEvent) => {
-      if (!desktop() || leaving) return;
-      const now = performance.now();
-      if (now - last > BACK_GESTURE_GAP_MS) {
-        armed = atTop(); // a new gesture: it may navigate only if it started at the top
-        accum = 0;
-      }
-      last = now;
-      if (!armed || !atTop()) return;
-      const dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * window.innerHeight : e.deltaY;
-      if (dy >= 0) {
-        accum = 0;
-        return;
-      }
-      accum += -dy;
-      if (accum >= BACK_WHEEL_PX) leave();
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (!desktop() || leaving || !atTop() || e.altKey || e.ctrlKey || e.metaKey) return;
-      const t = e.target as HTMLElement | null;
-      if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
-      const onButton = t?.tagName === 'BUTTON';
-      if (['ArrowUp', 'PageUp'].includes(e.key) || (e.key === ' ' && e.shiftKey && !onButton)) leave();
-    };
-    let touchY: number | null = null;
-    let touchAtTop = false;
-    const onTouchStart = (e: TouchEvent) => {
-      touchY = e.touches[0]?.clientY ?? null;
-      touchAtTop = atTop();
-    };
-    const onTouchEnd = (e: TouchEvent) => {
-      if (!desktop() || leaving || touchY == null) return;
-      const dy = (e.changedTouches[0]?.clientY ?? touchY) - touchY;
-      touchY = null;
-      if (touchAtTop && atTop() && dy > 40) leave();
-    };
-    window.addEventListener('wheel', onWheel, { passive: true });
-    window.addEventListener('keydown', onKey);
-    window.addEventListener('touchstart', onTouchStart, { passive: true });
-    window.addEventListener('touchend', onTouchEnd, { passive: true });
-    return () => {
-      window.removeEventListener('wheel', onWheel);
-      window.removeEventListener('keydown', onKey);
-      window.removeEventListener('touchstart', onTouchStart);
-      window.removeEventListener('touchend', onTouchEnd);
-    };
-  }, [router]);
-}
-
 /** the card under the pointer gets a soft spotlight that follows it */
 function spot(e: PointerEvent<HTMLAnchorElement>) {
   const r = e.currentTarget.getBoundingClientRect();
@@ -163,8 +92,6 @@ function spot(e: PointerEvent<HTMLAnchorElement>) {
 }
 
 export default function AboutView() {
-  useScrollUpToLanding();
-
   return (
     <div className="methodology-page about-page abt">
       <div className="kicker" style={{ marginTop: 0 }}>
@@ -174,11 +101,28 @@ export default function AboutView() {
       <h1 className="method-hero-title">From Electricity Access to Electricity Quality</h1>
 
       <section className="abt-hero" aria-label="Introduction">
-        <p className="abt-lead">
-          India has expanded electricity access and strengthened supply. Attention is now also on the quality of the electricity consumers
-          receive: <b>reliable, good quality, safe and supported by responsive services</b>. The dashboard is a systematic, transparent
-          resource to enable comparison, support improvements in electricity distribution services, and inform quality-linked tariff design.
-        </p>
+        <div className="abt-intro">
+          <span className="abt-badge">A public-interest tool</span>
+          <p className="abt-statement-text">
+            Consumers depend not only on electricity being available, but on its <em>quality, reliability and stability</em>.
+          </p>
+          <div className="abt-notes">
+            <div className="abt-note">
+              <h2 className="abt-intro-head">Background and context</h2>
+              <p className="abt-lead">
+                India has made significant progress in expanding electricity access, generation capacity and network reach. Yet information
+                on power quality is fragmented across utilities, regulators, central entities and consumer groups.
+              </p>
+            </div>
+            <div className="abt-note">
+              <h2 className="abt-intro-head">Closing the information gap</h2>
+              <p className="abt-lead">
+                The dashboard brings that information together in one place, to support evidence-based policymaking, institutional accountability,
+                compliance assessment and targeted improvements in electricity distribution.
+              </p>
+            </div>
+          </div>
+        </div>
         <div className="abt-flow" role="group" aria-label="How the dashboard brings evidence together">
           <p className="abt-flow-label abt-flow-label--a">Published across</p>
           <p className="abt-flow-label abt-flow-label--b">Brought together here</p>
@@ -227,45 +171,53 @@ export default function AboutView() {
         ))}
       </nav>
 
-      <div className="abt-pair">
-        <section aria-label="Who it is for">
+      <section className="abt-band" aria-label="Who it is for">
+        <div className="abt-band-head">
           <h2 className="abt-title-sm">Who it is for</h2>
-          <ul className="abt-aud" aria-label="Audience">
-            {AUDIENCE.map((x) => (
-              <li key={x}>{x}</li>
-            ))}
-          </ul>
           <p className="abt-body">
-            A public resource for everyone working on India’s power sector: a quick view of performance, and a starting point for deeper
-            analysis.
+            A public-interest tool for everyone with a stake in India’s power sector: a consolidated view of how distribution utilities
+            perform against their standards, and a transparent starting point for deeper analysis.
           </p>
-        </section>
-        <section aria-label="Part of a people-centric transition">
-          <h2 className="abt-title-sm">Part of a people-centric transition</h2>
-          <ul className="abt-shifts">
-            {REFORM.map((r) => (
-              <li key={r.head}>
-                <span className="abt-shift-head">{r.head}</span>
-                <span className="abt-shift-row">
-                  <span>{r.from}</span>
-                  <Arrow />
-                  <b>{r.to}</b>
-                </span>
-              </li>
-            ))}
-          </ul>
-          <p className="abt-body">The dashboard is part of ACPET’s People-centric Power Reform work.</p>
-          {THEORY_OF_CHANGE_HREF && (
-            <a className="abt-toc" href={THEORY_OF_CHANGE_HREF} target="_blank" rel="noopener noreferrer">
-              Explore ACPET’s Theory of Change
-              <Arrow />
-            </a>
-          )}
-        </section>
-      </div>
+        </div>
+        <ul className="abt-aud" aria-label="Audience">
+          {AUDIENCE.map((x) => (
+            <li key={x}>{x}</li>
+          ))}
+        </ul>
+      </section>
 
-      <section className="abt-sec" aria-label="Want to understand the data?">
-        <h2 className="abt-title-sm">Want to understand the data?</h2>
+      <section className="abt-band" aria-label="Part of a people-centric transition">
+        <div className="abt-band-head">
+          <h2 className="abt-title-sm">Part of a people-centric transition</h2>
+          <p className="abt-body">
+            This dashboard is an initiative under the Ashoka Centre for a People-centric Energy Transition’s (ACPET) Theory of Change for a People-centric Power Reform.
+            {THEORY_OF_CHANGE_HREF && (
+              <a className="abt-toc" href={THEORY_OF_CHANGE_HREF} target="_blank" rel="noopener noreferrer">
+                Explore ACPET’s Theory of Change
+                <Arrow />
+              </a>
+            )}
+          </p>
+        </div>
+        <ul className="abt-shifts">
+          {REFORM.map((r) => (
+            <li key={r.head}>
+              <span className="abt-shift-head">{r.head}</span>
+              <span className="abt-shift-row">
+                <span>{r.from}</span>
+                <Arrow />
+                <b>{r.to}</b>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="abt-band" aria-label="Method and transparency">
+        <div className="abt-band-head">
+          <h2 className="abt-title-sm">Method and transparency</h2>
+          <p className="abt-body">How the evidence was assembled, and how openly each state publishes it.</p>
+        </div>
         <nav className="abt-backing" aria-label="Behind the dashboard">
           {BACKING.map((b) => (
             <Link key={b.href} href={b.href} className="abt-back">

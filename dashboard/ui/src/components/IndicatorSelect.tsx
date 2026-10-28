@@ -1,7 +1,6 @@
 'use client';
 
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { BUCKET_ORDER, UNMAPPED_BUCKET, bucketFor } from '@/lib/indicatorBuckets';
 import FilterDropdown from './FilterDropdown';
 
 export interface IndicatorOption {
@@ -53,11 +52,9 @@ function MultiSummary({ names }: { names: string[] }) {
 /** The State Performance page's one Indicator filter, replaces the old Category → Type →
  * Indicator cascade. Every indicator name belongs to exactly one category/type in every state (see
  * StateDetail), so picking indicators directly loses nothing: the list shows a
- * Bucket → Category → Indicator hierarchy as headings (only the indicators are selectable), the
- * bucket (Quality of Supply / Service / Safety) from indicatorBuckets.ts, the category from the
- * data itself (or its raw type, where the category is just the generic "Other"). Multi-select
- * (checkbox list) like the other filters, with a type-to-search box that matches the indicator,
- * type, category or bucket and keeps a match's parent headings. Deliberately no "select all" at
+ * Category → Indicator hierarchy as headings (only the indicators are selectable), the category
+ * being the master sheet's own `category` column. Multi-select (checkbox list) like the other
+ * filters, with a type-to-search box that matches the indicator, its family or its category. Deliberately no "select all" at
  * any level, every indicator is its own page section, so all of them at once is never useful;
  * Reset clears the selection. The closed
  * trigger names what's selected: the indicator itself (its type as secondary text) for one, both
@@ -69,19 +66,16 @@ export default function IndicatorSelect({ options, selected, onChange }: Props) 
 
   const groups = useMemo(() => {
     const q = query.trim().toLowerCase();
-    // indicator category → indicators
+    // the sheet's own category → indicators, categories in the order the options list them
     const byBucket = new Map<string, string[]>();
     for (const o of options) {
-      const bucket = bucketFor(o.category, o.type, o.indicator);
-      if (q && ![o.indicator, bucket].some((s) => s.toLowerCase().includes(q))) continue;
-      (byBucket.get(bucket) ?? byBucket.set(bucket, []).get(bucket)!).push(o.indicator);
+      if (q && ![o.indicator, o.category, o.type].some((s) => s.toLowerCase().includes(q))) continue;
+      (byBucket.get(o.category) ?? byBucket.set(o.category, []).get(o.category)!).push(o.indicator);
     }
-    return [...BUCKET_ORDER, UNMAPPED_BUCKET]
-      .filter((bucket) => byBucket.has(bucket))
-      .map((bucket) => ({
-        bucket,
-        indicators: [...byBucket.get(bucket)!].sort((a, b) => a.localeCompare(b)),
-      }));
+    return [...byBucket].map(([bucket, indicators]) => ({
+      bucket,
+      indicators: [...new Set(indicators)].sort((a, b) => a.localeCompare(b)),
+    }));
   }, [options, query]);
 
   function toggle(indicator: string) {
@@ -98,13 +92,13 @@ export default function IndicatorSelect({ options, selected, onChange }: Props) 
         ) : single ? (
           <>
             <span className="filter-value-main">{single.indicator}</span>
-            <span className="filter-value-sub">{bucketFor(single.category, single.type, single.indicator)}</span>
+            <span className="filter-value-sub">{single.category}</span>
           </>
         ) : (
           <MultiSummary names={selected} />
         )
       }
-      ariaLabel={`Indicator: ${selected.length === 0 ? 'none selected' : single ? `${single.indicator}, ${bucketFor(single.category, single.type, single.indicator)}` : selected.join(', ')}`}
+      ariaLabel={`Indicator: ${selected.length === 0 ? 'none selected' : single ? `${single.indicator}, ${single.category}` : selected.join(', ')}`}
       panelClassName="indicator-select-panel"
       maxHeight={340}
       minPanelWidth={260}

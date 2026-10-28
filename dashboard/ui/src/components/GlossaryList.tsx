@@ -1,7 +1,8 @@
 "use client";
 
 import { Fragment, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { indicatorLabel, type GlossaryEntry } from "@/lib/glossary";
+import type { GlossaryEntry } from "@/lib/glossary";
+import { FAMILY_DEFINITIONS } from "@/lib/familyDefinitions";
 
 /** indicators per page on a phone, where the frame isn't fitted to the window height */
 const MOBILE_PAGE = 10;
@@ -39,7 +40,7 @@ function Term({ e, query, showWhere }: { e: GlossaryEntry; query: string; showWh
           {e.bucket}
         </div>
       )}
-      <dt>{highlight(indicatorLabel(e.indicator), query)}</dt>
+      <dt>{highlight(e.indicator, query)}</dt>
       <dd>{e.definition ? highlight(e.definition, query) : "N/A"}</dd>
       {e.readings.map((r) => (
         <dd className="gl-reading" key={r.measure}>
@@ -52,6 +53,103 @@ function Term({ e, query, showWhere }: { e: GlossaryEntry; query: string; showWh
 }
 
 const termKey = (e: GlossaryEntry) => `${e.bucket}::${e.category}::${e.indicator}`;
+
+/** the families a reader is most likely to look for, listed first in their tab in this order
+ * (names exactly as in the sheet's `indicator_family`); every other family follows, the ones the
+ * most states set first. Order only, nothing is hidden. */
+const KEY_FAMILIES = [
+  "SAIDI",
+  "SAIFI",
+  "CAIDI",
+  "CAIFI",
+  "MAIFI",
+  "Hours of supply",
+  "Voltage variation limit - LV",
+  "Voltage complaint - no network expansion needed",
+  "Distribution transformer failure - replacement & restoration",
+  "Distribution transformer failure rate",
+  "Restoration after LT-side DT fuse / consumer-end fault",
+  "Restoration after HT-side DT fuse / drop-out fuse",
+  "Power transformer / switchgear failure repair or replacement",
+  "Power transformer failure - interim restoration",
+  "Overhead line/cable breakdown restoration",
+  "Advance notice of scheduled outage",
+  "New connection - supply from existing network",
+  "Reconnection after payment of dues",
+  "Billing complaint resolution (unsplit)",
+  "Billing complaint - no additional information required",
+  "Billing complaint - additional information required",
+  "Billing complaint acknowledgement",
+  "Billing complaint - arithmetical error / non-receipt",
+  "Billing complaint - site visit required",
+  "Billing mistakes (share of bills)",
+  "Bill delivery timeliness",
+  "First bill after new connection",
+  "Provisional/average billing duration",
+  "Final bill on vacation / special reading",
+  "Refund of excess amount billed",
+  "Billing efficiency",
+  "Defective (slow/fast/stuck) meter replacement",
+  "Compensation payment",
+  "Complaint registration & number issue",
+  "24x7 call centre / help desk availability",
+  "Fatal electrical accidents - human",
+  "Fatal electrical accidents - animal",
+  "Non-fatal electrical accidents - human",
+  "Non-fatal electrical accidents - animal",
+  "Electrical accidents (total)",
+  "Fatal accident reporting",
+];
+const keyRank = (f: string) => {
+  const i = KEY_FAMILIES.indexOf(f);
+  return i < 0 ? KEY_FAMILIES.length : i;
+};
+const stateCount = (es: GlossaryEntry[]) => new Set(es.flatMap((e) => e.states)).size;
+
+/** a family's one line in the list: the signed-off summary where there is one, otherwise the
+ * sheet's own definition word for word (the most-used wording among its indicators) */
+function familyDefinition(name: string, es: GlossaryEntry[]): string | null {
+  if (FAMILY_DEFINITIONS[name]) return FAMILY_DEFINITIONS[name];
+  const n = new Map<string, number>();
+  for (const e of es) if (e.definition) n.set(e.definition, (n.get(e.definition) ?? 0) + 1);
+  let best: string | null = null;
+  let most = 0;
+  for (const [t, c] of n) if (c > most) [best, most] = [t, c];
+  return best;
+}
+
+/** what the panel lists: a tab's indicator families (the sheet's `indicator_family`), or the
+ * indicators themselves, each wording exactly as the sheet has it */
+type Item = { kind: "family"; name: string; n: number; def: string | null } | { kind: "entry"; e: GlossaryEntry };
+const itemKey = (it: Item) => (it.kind === "family" ? `family::${it.name}` : termKey(it.e));
+
+/** one indicator family: opens to its indicators */
+function FamilyTerm({ name, n, def, onOpen }: { name: string; n: number; def: string | null; onOpen?: () => void }) {
+  return (
+    <div className="gl-term gl-family">
+      <dt>
+        <button type="button" className="gl-family-open" onClick={onOpen} tabIndex={onOpen ? undefined : -1}>
+          {name}
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="m6 3.5 4.5 4.5L6 12.5" />
+          </svg>
+        </button>
+      </dt>
+      <dd>{def ?? "N/A"}</dd>
+      <dd className="gl-family-n">
+        {n} {n === 1 ? "indicator" : "indicators"} as worded across states
+      </dd>
+    </div>
+  );
+}
+
+function ItemView({ it, query, showWhere, onOpen }: { it: Item; query: string; showWhere: boolean; onOpen?: (name: string) => void }) {
+  return it.kind === "family" ? (
+    <FamilyTerm name={it.name} n={it.n} def={it.def} onOpen={onOpen && (() => onOpen(it.name))} />
+  ) : (
+    <Term e={it.e} query={query} showWhere={showWhere} />
+  );
+}
 
 /** Splits terms of the given heights, laid out `cols` to a row, into pages that each fit
  * `avail` pixels; returns each page's first index. A row taller than a whole page still gets a
@@ -78,6 +176,7 @@ export default function GlossaryList({ entries }: { entries: GlossaryEntry[] }) 
   const all = useMemo(() => groupsByBucket(entries), [entries]);
   const [bucketIdx, setBucketIdx] = useState(0);
   const [groupId, setGroupId] = useState<string | null>(null);
+  const [family, setFamily] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [starts, setStarts] = useState<number[]>([0]);
   const [findOpen, setFindOpen] = useState(false);
@@ -98,14 +197,24 @@ export default function GlossaryList({ entries }: { entries: GlossaryEntry[] }) 
     if (!needle) return [];
     return entries.filter(
       (e) =>
-        indicatorLabel(e.indicator).toLowerCase().includes(needle) ||
+        e.indicator.toLowerCase().includes(needle) ||
         e.indicator.toLowerCase().includes(needle) ||
         (e.definition ?? "").toLowerCase().includes(needle),
     );
   }, [entries, q]);
 
   // what the panel shows: the find results while searching, otherwise the selected category
-  const list = finding ? results : (group?.entries ?? []);
+  const families = useMemo(() => {
+    const m = new Map<string, GlossaryEntry[]>();
+    for (const e of group?.entries ?? []) (m.get(e.category) ?? m.set(e.category, []).get(e.category)!).push(e);
+    return [...m].sort(([a, ea], [b, eb]) => keyRank(a) - keyRank(b) || stateCount(eb) - stateCount(ea) || a.localeCompare(b));
+  }, [group]);
+  const familyEntries = family ? (families.find(([f]) => f === family)?.[1] ?? []) : [];
+  const list: Item[] = finding
+    ? results.map((e) => ({ kind: "entry", e }))
+    : family
+      ? familyEntries.map((e) => ({ kind: "entry", e }))
+      : families.map(([name, es]) => ({ kind: "family", name, n: es.length, def: familyDefinition(name, es) }));
   const pages = starts.length;
   const current = Math.min(page, pages - 1);
   const from = starts[current] ?? 0;
@@ -141,7 +250,7 @@ export default function GlossaryList({ entries }: { entries: GlossaryEntry[] }) 
   // pages: every term in the list is laid out in a hidden copy at the same width
   // (.gl-terms--measure), and pages are cut where the next row would overflow the panel, so no
   // page ever needs a scrollbar, however long its definitions. Re-run on resize and font load.
-  const listKey = finding ? `find:${q}` : (group?.id ?? "");
+  const listKey = finding ? `find:${q}` : `${group?.id ?? ""}::${family ?? ""}`;
   useLayoutEffect(() => {
     const panel = panelRef.current;
     const measurer = measureRef.current;
@@ -180,6 +289,15 @@ export default function GlossaryList({ entries }: { entries: GlossaryEntry[] }) 
     if (findOpen) closeFind();
     setBucketIdx(i);
     setGroupId(null);
+    setFamily(null);
+    setPage(0);
+  }
+  function openFamily(name: string) {
+    setFamily(name);
+    setPage(0);
+  }
+  function closeFamily() {
+    setFamily(null);
     setPage(0);
   }
   function chooseGroup(id: string) {
@@ -197,7 +315,7 @@ export default function GlossaryList({ entries }: { entries: GlossaryEntry[] }) 
             return (
               <button key={b} type="button" role="tab" aria-selected={on} className={`gl-tab${on ? " is-active" : ""}`} onClick={() => chooseBucket(i)}>
                 {b}
-                <span className="gl-tab-n">{gs.reduce((n, g) => n + g.entries.length, 0)}</span>
+                <span className="gl-tab-n">{new Set(gs.flatMap((g) => g.entries.map((e) => e.category))).size}</span>
               </button>
             );
           })}
@@ -246,8 +364,27 @@ export default function GlossaryList({ entries }: { entries: GlossaryEntry[] }) 
           <section className="gl-panel" ref={panelRef} aria-label={finding ? "Find results" : group.category}>
             <header className="gl-panel-head">
               <h2 aria-live={finding ? "polite" : undefined}>
-                {finding ? `${results.length} ${results.length === 1 ? "match" : "matches"} for “${q}”` : group.category}
+                {finding ? (
+                  `${results.length} ${results.length === 1 ? "match" : "matches"} for “${q}”`
+                ) : family ? (
+                  <>
+                    <button type="button" className="gl-back" onClick={closeFamily}>
+                      <svg viewBox="0 0 16 16" aria-hidden="true">
+                        <path d="M10 3.5 5.5 8l4.5 4.5" />
+                      </svg>
+                      {group.category}
+                    </button>
+                    {family}
+                  </>
+                ) : (
+                  group.category
+                )}
               </h2>
+              {!finding && family && FAMILY_DEFINITIONS[family] && (
+                <p className="gl-family-summary">
+                  <span>In short</span> {FAMILY_DEFINITIONS[family]} <em>Each state’s own wording follows.</em>
+                </p>
+              )}
               {pages > 1 && (
                 <div className="gl-pager">
                   <span>
@@ -270,14 +407,14 @@ export default function GlossaryList({ entries }: { entries: GlossaryEntry[] }) 
               <p className="gl-find-empty">No indicator names or definitions contain “{q}”. Try a shorter word.</p>
             ) : (
               <dl className="gl-terms" key={`${listKey}:${from}`}>
-                {pageEntries.map((e) => (
-                  <Term key={termKey(e)} e={e} query={q} showWhere={finding} />
+                {pageEntries.map((it) => (
+                  <ItemView key={itemKey(it)} it={it} query={q} showWhere={finding} onOpen={openFamily} />
                 ))}
               </dl>
             )}
             <dl className="gl-terms gl-terms--measure" ref={measureRef} aria-hidden="true">
-              {list.map((e) => (
-                <Term key={termKey(e)} e={e} query={q} showWhere={finding} />
+              {list.map((it) => (
+                <ItemView key={itemKey(it)} it={it} query={q} showWhere={finding} />
               ))}
             </dl>
           </section>
