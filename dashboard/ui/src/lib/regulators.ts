@@ -21,4 +21,5 @@ export const REGULATORS: Record<string, Regulator> = {
   'West Bengal': { abbr: 'WBERC', name: 'West Bengal Electricity Regulatory Commission', url: 'https://www.wberc.gov.in/' },
   'Uttar Pradesh': { abbr: 'UPERC', name: 'Uttar Pradesh Electricity Regulatory Commission', url: 'https://www.uperc.org/' },
   'Andhra Pradesh': { abbr: 'APERC', name: 'Andhra Pradesh Electricity Regulatory Commission', url: 'https://aperc.gov.in/' },
+  Assam: { abbr: 'AERC', name: 'Assam Electricity Regulatory Commission', url: 'https://aerc.gov.in/' },
 };

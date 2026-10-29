@@ -13,6 +13,7 @@
 @import '../styles/methodology.css';
 @import '../styles/glance.css';
 @import '../styles/about.css';
+@import '../styles/glossary.css';
 @import '../styles/international.css';
 
 html,
@@ -25,3 +26,25 @@ body {
   color: var(--ink);
 }
 
+
+/* Light theme: no faded text anywhere. Text that other rules thin out with colour-mix or opacity
+   renders at full strength here; dark mode keeps its original fades. */
+:root:not([data-theme='dark']) .abt {
+  --abt-quiet: var(--muted);
+}
+:root:not([data-theme='dark']) .abt-intro .abt-lead,
+:root:not([data-theme='dark']) .abt-band .abt-back-body {
+  color: var(--ink);
+}
+:root:not([data-theme='dark']) .im,
+:root:not([data-theme='dark']) [class*='im-'] {
+  --im-quiet: var(--muted);
+}
+:root:not([data-theme='dark']) .indicator-select-category-all,
+:root:not([data-theme='dark']) .ev-pill.is-none,
+:root:not([data-theme='dark']) .mj-step-timer {
+  opacity: 1;
+}
+:root:not([data-theme='dark']) .mj-layer {
+  opacity: 0.75;
+}

@@ -22,13 +22,14 @@ const NONE = /^\s*(not|no|nil|n\/a|none)\b/i;
 const UNKNOWN_BASIS = /unresolved|basis not stated|not standardised|unit basis|not annualised/i;
 // dates, years, quarter names and voltage levels, which are numbers but never the figure
 const NOT_FIGURES = /FY\s*\d{2,4}(-\d{2,4})?|\b(19|20)\d{2}(-\d{2})?\b|\bQ[1-4]\b|[A-Z][a-z]{2}-\d{2}|\b\d{1,2}\s*kV\b|within \d+\s*(hours?|hrs|days?)/gi;
-const NUMBER = /(\d[\d,]*(?:\.\d+)?)\s*(%|minutes|mins|hours|hrs|interruptions|nos\b|times)?/i;
+const NUMBER = /(\d[\d,]*(?:\.\d+)?)\s*(%|minutes|mins|hours|hrs|momentary interruptions|interruptions|nos\b|times|accidents|complaints)?/i;
 
 function basis(after: string): string | null {
   const t = after.toLowerCase();
   if (/per\s+kw|kw of connected/.test(t)) return 'per kW of connected load';
   if (/connected load/.test(t)) return 'per unit of connected load';
   if (/consumer|customer/.test(t)) return 'per consumer';
+  if (/^\s*per day/.test(t)) return 'per day';
   return null;
 }
 
@@ -56,9 +57,18 @@ export function headlineFigure(r: MasterRow): Headline | null {
 
   const text = word === '%' ? `${m[1]}%` : m[1];
   if (word === '%') return { value, unit: '%', text };
+  // no basis written beside the number ("FY SAIFI: 91.44 Nos.", "FY SAIDI: 10,344 minutes."): the
+  // row's own `unit` column, only where it names the same measure (user, 29 Oct 2026)
+  const sheet = (r.unit ?? '').toLowerCase();
   const per = basis(after);
-  if (word === 'minutes' || word === 'mins') return per ? { value, unit: `minutes ${per}`, text } : null;
-  if (word === 'hours' || word === 'hrs') return per ? { value, unit: `hours ${per}`, text } : null;
-  if (word === 'interruptions' || word === 'nos' || word === 'times') return per ? { value, unit: `interruptions ${per}`, text } : null;
+  if (word === 'minutes' || word === 'mins')
+    return per ? { value, unit: `minutes ${per}`, text } : sheet.startsWith('minutes per') ? { value, unit: sheet, text } : null;
+  if (word === 'hours' || word === 'hrs')
+    return per ? { value, unit: `hours ${per}`, text } : sheet.startsWith('hours per') ? { value, unit: sheet, text } : null;
+  if (word === 'momentary interruptions')
+    return per ? { value, unit: `momentary interruptions ${per}`, text } : sheet.startsWith('momentary interruptions per') ? { value, unit: sheet, text } : null;
+  if (word === 'interruptions' || word === 'nos' || word === 'times')
+    return per ? { value, unit: `interruptions ${per}`, text } : sheet.startsWith('interruptions per') ? { value, unit: sheet, text } : null;
+  if ((word === 'accidents' || word === 'complaints') && sheet === 'count') return { value, unit: word, text };
   return null;
 }

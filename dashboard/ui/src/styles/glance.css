@@ -1,756 +1,480 @@
-/* ---- At a glance page (GlanceView.tsx): one indicator, one year, every DISCOM's figure.
-   Shared page header (kicker + .method-hero-title); one line of indicator tabs with the year switch
-   at its far end; then one chart, where an indicator is reported in more than one unit/direction, a
-   "Reported as" switcher picks which one is shown. Rows size themselves (GlanceView useFitRowHeight)
-   so the chart fits the window on desktop; the legend sits in one quiet line under it. Each chart is a single CSS grid,
-   state | DISCOM | figure | plot, so the axis, gridlines, bars and each state's benchmark line all
-   sit in the same plot column and line up by construction. Bar colour is the source's own verdict
-   and nothing else. ---- */
+/* ---- Quick comparison (GlanceView.tsx, rebuilt 29 Oct 2026). Title + lede; indicator tabs with
+   the indicator's plain definition under them; one control bar (period · year · quarter, the
+   quarter always present so the bar never changes shape); then the stage: the chart card beside the
+   record card, both filling the height left in the window. Every chart row has the same height on
+   every indicator, period and year (GlanceView sets --qc-row-h), so the page never scrolls and
+   nothing moves when the selection changes. ---- */
 
-.glc {
-  max-width: 1240px;
-  /* one text size for every control on the page: indicator tabs, years, quarters, Reported as */
-  --glc-control-fs: clamp(12.5px, 1vw, 14px);
-  --glc-line: color-mix(in srgb, var(--line) 85%, transparent);
-  --glc-meta: color-mix(in srgb, var(--accent-text) 38%, var(--text-supporting, var(--muted)));
-  --glc-accent: var(--accent-hover);
-  --glc-grid: color-mix(in srgb, var(--ink) 9%, transparent);
-  --glc-bench: color-mix(in srgb, var(--ink) 88%, transparent);
-  /* one rhythm for every indicator, sized so most fit one window; the few largest scroll */
-  --glc-row-h: 28px;
-  --glc-axis-h: 26px;
-  --glc-gap-h: 12px;
-  /* grid columns */
-  --glc-state-w: 140px;
-  --glc-name-w: 92px;
-  --glc-fig-w: 86px;
+.qc {
+  max-width: 1400px;
+  --qc-line: color-mix(in srgb, var(--line) 85%, transparent);
+  --qc-meta: var(--text-supporting, var(--muted));
+  --qc-track: color-mix(in srgb, var(--ink) 7%, transparent);
+  --qc-bench: color-mix(in srgb, var(--ink) 88%, transparent);
+  --qc-on: var(--accent-text);
+  --qc-row-h: 40px;
 }
-:root[data-theme='dark'] .glc {
-  --glc-accent: var(--accent-text);
-}
-.glc-v-met {
+.qc-v-met {
   --tone: var(--good);
 }
-.glc-v-missed {
+.qc-v-missed {
   --tone: var(--critical);
 }
-.glc-v-none {
-  --tone: color-mix(in srgb, var(--ink) 40%, transparent);
+.qc-v-none {
+  --tone: color-mix(in srgb, var(--ink) 38%, transparent);
 }
 
-/* the year switch: its own line under the indicator tabs, at the left where the eye already is,
-   well clear of the logo in the top-right corner */
-.glc-yearrow {
-  margin-top: 16px;
-}
-
-/* ---- controls: indicator tabs on one line, years at the far end ---- */
-.glc-bar {
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 10px 24px;
-  margin-top: 22px;
-  border-bottom: 1px solid var(--glc-line);
-}
-/* every indicator on one line, never scrolled out of sight (the years sit in the chart heading) */
-.glc-tabs {
-  display: flex;
-  flex: 1 1 auto;
-  flex-wrap: nowrap;
-  min-width: 0;
-}
-.glc-tab {
-  all: unset;
-  padding: 11px clamp(7px, 0.9vw, 13px) 9px;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  font-size: var(--glc-control-fs);
-  font-weight: 500;
-  white-space: nowrap;
-  color: var(--glc-meta);
-  cursor: pointer;
-  transition: color 150ms var(--ease), border-color 150ms var(--ease);
-}
-.glc-tab:hover {
-  color: var(--ink);
-}
-.glc-tab.is-active {
-  border-bottom-color: var(--glc-accent);
-  color: var(--ink);
-  font-weight: 600;
-}
-.glc-years {
-  display: inline-flex;
-  flex: none;
-  gap: 2px;
-  padding: 3px;
-  border: 1px solid var(--glc-line);
-  border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--panel) 70%, transparent);
-}
-.glc-year {
-  all: unset;
-  padding: 4px 11px;
-  border-radius: var(--radius-pill);
-  font-size: var(--glc-control-fs);
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  color: var(--glc-meta);
-  cursor: pointer;
-  transition: background-color 150ms var(--ease), color 150ms var(--ease);
-}
-.glc-year:hover:not(:disabled) {
-  color: var(--ink);
-}
-.glc-year.is-active {
-  background: var(--accent);
-  color: #fff;
-}
-.glc-year:disabled {
-  opacity: 0.35;
-  cursor: default;
-}
-.glc-tab:focus-visible,
-.glc-year:focus-visible,
-.glc-row:focus-visible,
-.glc-bench:focus-visible {
-  outline: 2px solid var(--glc-accent);
-  outline-offset: -2px;
-  border-radius: 6px;
-}
-
-/* ---- body: the charts, and the selected DISCOM's card beside them ---- */
-.glc-body {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 40px;
-  align-items: start;
-  margin-top: 20px;
-}
-.glc-body.has-card {
-  grid-template-columns: minmax(0, 1fr) clamp(300px, 25vw, 360px);
-}
-
-/* heading: the unit, short (the source's full wording on hover), or the "Reported as" switcher
-   when there's more than one; the direction after it */
-.glc-chart-head {
+/* ---- indicator tabs + definition ---- */
+.qc-tabs {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 14px;
-  margin-bottom: 4px;
-  min-height: 32px;
+  gap: 4px 28px;
+  border-bottom: 1px solid var(--qc-line);
 }
-.glc-chart-head h2 {
-  margin: 0;
-  font-family: var(--font-sans);
+.qc-tab {
+  position: relative;
+  padding: 8px 0 11px;
+  border: 0;
+  background: none;
+  font: inherit;
   font-size: 15px;
   font-weight: 600;
-  line-height: 1.4;
-  color: var(--ink);
-  cursor: help;
-}
-.glc-dir {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  color: var(--accent-text);
-}
-.glc-reps {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-}
-.glc-reps-label {
-  margin-right: 4px;
-  font-size: var(--glc-control-fs);
-  color: var(--text-supporting, var(--muted));
-}
-.glc-rep {
-  all: unset;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 5px 8px 5px 12px;
-  border: 1px solid var(--glc-line);
-  border-radius: var(--radius-pill);
-  font-size: var(--glc-control-fs);
-  font-weight: 600;
-  white-space: nowrap;
-  color: var(--glc-meta);
+  color: var(--qc-meta);
   cursor: pointer;
-  transition: background-color 150ms var(--ease), color 150ms var(--ease), border-color 150ms var(--ease);
 }
-.glc-rep:hover {
+.qc-tab:hover,
+.qc-tab.is-on {
   color: var(--ink);
 }
-.glc-rep.is-active {
-  border-color: var(--glc-accent);
-  background: color-mix(in srgb, var(--accent) 18%, transparent);
-  color: var(--ink);
-}
-.glc-rep:focus-visible {
-  outline: 2px solid var(--glc-accent);
-  outline-offset: 2px;
-}
-/* how many DISCOMs report it this way */
-.glc-rep-n {
-  min-width: 18px;
-  padding: 1px 5px;
-  border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--ink) 9%, transparent);
-  font-size: 11px;
-  font-variant-numeric: tabular-nums;
-  text-align: center;
-}
-/* the key, one quiet line under the chart, aligned with the plot */
-.glc-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 18px;
-  margin: 10px 0 0;
-  padding-left: calc(var(--glc-state-w) + var(--glc-name-w) + var(--glc-fig-w) + 10px);
-  font-size: 12px;
-  color: var(--text-supporting, var(--muted));
-  opacity: 0.85;
-}
-.glc-legend > span {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-}
-.glc-legend-star {
-  font-weight: 700;
-  color: var(--accent-text);
-}
-.glc-swatch {
-  width: 11px;
-  height: 11px;
-  border-radius: 3px;
-  background: var(--tone);
-}
-.glc-bench-glyph {
-  width: 2px;
-  height: 14px;
-  border-radius: 1px;
-  background: var(--glc-bench);
-}
-
-/* ---- the chart grid ---- */
-.glc-grid {
-  position: relative;
-  display: grid;
-  grid-template-columns: var(--glc-state-w) var(--glc-name-w) var(--glc-fig-w) minmax(0, 1fr);
-  /* every piece of the plot column (axis, gridlines, bars, benchmarks) shares these insets */
-  --glc-plot-l: 10px;
-  --glc-plot-r: 26px;
-}
-.glc-axis,
-.glc-gridlines,
-.glc-bench {
-  grid-column: 4;
-  position: relative;
-}
-.glc-axis,
-.glc-gridlines,
-.glc-bench,
-.glc-plot {
-  margin-left: var(--glc-plot-l);
-  margin-right: var(--glc-plot-r);
-}
-.glc-axis {
-  grid-row: 1;
-}
-.glc-axis span {
-  position: absolute;
-  bottom: 6px;
-  transform: translateX(-50%);
-  font-size: 11px;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-  color: var(--text-supporting, var(--muted));
-  opacity: 0.7;
-}
-.glc-axis span.is-first {
-  transform: none;
-}
-.glc-gridlines {
-  grid-row: 2 / -1;
-  pointer-events: none;
-}
-.glc-gridlines i {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background: var(--glc-grid);
-}
-/* the zero line, a touch firmer: the bars' common start */
-.glc-gridlines i:first-child {
-  background: color-mix(in srgb, var(--ink) 22%, transparent);
-}
-
-/* a rule between states */
-.glc-sep {
-  grid-column: 1 / -1;
-  align-self: center;
-  height: 1px;
-  background: color-mix(in srgb, var(--line) 75%, transparent);
-  pointer-events: none;
-}
-.glc-state {
-  grid-column: 1;
-  align-self: start;
-  display: flex;
-  align-items: center;
-  height: var(--glc-row-h);
-  padding-left: 2px;
-  overflow: hidden;
-  font-size: 13.5px;
-  font-weight: 600;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  color: var(--ink);
-  font-size: min(13.5px, calc(var(--glc-row-h) * 0.7));
-}
-
-/* one DISCOM: name | figure | bar, on the chart's own columns (subgrid) */
-.glc-row {
-  all: unset;
-  box-sizing: border-box;
-  grid-column: 2 / -1;
-  display: grid;
-  grid-template-columns: subgrid;
-  align-items: center;
-  border-radius: 7px;
-  cursor: pointer;
-  transition: background-color 140ms var(--ease);
-}
-.glc-row:hover {
-  background: color-mix(in srgb, var(--ink) 6%, transparent);
-}
-.glc-row.is-selected {
-  background: color-mix(in srgb, var(--accent) 24%, transparent);
-}
-.glc-name {
-  padding-left: 10px;
-  overflow: hidden;
-  font-size: min(13.5px, calc(var(--glc-row-h) * 0.7));
-  font-weight: 600;
-  white-space: nowrap;
-  color: var(--ink);
-}
-.glc-fig {
-  font-size: min(14px, calc(var(--glc-row-h) * 0.72));
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-  white-space: nowrap;
-  color: var(--ink);
-}
-/* room on the right for a note's asterisk, so figures stay aligned whether or not they have one */
-.glc-fig {
-  position: relative;
-  padding-right: 8px;
-}
-.glc-fig sup {
-  position: absolute;
-  top: -3px;
-  right: 0;
-  color: var(--accent-text);
-}
-.glc-plot {
-  position: relative;
-  height: 12px;
-}
-.glc-fill {
-  position: absolute;
-  inset: 0 auto 0 0;
-  min-width: 2px;
-  border-radius: 0 3px 3px 0;
-  background: var(--tone);
-  transform-origin: left;
-  animation: glc-grow 650ms var(--ease) both;
-}
-@keyframes glc-grow {
-  from {
-    transform: scaleX(0);
-  }
-}
-
-/* a state's benchmark: one solid line through exactly its rows, on the plot's scale, with a wider
-   invisible hover/focus target; the value shows in a tooltip */
-.glc-bench {
-  z-index: 2;
-  pointer-events: none;
-  outline: none;
-}
-.glc-bench-hit {
-  position: absolute;
-  top: 4px;
-  bottom: 4px;
-  left: var(--at);
-  width: 14px;
-  margin-left: -7px;
-  cursor: help;
-  pointer-events: auto;
-}
-.glc-bench-hit::before {
+.qc-tab.is-on::after {
   content: '';
   position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 6px;
-  width: 2px;
-  border-radius: 1px;
-  background: var(--glc-bench);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--paper) 55%, transparent);
-  transition: background-color 140ms var(--ease);
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--qc-on);
 }
-.glc-bench:hover .glc-bench-hit::before,
-.glc-bench:focus-visible .glc-bench-hit::before {
-  background: var(--accent-text);
+/* the indicator's plain definition: a superscript "i" on its tab, the text on hover/focus */
+.qc-info {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 15px;
+  height: 15px;
+  margin-left: 5px;
+  vertical-align: super;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  opacity: 0.7;
+  cursor: help;
 }
-.glc-bench-tip {
+.qc-info:hover,
+.qc-info:focus-visible {
+  opacity: 1;
+}
+.qc-tip {
   position: absolute;
-  bottom: calc(100% + 6px);
-  left: 50%;
-  padding: 5px 9px;
-  border: 1px solid var(--line);
-  border-radius: 7px;
+  top: calc(100% + 10px);
+  left: -12px;
+  z-index: 30;
+  width: 320px;
+  padding: 10px 12px;
+  border: 1px solid var(--qc-line);
+  border-radius: 8px;
   background: var(--panel);
   box-shadow: var(--shadow-md);
-  font-size: 12px;
-  white-space: nowrap;
-  color: var(--text-supporting, var(--muted));
-  opacity: 0;
-  transform: translate(-50%, 4px);
-  pointer-events: none;
-  transition: opacity 140ms var(--ease), transform 140ms var(--ease);
-}
-.glc-bench-tip b {
-  margin-left: 4px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
+  font-family: inherit;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1.45;
+  text-align: left;
   color: var(--ink);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 120ms;
 }
-.glc-bench:hover .glc-bench-tip,
-.glc-bench:focus-visible .glc-bench-tip {
+.qc-info:hover .qc-tip,
+.qc-info:focus-visible .qc-tip {
   opacity: 1;
-  transform: translate(-50%, 0);
+  visibility: visible;
+}
+:root:not([data-theme='dark']) .qc-tip {
+  background: #ffffff;
 }
 
-/* ---- the selected DISCOM's card: beside the charts, and stays in view while the page scrolls ---- */
-.glc-aside {
-  position: sticky;
-  top: 24px;
-}
-.glc-card {
-  padding: 22px 24px 20px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--panel);
-  box-shadow: var(--shadow-md);
-  animation: acm-in 220ms var(--ease);
-}
-.glc-card-head {
+/* ---- control bar: one line, label beside each group ---- */
+.qc-toolbar {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 32px;
+  margin: 16px 0 18px;
+}
+.qc-seg {
+  display: flex;
+  align-items: center;
   gap: 10px;
 }
-.glc-card-head h2 {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: 24px;
-  font-weight: 700;
-  line-height: 1.15;
-  color: var(--ink);
-}
-.glc-card-head p {
-  margin: 5px 0 0;
-  font-size: 13px;
-  line-height: 1.45;
-  color: var(--text-supporting, var(--muted));
-}
-.glc-card-value {
-  display: flex;
-  flex-direction: column; /* the figure on its own line, its unit and year under it */
-  align-items: flex-start;
-  gap: 4px 10px;
-  margin: 18px 0 0;
-}
-.glc-card-value b {
-  font-family: var(--font-display);
-  font-size: 38px;
-  font-weight: 600;
-  line-height: 1;
-  font-variant-numeric: lining-nums;
-  color: var(--ink);
-}
-.glc-card-value span {
-  font-size: 13px;
-  color: var(--text-supporting, var(--muted));
-}
-/* the card's facts, plain: the standard, then the benchmark beside whether it was met, then the
-   reason only where that is N/A, separated by hairlines, kept compact so the card fits the window */
-.glc-boxes {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  column-gap: 28px;
-  margin: 14px 0 0;
-}
-.glc-box {
-  min-width: 0;
-  padding: 10px 0 0;
-  margin-top: 10px;
-  border-top: 1px solid var(--line);
-}
-.glc-box--wide {
-  grid-column: 1 / -1;
-}
-.glc-box-label {
-  display: block;
-  margin: 0 0 4px;
+.qc-seg-label {
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  white-space: nowrap;
-  color: var(--muted);
+  color: var(--qc-meta);
 }
-.glc-box p {
-  margin: 0;
-  font-size: 12.5px;
-  line-height: 1.4;
-  color: var(--ink);
-  overflow-wrap: anywhere;
-}
-.glc-box .glc-box-val {
-  font-size: 16px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-.glc-box .mj-chip {
-  margin: 0;
-}
-.glc-notes {
-  margin: 16px 0 0;
-  padding: 0;
-  list-style: none;
-}
-.glc-notes li {
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--text-supporting, var(--muted));
-}
-.glc-notes li + li {
-  margin-top: 8px;
-}
-.glc-card-link {
+.qc-seg-btns {
   display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  margin-top: 18px;
-  padding-top: 14px;
-  border-top: 1px solid var(--line);
+  padding: 3px;
+  border: 1px solid var(--qc-line);
+  border-radius: var(--radius-pill, 999px);
+}
+.qc-seg-btn {
+  min-width: 46px;
+  padding: 5px 12px;
+  border: 0;
+  border-radius: var(--radius-pill, 999px);
+  background: none;
+  font: inherit;
   font-size: 13.5px;
   font-weight: 600;
-  color: var(--accent-text);
-  text-decoration: none;
+  color: var(--qc-meta);
+  cursor: pointer;
 }
-.glc-card-link:hover {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+.qc-seg-btn:hover:not(:disabled) {
+  color: var(--ink);
 }
-.glc-card-link:focus-visible {
-  outline: 2px solid var(--accent-text);
-  outline-offset: 2px;
-  border-radius: 4px;
+.qc-seg-btn.is-on {
+  background: color-mix(in srgb, var(--qc-on) 20%, transparent);
+  color: var(--ink);
+}
+.qc-seg-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
 }
 
-/* a card too tall for the window (several notes) tightens: step 1 spacing and the big figure,
-   step 2 also the notes' text (GlanceView DetailCard) */
-.glc-card.is-tight-1,
-.glc-card.is-tight-2 {
-  padding: 16px 20px 14px;
+/* ---- stage: chart card + record card, same height ---- */
+.qc-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  gap: 40px;
 }
-.glc-card[class*='is-tight'] .glc-card-head h2 {
-  font-size: 21px;
+
+.qc-card {
+  min-height: 0;
+  padding: 18px 22px;
+  border: 1px solid var(--qc-line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--panel) 70%, transparent);
 }
-.glc-card[class*='is-tight'] .glc-card-value {
+:root:not([data-theme='dark']) .qc-card {
+  border-color: rgba(0, 0, 0, 0.14);
+  background: #ffffff;
+}
+/* the chart sits on the page; only the record card is boxed */
+.qc .qc-chartcard {
+  padding: 4px 0 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
+
+/* ---- chart ---- */
+.qc-chart-head {
+  display: flex;
+  padding-left: 10px;
+  padding-bottom: 12px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--qc-line);
+}
+.qc .qc-chart-head h2 {
+  margin: 0;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: var(--ink);
+}
+.qc-chart-head h2 span {
+  margin-left: 10px;
+  font-weight: 600;
+  color: var(--qc-meta);
+}
+.qc-legend {
+  /* its own line, right-aligned, so the control bar is the same height on every view */
+  display: flex;
+  flex-basis: 100%;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: -4px 0 0;
+  font-size: 12.5px;
+  color: var(--qc-meta);
+}
+.qc-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.qc-key::before {
+  content: '';
+  width: 14px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--tone);
+}
+.qc-key--bench::before {
+  width: 2px;
+  height: 14px;
+  border-radius: 0;
+  background: var(--qc-bench);
+}
+
+/* one row: DISCOM | category | track | figure; the axis uses the same columns */
+.qc-row,
+.qc-axis {
+  display: grid;
+  grid-template-columns: 150px 118px minmax(0, 1fr) 82px;
+  align-items: center;
+  column-gap: 16px;
+}
+.qc-rows {
+  display: grid;
+  row-gap: var(--qc-row-gap, 6px);
+}
+/* row text, chart title and axis share one 10px inset, so the row highlight stays inside the chart */
+.qc-row {
+  width: 100%;
+  height: var(--qc-row-h);
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  font: inherit;
+  text-align: left;
+  color: var(--ink);
+  cursor: pointer;
+}
+.qc-row.is-first:not(:first-child) {
+  box-shadow: inset 0 1px 0 var(--qc-line);
+  border-radius: 0 0 8px 8px;
+}
+.qc-row:hover {
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
+}
+.qc-row.is-on {
+  background: color-mix(in srgb, var(--qc-on) 14%, transparent);
+}
+.qc-who {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.qc-who b {
+  font-size: 14.5px;
+}
+.qc-who small {
+  margin-left: 4px;
+  font-size: 12px;
+  color: var(--qc-meta);
+}
+.qc-cat {
+  font-size: 13.5px;
+  color: var(--qc-meta);
+}
+.qc-track {
+  position: relative;
+  /* bars take under half the row, so neighbouring bars always have a clear gap */
+  height: min(14px, calc(var(--qc-row-h) * 0.4));
+  border-radius: 3px;
+  background: var(--qc-track);
+}
+.qc-bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 3px;
+  background: var(--tone);
+  transition: width 260ms var(--ease, ease);
+}
+.qc-bench {
+  position: absolute;
+  top: -5px;
+  bottom: -5px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--qc-bench);
+}
+.qc-val {
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.qc-axis {
+  margin-top: 8px;
+  padding: 0 10px;
+  font-size: 12px;
+  color: var(--qc-meta);
+  font-variant-numeric: tabular-nums;
+}
+.qc-axis-scale {
+  display: flex;
+  justify-content: space-between;
+}
+.qc-empty {
+  margin: 0;
+  font-size: 14px;
+  color: var(--qc-meta);
+}
+
+/* ---- the selected record ---- */
+.qc-detail {
+  /* only as tall as its content, so its top and bottom padding always match */
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.qc .qc-detail header h2 {
+  margin: 0;
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: var(--ink);
+}
+.qc-detail header h2 span {
+  font-weight: 500;
+  color: var(--qc-meta);
+}
+.qc-detail header p {
+  margin: 3px 0 0;
+  font-size: 13.5px;
+  color: var(--qc-meta);
+}
+.qc-figure {
+  margin: 18px 0 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--qc-line);
+}
+.qc-figure b {
+  display: block;
+  font-size: 38px;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.qc-figure > span {
+  font-size: 14px;
+  color: var(--qc-meta);
+}
+.qc-figure p {
+  display: flex;
+  align-items: center;
+  margin: 12px 0 0;
+  font-size: 14px;
+  color: var(--qc-meta);
+}
+.qc-facts {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.qc-facts dt {
   margin-top: 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--qc-meta);
 }
-.glc-card[class*='is-tight'] .glc-card-value b {
+.qc-facts dt:first-child {
+  margin-top: 0;
+}
+.qc-facts dd {
+  margin: 3px 0 0;
+  color: var(--ink);
+  /* only a very long sheet text stops (at six lines); the full text is on hover */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 6;
+  overflow: hidden;
+}
+.qc-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 16px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--qc-on);
+}
+
+/* short windows: the record card tightens in steps (GlanceView adds these), never scaled */
+.qc-detail.is-compact .qc-figure {
+  margin: 10px 0 10px;
+  padding-bottom: 10px;
+}
+.qc-detail.is-compact .qc-figure b {
   font-size: 30px;
 }
-.glc-card[class*='is-tight'] .glc-boxes {
-  margin-top: 10px;
+.qc-detail.is-compact .qc-figure p {
+  margin-top: 6px;
 }
-.glc-card[class*='is-tight'] .glc-box {
-  padding-top: 7px;
-  margin-top: 7px;
+.qc-detail.is-compact .qc-link {
+  padding-top: 8px;
 }
-.glc-card[class*='is-tight'] .glc-box p {
-  font-size: 12px;
-  line-height: 1.35;
+.qc-detail.is-tight header p {
+  display: none;
 }
-.glc-card[class*='is-tight'] .glc-notes {
-  margin-top: 10px;
+.qc-detail.is-tight .qc-facts {
+  font-size: 13.5px;
+  line-height: 1.45;
 }
-.glc-card[class*='is-tight'] .glc-notes li + li {
-  margin-top: 5px;
-}
-.glc-card[class*='is-tight'] .glc-card-link {
-  margin-top: 10px;
-  padding-top: 10px;
-}
-.glc-card.is-tight-2 .glc-notes li {
-  font-size: 12px;
+.qc-detail.is-tighter .qc-facts {
+  font-size: 13px;
   line-height: 1.4;
 }
-
-/* short windows: tighter spacing around the controls so the whole chart still fits without scrolling */
-@media (min-width: 901px) and (max-height: 880px) {
-  .glc-bar {
-    margin-top: 12px;
-  }
-  .glc-yearrow {
-    margin-top: 10px;
-  }
-  .glc-body {
-    margin-top: 10px;
-  }
-  .glc {
-    --glc-axis-h: 22px;
-    --glc-gap-h: 8px;
-  }
+.qc-detail.is-tighter .qc-facts dt {
+  margin-top: 6px;
 }
-/* very short windows: a smaller page title and tighter controls again */
-@media (min-width: 901px) and (max-height: 800px) {
-  .glc .method-hero-title {
-    font-size: 24px;
-  }
-  .glc-bar {
-    margin-top: 6px;
-  }
-  .glc-tab {
-    padding-top: 7px;
-    padding-bottom: 6px;
-  }
-  .glc-yearrow {
-    margin-top: 6px;
-  }
-  .glc-body {
-    margin-top: 6px;
-  }
-  .glc-chart-head {
-    min-height: 26px;
-  }
+.qc-detail.is-tighter .qc-figure b {
+  font-size: 26px;
+}
+.qc-detail.is-tighter header h2 {
+  font-size: 17px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .glc-fill,
-  .glc-card {
-    animation: none;
+  .qc-bar {
+    transition: none;
   }
 }
 
-/* ---- narrow screens: everything stacks and the page scrolls as usual ---- */
-@media (max-width: 900px) {
-  .glc-bar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  /* tabs wrap rather than scroll; the years sit on their own line, left, clear of the fixed logo */
-  .glc-tabs {
-    flex-wrap: wrap;
-  }
-  .glc-years {
-    align-self: flex-start;
-  }
-  .glc-body,
-  .glc-body.has-card {
-    grid-template-columns: 1fr;
-  }
-  .glc-aside {
-    position: static;
-  }
-  .glc-legend {
-    padding-left: 0;
-  }
-  .glc {
-    --glc-state-w: 84px;
-    --glc-name-w: 70px;
-    --glc-fig-w: 64px;
+/* ---- narrower screens: the record card goes under the chart and the page scrolls as usual ---- */
+@media (max-width: 1100px) {
+  .qc-stage {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
-
-/* ---- light mode: firmer greys on the pale backdrop (as on the Methodology page), opaque year
-   switch and card ---- */
-:root:not([data-theme='dark']) .glc {
-  --glc-meta: #2b2b2b;
-  --glc-line: rgba(0, 0, 0, 0.16);
-  --glc-grid: rgba(0, 0, 0, 0.08);
-  --glc-bench: #1a1a1a;
-}
-:root:not([data-theme='dark']) .glc-v-none {
-  --tone: #8a8984;
-}
-:root:not([data-theme='dark']) .glc-axis span,
-:root:not([data-theme='dark']) .glc-card-head p,
-:root:not([data-theme='dark']) .glc-card-value span,
-:root:not([data-theme='dark']) .glc-notes li {
-  color: #2b2b2b;
-}
-:root:not([data-theme='dark']) .glc-dir {
-  color: var(--accent);
-}
-:root:not([data-theme='dark']) .glc-rep.is-active {
-  background: color-mix(in srgb, var(--accent) 12%, #ffffff);
-}
-:root:not([data-theme='dark']) .glc-years {
-  border-color: rgba(0, 0, 0, 0.16);
-  background: #ffffff;
-}
-:root:not([data-theme='dark']) .glc-row:hover {
-  background: rgba(255, 255, 255, 0.55);
-}
-:root:not([data-theme='dark']) .glc-row.is-selected {
-  background: color-mix(in srgb, var(--accent) 14%, #ffffff);
-}
-:root:not([data-theme='dark']) .glc-card {
-  border-color: rgba(0, 0, 0, 0.16);
-  background: #ffffff;
-  box-shadow: 0 24px 56px rgba(40, 30, 20, 0.14), 0 2px 8px rgba(40, 30, 20, 0.08);
-}
-
-/* the DISCOM's own sentence the figure was read from (master sheet), under the big figure */
-.glc-card-text {
-  margin: -4px 0 12px;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--text-supporting, var(--muted));
-}
-/* one line under the tabs saying what the indicator is */
-.glc-about {
-  margin: 10px 0 0;
-  font-size: 14px;
-  line-height: 1.5;
-  color: var(--text-supporting, var(--muted));
-}
-.glc-about b {
-  font-weight: 600;
-  color: var(--ink);
-}
-.glc-about a {
-  margin-left: 4px;
-  color: var(--accent-text, var(--ink));
-  text-decoration: underline;
-  text-underline-offset: 3px;
+@media (max-width: 600px) {
+  .qc-row,
+  .qc-axis {
+    grid-template-columns: 70px 72px minmax(0, 1fr) 58px;
+    column-gap: 8px;
+  }
+  .qc-card {
+    padding: 16px;
+  }
+  .qc-who small {
+    display: none;
+  }
+  .qc-legend {
+    margin-left: 0;
+  }
 }

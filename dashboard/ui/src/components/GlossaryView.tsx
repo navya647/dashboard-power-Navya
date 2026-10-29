@@ -4,7 +4,6 @@ import { useMemo } from "react";
 import { useData } from "@/lib/DataContext";
 import { buildGlossary } from "@/lib/glossary";
 import { useNoScrollbar } from "@/lib/useNoScrollbar";
-import AboutKicker from "./AboutKicker";
 import GlossaryList from "./GlossaryList";
 
 /** The Glossary page (/about/glossary, reached from the About page): every indicator in
@@ -18,8 +17,8 @@ export default function GlossaryView() {
 
   return (
     <div className="methodology-page about-page">
-      <AboutKicker here="Glossary" />
-      <h1 className="method-hero-title">Glossary</h1>
+      <h1 className="method-hero-title abt-title gl-title">Glossary</h1>
+      <p className="gl-lede">Every indicator the regulators set, in plain words first, then in each state’s own wording.</p>
 
       <div id="glossary" className="glossary-body">
         {loading ? (

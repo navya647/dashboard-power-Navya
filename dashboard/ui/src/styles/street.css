@@ -123,6 +123,22 @@
   -webkit-mask-image: linear-gradient(to right, transparent 0, #000 35%);
   mask-image: linear-gradient(to right, transparent 0, #000 35%);
 }
+/* the sunset photo (HeroSection's sunOn): stacked over the India Gate layer, hidden until the
+   visitor scrolls left on the landing view, then cross-faded in; the fill is sampled from its sky */
+.street-layer.hero-photo-sun {
+  background: linear-gradient(to bottom, #b9470f 0%, #c4520f 55%, #6e2a0c 100%);
+  opacity: 0;
+  transition: opacity 700ms ease;
+  pointer-events: none;
+}
+.street-layer.hero-photo-sun::after { background-image: url('/hero-sunset.jpg'); }
+.street-layer.hero-photo-sun.is-on { opacity: 1; }
+@media (max-width: 980px) {
+  .street-layer.hero-photo-sun.is-on { opacity: 0.45; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .street-layer.hero-photo-sun { transition: none; }
+}
 @media (max-width: 980px) {
   /* mobile stacks the headline over the photo, so it covers the full width there */
   .street-layer.hero-photo-layer::after {

@@ -21,6 +21,10 @@ import { headlineFigure } from './headlineFigure';
 export type PlotUnit = string;
 
 const SHARE = /(?:at least\s+)?([\d.]+)\s*%\s+(?:of (?:the )?(?:cases|feeders|feeder|complaints|consumers)|within)/i;
+// a standard that is one annual % limit and nothing else: "Not more than 0.1% of bills issued.",
+// "Shall not exceed 3% per annum.", "Not less than 95%"; never two-value or dated ("From 14 Oct 2022: …")
+const SHARE_LIMIT = /^\s*(?:not (?:more|greater|less) than|no more than|shall not exceed|at least|maximum of|minimum of)\s+([\d.]+)\s*%(?![^.;]*\d\s*%)[^;]*$/i;
+const PER_QUARTER = /\b(per quarter|quarterly|per month|monthly)\b/i;
 // "Not more than 15 hours per consumer per quarter", "Not more than 90 hours per consumer per year",
 // "Monthly limit of 600 minutes per consumer"
 const LIMIT = /(?:no[t]? more than|limit of)\s+([\d,]+(?:\.\d+)?)\s+(hours|minutes|interruptions) per consumer(?:\s+per\s+(year|quarter|month))?/i;
@@ -82,7 +86,7 @@ export function quarterFigures(r: MasterRow): (number | null)[] | null {
 export function plotBenchmark(r: MasterRow, fig: PlotFigure | null): PlotBenchmark | null {
   if (!fig?.unit || !r.standard) return null;
   if (fig.unit === '%') {
-    const m = SHARE.exec(r.standard);
+    const m = SHARE.exec(r.standard) ?? (PER_QUARTER.test(r.standard) ? null : SHARE_LIMIT.exec(r.standard));
     return m ? { value: Number(m[1]), label: `${num(Number(m[1]))}%` } : null;
   }
   const l = standardLimit(r, fig.unit);

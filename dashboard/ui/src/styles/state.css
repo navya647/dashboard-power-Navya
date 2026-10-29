@@ -726,6 +726,16 @@
   color: var(--ink);
   cursor: pointer;
 }
+/* in the scrolling flex column, rows keep their full height instead of being squeezed (that
+   clipped rows at the top and bottom of a long list) */
+.discom-multiselect-panel > *,
+.indicator-select-group > * {
+  flex-shrink: 0;
+}
+.discom-multiselect-option > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
 .discom-multiselect-option:hover {
   background: var(--paper);
 }
@@ -791,7 +801,8 @@
    or resizes either field. */
 .toolbar--filters {
   --reset-space: 56px;
-  grid-template-columns: minmax(150px, 1fr) minmax(260px, 2.1fr);
+  /* DISCOM · Category · Indicator on one line; the indicator gets the most room */
+  grid-template-columns: minmax(130px, 0.7fr) minmax(290px, 1fr) minmax(280px, 2.6fr);
   align-items: end;
   column-gap: 20px;
   padding-right: calc(18px + var(--reset-space));
@@ -866,6 +877,11 @@
   border-radius: 4px 4px 0 0;
 }
 .indicator-select-search {
+  /* stays at the top while the list scrolls under it; the shadow covers the panel's 6px padding */
+  position: sticky;
+  top: -6px;
+  z-index: 1;
+  box-shadow: 0 -6px 0 6px var(--panel);
   box-sizing: border-box;
   width: 100%;
   margin-bottom: 4px;
@@ -897,6 +913,25 @@
   letter-spacing: 0.11em;
   text-transform: uppercase;
   color: var(--mv-indicator);
+}
+/* the heading is a button: click to show only that category, click again for all */
+.indicator-select-category--btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  font-family: inherit;
+  cursor: pointer;
+}
+.indicator-select-category--btn:hover,
+.indicator-select-category--btn:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.indicator-select-category-all {
+  font-weight: 500;
+  opacity: 0.75;
 }
 .indicator-select-type {
   padding: 5px 6px 1px 14px;
@@ -972,6 +1007,19 @@
 }
 .filter-fallback-note button:focus-visible {
   outline: 2px solid var(--accent);
+}
+/* the picked indicator's full name, wrapping onto a second line rather than cut off; the category
+   beside it is dropped since the Category filter now carries it */
+.toolbar--filters .toolbar-field--indicator .filter-value {
+  height: auto;
+  white-space: normal;
+}
+.toolbar--filters .toolbar-field--indicator .filter-value-main {
+  overflow: visible;
+  text-overflow: clip;
+}
+.toolbar--filters .toolbar-field--indicator .filter-value-sub {
+  display: none;
 }
 @media (max-width: 720px) {
   .toolbar--filters {

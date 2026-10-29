@@ -9,23 +9,30 @@
 /* hero: title + one-line lede, India's weighted benchmark as the one big figure */
 .ic-hero {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 360px; /* same columns as .ic-body: the stat sits over the card */
+  grid-template-columns: minmax(0, 1fr); /* the weighted-benchmark stat now heads .ic-aside */
   align-items: end;
   gap: 24px;
 }
 .ic-lede {
-  max-width: 640px;
-  margin: 12px 0 0;
-  font-size: 16px;
-  line-height: 1.55;
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.5;
   color: var(--text-supporting, var(--muted));
   cursor: help;
 }
+.ic-lede-line {
+  display: block;
+}
 .ic-hero-stat {
+  /* one slim highlighted strip under the lede: label, then the two figures, on one line */
   display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 4px 0 4px 28px;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 36px;
+  width: fit-content;
+  margin-top: 20px;
+  padding: 4px 0 4px 20px;
   border-left: 3px solid var(--accent-text);
   cursor: help;
 }
@@ -73,10 +80,11 @@
 
 .ic-body {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 360px;
+  /* the chart takes the full width; it gives up 360px only while a country's card is open */
+  grid-template-columns: minmax(0, 1fr);
   gap: 24px;
   align-items: start;
-  margin-top: 44px;
+  margin-top: 28px;
 }
 .ic-chart-wrap {
   padding: 20px 24px 16px;
@@ -256,6 +264,19 @@
 .ic-aside {
   position: sticky;
   top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.ic-body--open {
+  grid-template-columns: minmax(0, 1fr) 360px;
+}
+.ic-pick {
+  margin: 0;
+  padding: 16px 0 0 31px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-supporting, var(--muted));
 }
 .ic-card {
   padding: 22px 24px 20px;
@@ -370,6 +391,21 @@
   background: var(--ink);
   transform: translate(-50%, -50%);
 }
+.ic-mark-val {
+  position: absolute;
+  top: calc(50% + 10px);
+  transform: translateX(-50%);
+  font-size: 10.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-supporting, var(--muted));
+  cursor: help;
+}
+.ic-mark-val--end {
+  /* near the axis end: hang left from the tick so it never runs past the plot */
+  transform: translateX(calc(-100% + 2px));
+}
 .ic-key-mark {
   display: inline-block;
   width: 3px;
@@ -468,6 +504,35 @@
     overflow-wrap: anywhere;
   }
   .ic-geo small {
+    display: none;
+  }
+}
+
+/* title: the About/Glossary heading (.abt-title: size, hairline, level with the logo), with the
+   Glossary's spacing below it */
+.ic-title {
+  margin-bottom: 22px !important;
+  padding-bottom: 14px;
+}
+
+/* phones: the benchmark strip wraps inside the column; the SAIDI axis drops its last label where
+   it meets the SAIFI axis; India's range text (in its card on tap) gives way to the weighted
+   figures so the two columns don't collide */
+@media (max-width: 760px) {
+  .ic-hero-stat {
+    max-width: 100%;
+  }
+  .ic-hero-figs {
+    flex-wrap: wrap;
+    gap: 10px 24px;
+  }
+  .ic-hero-figs > span {
+    min-width: 0;
+  }
+  .ic-chart > .ic-axis:nth-last-child(2) > span:last-child {
+    display: none;
+  }
+  .ic-row--india .ic-val--left {
     display: none;
   }
 }

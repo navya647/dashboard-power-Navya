@@ -34,7 +34,7 @@
   padding-bottom: 48px;
 }
 :root:not([data-theme='dark']) .abt {
-  --abt-surface: #ffffff;
+  --abt-surface: transparent;
 }
 :root[data-theme='dark'] .abt {
   --abt-link: #7db4ff;
@@ -155,6 +155,16 @@
 }
 .abt-flow-list--a li {
   color: var(--text-supporting, var(--muted));
+}
+/* the sources sit in the middle two of the four rows, matching SOURCE_Y in AboutView; a name that
+   wraps stays inside its own row instead of running into the next */
+.abt-flow-list--a {
+  grid-template-rows: repeat(2, var(--row));
+  align-content: center;
+  align-self: stretch;
+}
+.abt-flow-list li {
+  line-height: 1.25;
 }
 .abt-flow-hub {
   grid-column: 3;
@@ -577,7 +587,7 @@
   grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
   gap: 24px 64px;
   align-items: center;
-  margin-top: 44px;
+  margin-top: 36px;
   padding-top: 28px;
   border-top: 1px solid var(--line);
 }
@@ -585,8 +595,8 @@
   margin-bottom: 8px;
 }
 .abt-band .abt-body {
-  font-size: 14.5px;
-  line-height: 1.6;
+  font-size: 15.5px;
+  line-height: 1.7;
 }
 .abt-band .abt-toc {
   display: flex;
@@ -668,12 +678,987 @@
 .abt-band .abt-back-body { grid-column: 1; grid-row: 2; }
 .abt-band .abt-back svg { grid-column: 2; grid-row: 1 / span 2; }
 
-/* Paragraph text on the About page is justified (headings, labels and chips are not) */
+/* Paragraph text on the About page is left-aligned with normal word spacing and no automatic
+   hyphenation (justified text opened wide gaps in the narrow band columns) */
 .abt-lead,
 .abt-body,
 .abt-statement-text,
 .abt-go-body,
 .abt-back-body {
-  text-align: justify;
-  hyphens: auto;
+  text-align: left;
+  hyphens: manual;
+  overflow-wrap: normal;
+}
+
+/* the page title: the full dashboard name, at a size that fits on one line on a desktop window
+   (the page column is 1240px wide, which stays clear of the ACPET logo); normal letter-spacing plus
+   a little extra word-spacing, like the landing headline, so the words don't run together */
+.abt-title {
+  font-size: clamp(22px, 1.5vw, 28px) !important;
+  letter-spacing: 0 !important;
+  word-spacing: 0.08em;
+  line-height: 1.35 !important;
+  margin-bottom: 32px !important;
+  /* pulled up so the title's line sits level with the middle of the ACPET logo beside it */
+  margin-top: -17px !important;
+  /* a faint hairline under the title, setting it off from the page below; only as wide as the
+     title itself, so it never runs under the ACPET logo */
+  width: fit-content;
+  padding-bottom: 18px;
+  border-bottom: 1px solid color-mix(in srgb, var(--ink) 14%, transparent);
+}
+@media (max-width: 980px) {
+  /* the logo sits above the title on a narrow screen, so no pull-up there */
+  .abt-title {
+    margin-top: 0 !important;
+  }
+}
+
+/* the introduction, set like a conventional About page: the opening statement as a pull quote
+   (accent rule at its left), then two short sections with plain serif subheadings and
+   left-aligned, unhyphenated prose at a comfortable reading width */
+.abt-intro .abt-statement-text {
+  max-width: 900px;
+  padding-left: 22px;
+  border-left: 3px solid var(--abt-link);
+  font-size: clamp(19px, 1.5vw, 23px);
+  line-height: 1.5;
+  text-align: left;
+  hyphens: manual;
+}
+.abt-intro .abt-notes {
+  gap: 28px 64px;
+  margin-top: 40px;
+}
+.abt-intro .abt-note {
+  padding-top: 0;
+  border-top: 0;
+}
+.abt .abt-intro .abt-intro-head {
+  margin: 0 0 10px;
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink);
+}
+.abt-intro .abt-lead {
+  max-width: 62ch;
+  font-size: 15.5px;
+  line-height: 1.75;
+  text-align: left;
+  hyphens: manual;
+}
+
+/* ---- refinement pass (29 Oct 2026): same content and components, tighter typographic system ---- */
+
+/* opening statement: the page's lede, given room to lead */
+.abt-intro .abt-statement-text {
+  max-width: 1000px;
+  font-size: clamp(21px, 1.75vw, 26px);
+  line-height: 1.45;
+  letter-spacing: -0.005em;
+}
+.abt-intro .abt-notes {
+  margin-top: 44px;
+  gap: 28px 72px;
+}
+.abt-intro .abt-lead {
+  max-width: none;
+}
+
+/* diagram: source names sit right against their connector dots instead of across an empty gap */
+.abt-flow-list--a li {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+/* lower sections: a wider reading column, content top-aligned with the heading, even rhythm */
+.abt-band {
+  grid-template-columns: minmax(0, 420px) minmax(0, 1fr);
+  gap: 24px 72px;
+  align-items: start;
+  margin-top: 48px;
+  padding-top: 40px;
+}
+.abt-band .abt-title-sm {
+  margin-bottom: 12px;
+}
+.abt-band > :not(.abt-band-head) {
+  margin-top: 6px;
+}
+
+/* audience: six quiet editorial tiles, each numbered, hairline only */
+.abt-band .abt-aud {
+  counter-reset: abt-aud;
+  gap: 0;
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+}
+.abt-band .abt-aud li {
+  counter-increment: abt-aud;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 18px;
+  min-height: 104px;
+  box-sizing: border-box;
+  padding: 16px 20px 18px;
+  border: 0;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  font-size: 21px;
+  transition: background 200ms var(--ease);
+}
+.abt-band .abt-aud li::before {
+  content: counter(abt-aud, decimal-leading-zero);
+  font-family: var(--font-sans, inherit);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--abt-link);
+}
+.abt-band .abt-aud li:hover {
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
+}
+
+/* reform shifts and data-page links: same card language, a touch more air */
+.abt-band .abt-shifts li,
+.abt-band .abt-shifts li:last-child,
+.abt-band .abt-back {
+  padding: 18px 20px;
+  border-radius: 12px;
+}
+.abt-band .abt-shift-head {
+  color: var(--abt-link);
+}
+.abt-band .abt-back {
+  transition: background 200ms var(--ease), border-color 200ms var(--ease);
+}
+.abt-band .abt-back:hover {
+  border-color: color-mix(in srgb, var(--abt-link) 45%, var(--line));
+  background: color-mix(in srgb, var(--abt-link) 6%, var(--panel));
+}
+
+@media (max-width: 1100px) {
+  .abt-band {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+  .abt-band .abt-body {
+    max-width: 720px;
+  }
+}
+@media (max-width: 800px) {
+  .abt-flow-list--a li {
+    justify-content: flex-start;
+    text-align: left;
+  }
+  .abt-band .abt-aud li {
+    min-height: 80px;
+    padding: 14px 14px 16px;
+    font-size: 17px;
+    overflow-wrap: anywhere;
+  }
+  .abt-band {
+    margin-top: 36px;
+    padding-top: 28px;
+  }
+}
+
+
+/* the two intro notes read as one pair, problem → response: the longer first note gets a little
+   more width so both end at about the same line, a hairline runs between them, and the response's
+   heading carries the accent */
+@media (min-width: 801px) {
+  .abt-intro .abt-notes {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    gap: 28px 0;
+  }
+  .abt-intro .abt-note {
+    padding-right: 56px;
+  }
+  .abt-intro .abt-note + .abt-note {
+    padding-right: 0;
+    padding-left: 56px;
+    border-left: 1px solid var(--line);
+  }
+}
+.abt .abt-intro .abt-note + .abt-note .abt-intro-head {
+  color: var(--abt-link);
+}
+
+/* lighter intro: the opening statement sits a step below the page title (28px) instead of above
+   it, and the two notes' prose is set smaller and quieter so the block reads less dense */
+.abt-intro .abt-statement-text {
+  font-size: clamp(18px, 1.3vw, 22px);
+  line-height: 1.5;
+  border-left-width: 2px;
+}
+.abt .abt-intro .abt-intro-head {
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+.abt-intro .abt-notes {
+  margin-top: 56px;
+}
+.abt-intro .abt-lead {
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: color-mix(in srgb, var(--ink) 72%, transparent);
+}
+
+/* ---- intro, redone (29 Oct 2026): lede + body. The opening statement is the lede in its own
+   column on the left; the two notes stack on the right as one reading column, divided by a single
+   hairline. Replaces the side-by-side notes and the statement's accent bar above. ---- */
+@media (min-width: 1001px) {
+  .abt-intro {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 0 88px;
+    align-items: start;
+  }
+  .abt-intro .abt-statement-text {
+    position: sticky;
+    top: 32px;
+  }
+}
+.abt-intro .abt-statement-text {
+  max-width: 520px;
+  padding: 0;
+  border-left: 0;
+  font-size: clamp(22px, 1.75vw, 27px);
+  font-weight: 500;
+  line-height: 1.36;
+  letter-spacing: -0.008em;
+  text-wrap: balance;
+}
+.abt-intro .abt-notes,
+.abt-intro .abt-notes {
+  display: block;
+  margin-top: 0;
+}
+.abt-intro .abt-note,
+.abt-intro .abt-note + .abt-note {
+  padding: 0;
+  border: 0;
+}
+.abt-intro .abt-note + .abt-note {
+  margin-top: 26px;
+  padding-top: 26px;
+  border-top: 1px solid var(--line);
+}
+.abt .abt-intro .abt-intro-head,
+.abt .abt-intro .abt-note + .abt-note .abt-intro-head {
+  margin: 0 0 8px;
+  font-size: 17px;
+  color: var(--ink);
+}
+.abt-intro .abt-lead {
+  max-width: 68ch;
+  font-size: 15px;
+  line-height: 1.72;
+  text-wrap: pretty;
+}
+@media (max-width: 1000px) {
+  .abt-intro .abt-notes {
+    margin-top: 32px;
+  }
+}
+.abt-intro .abt-lead {
+  font-size: 15.5px;
+  color: color-mix(in srgb, var(--ink) 80%, transparent);
+}
+.abt .abt-intro .abt-intro-head,
+.abt .abt-intro .abt-note + .abt-note .abt-intro-head {
+  font-size: 18px;
+}
+.abt-intro .abt-note + .abt-note {
+  padding-top: 18px;
+}
+
+/* the lede sits centred against the two notes, with a short accent rule above it as its anchor */
+@media (min-width: 1001px) {
+  .abt-intro {
+    align-items: center;
+  }
+  .abt-intro .abt-statement-text {
+    position: static;
+  }
+}
+.abt-intro .abt-statement-text::before {
+  content: '';
+  display: block;
+  width: 44px;
+  height: 2px;
+  margin-bottom: 22px;
+  background: var(--abt-link);
+}
+
+/* the opening statement was removed (user, 29 Oct 2026): the intro is just the two notes again,
+   side by side as a balanced pair with a hairline between them */
+.abt-intro {
+  display: block;
+}
+@media (min-width: 801px) {
+  .abt-intro .abt-notes {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    gap: 0;
+  }
+  .abt-intro .abt-note {
+    padding-right: 56px;
+  }
+  .abt-intro .abt-note + .abt-note {
+    margin-top: 0;
+    padding: 0 0 0 56px;
+    border-top: 0;
+    border-left: 1px solid var(--line);
+  }
+}
+@media (max-width: 1000px) {
+  .abt-intro .abt-notes {
+    margin-top: 0;
+  }
+}
+
+/* sequential (user, 29 Oct 2026: too many separators): the two notes one after the other, no
+   dividing lines, at a comfortable reading width */
+.abt-intro .abt-notes {
+  display: block !important;
+  max-width: 820px;
+}
+.abt-intro .abt-note,
+.abt-intro .abt-note + .abt-note {
+  padding: 0 !important;
+  border: 0 !important;
+}
+.abt-intro .abt-note + .abt-note {
+  margin-top: 28px;
+}
+
+/* ---- intro + evidence flow side by side (29 Oct 2026): the two notes on the left, the flow in
+   the column to their right, drawn top to bottom (sources → hub → dimensions) ---- */
+.abt-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 460px);
+  gap: 40px 72px;
+  align-items: center;
+}
+.abt-intro .abt-notes {
+  max-width: 760px;
+}
+.vf {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 24px 24px 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--abt-surface);
+}
+.vf-label {
+  margin: 0 0 12px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--abt-quiet);
+}
+.vf-label--foot {
+  margin: 12px 0 0;
+}
+.vf-row {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.vf-row--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.vf-row--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.vf-row li {
+  display: grid;
+  place-items: center;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-size: 13.5px;
+  line-height: 1.3;
+  text-align: center;
+  color: var(--ink);
+}
+.vf-row--3 li {
+  padding: 8px 6px;
+  font-size: 12.5px;
+}
+.vf-wires {
+  display: block;
+  width: 100%;
+  height: 36px;
+  overflow: visible;
+}
+.vf-wires path {
+  fill: none;
+  stroke: color-mix(in srgb, var(--ink) 55%, transparent);
+  stroke-width: 1.4;
+  vector-effect: non-scaling-stroke;
+}
+.vf-hub {
+  padding: 16px 14px 18px;
+  border: 1px solid color-mix(in srgb, var(--abt-link) 45%, var(--line));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--abt-link) 8%, transparent);
+  text-align: center;
+}
+.vf-hub .vf-label {
+  margin-bottom: 8px;
+  color: var(--abt-link);
+}
+.vf-hub-text {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--ink);
+}
+.vf-hub-text i {
+  margin-right: 4px;
+  font-style: normal;
+  font-weight: 400;
+  color: var(--abt-quiet);
+}
+@media (max-width: 1100px) {
+  .abt-hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .vf {
+    max-width: 520px;
+  }
+}
+
+
+/* the diagram as three labelled groups (29 Oct 2026): categories, evidence base, structure; same
+   panel, chips and colours as before, no connectors between groups */
+.vf-group + .vf-group {
+  margin-top: 22px;
+}
+.vf-group--evidence .vf-label {
+  color: var(--abt-link);
+}
+.vf-pairs {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.vf-pairs li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid color-mix(in srgb, var(--abt-link) 45%, var(--line));
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--abt-link) 8%, transparent);
+  font-size: 13.5px;
+  line-height: 1.3;
+  color: var(--text-supporting, var(--muted));
+}
+.vf-pairs b {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.vf-pairs svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: var(--abt-quiet);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* the notes and the diagram share one centre line (user, 29 Oct 2026: perfectly aligned) */
+@media (min-width: 1101px) {
+  .abt-hero {
+    align-items: center;
+  }
+  .vf {
+    margin-top: 0;
+  }
+}
+/* tighter gap between the page title's hairline and the intro (user, 29 Oct 2026) */
+.abt-hero {
+  margin-top: 4px;
+}
+
+/* the four ways in, tidied (29 Oct 2026): the arrow sits on the icon's centre line instead of
+   above it, descriptions wrap without one-word last lines, and the longer "Explore the map"
+   description sets the row height without the others looking stranded */
+.abt-go {
+  padding: 22px 24px 22px;
+}
+.abt-go-arrow {
+  top: 31px;
+  right: 22px;
+}
+.abt-go-title {
+  margin-top: 2px;
+}
+.abt-go-body {
+  max-width: 34ch;
+  font-size: 13.5px;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+
+/* audience: a quiet three-column list, not tiles (user, 29 Oct 2026: they aren't links, so no
+   hover; the index numbers implied an order that isn't there) */
+.abt-band .abt-aud {
+  gap: 0 36px;
+  border: 0;
+  align-self: center;
+}
+.abt-band .abt-aud li {
+  min-height: 0;
+  padding: 16px 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+  background: transparent;
+  font-size: 19px;
+  font-weight: 500;
+  transition: none;
+}
+.abt-band .abt-aud li:nth-last-child(-n + 3) {
+  border-bottom: 1px solid var(--line);
+}
+.abt-band .abt-aud li::before {
+  content: none;
+}
+.abt-band .abt-aud li:hover {
+  background: transparent;
+}
+@media (max-width: 800px) {
+  .abt-band .abt-aud li:nth-last-child(-n + 3) {
+    border-bottom: 0;
+  }
+  .abt-band .abt-aud li:nth-last-child(-n + 2) {
+    border-bottom: 1px solid var(--line);
+  }
+  .abt-band .abt-aud li {
+    padding: 12px 0;
+    font-size: 17px;
+  }
+}
+
+/* audience with icons (29 Oct 2026): each group an icon in a soft accent disc beside its name,
+   three by two, no rules or boxes; decorative only, so no hover */
+.abt-band .abt-aud {
+  gap: 22px 28px;
+}
+.abt-band .abt-aud li,
+.abt-band .abt-aud li:nth-last-child(-n + 3),
+.abt-band .abt-aud li:nth-last-child(-n + 2) {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 14px;
+  padding: 0;
+  border: 0;
+}
+.abt-aud-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--abt-link) 12%, transparent);
+  color: var(--abt-link);
+}
+.abt-aud-icon svg {
+  width: 23px;
+  height: 23px;
+}
+@media (max-width: 800px) {
+  .abt-band .abt-aud {
+    gap: 16px 18px;
+  }
+  .abt-aud-icon {
+    width: 38px;
+    height: 38px;
+  }
+  .abt-aud-icon svg {
+    width: 19px;
+    height: 19px;
+  }
+}
+
+/* reform directions with icons (29 Oct 2026), matching the audience list: an icon disc above
+   each card's label; cards centred against the paragraph; not links, so no hover */
+.abt-band .abt-shifts {
+  align-self: center;
+}
+.abt-band .abt-shifts li,
+.abt-band .abt-shifts li:last-child {
+  gap: 8px;
+  padding: 22px 22px 24px;
+}
+.abt-band .abt-shifts li:hover {
+  transform: none;
+}
+.abt-shift-icon {
+  margin-bottom: 8px;
+}
+
+/* reform directions as transitions (29 Oct 2026): three stacked rows, no cards. Each row: the icon,
+   the direction's label, then old → new along one line that brightens from the muted "from" to the
+   accent "to"; reads as a shift rather than three boxes */
+.abt-band .abt-shifts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+}
+.abt-band .abt-shifts li,
+.abt-band .abt-shifts li:last-child {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: 20px;
+  row-gap: 6px;
+  align-items: center;
+  height: auto;
+  padding: 18px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.abt-band .abt-shifts li + li {
+  border-top: 1px solid var(--line);
+}
+.abt-band .abt-shift-icon {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  margin: 0;
+}
+.abt-band .abt-shift-head {
+  grid-column: 2;
+  grid-row: 1;
+}
+.abt-band .abt-shift-row,
+.abt-band .abt-shift-row {
+  grid-column: 2;
+  grid-row: 2;
+  display: grid;
+  grid-template-columns: auto minmax(40px, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  flex-direction: initial;
+  font-size: 17px;
+}
+.abt-band .abt-shift-row > span {
+  grid-column: 1;
+  grid-row: 1;
+  color: var(--abt-quiet);
+}
+.abt-band .abt-shift-row > svg {
+  display: none;
+}
+.abt-band .abt-shift-row > b {
+  grid-column: 3;
+  grid-row: 1;
+  color: var(--ink);
+}
+/* the transition line: muted at the old idea, accent at the new, with an arrowhead */
+.abt-band .abt-shift-row::before,
+.abt-band .abt-shift-row::after {
+  content: '';
+  grid-column: 2;
+  grid-row: 1;
+}
+.abt-band .abt-shift-row::before {
+  height: 1.5px;
+  background: linear-gradient(to right, color-mix(in srgb, var(--ink) 18%, transparent), var(--abt-link));
+}
+.abt-band .abt-shift-row::after {
+  justify-self: end;
+  width: 7px;
+  height: 7px;
+  margin-right: 1px;
+  border-top: 1.5px solid var(--abt-link);
+  border-right: 1.5px solid var(--abt-link);
+  transform: rotate(45deg);
+}
+@media (max-width: 800px) {
+  .abt-band .abt-shift-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+  .abt-band .abt-shift-row::before,
+  .abt-band .abt-shift-row::after {
+    display: none;
+  }
+  .abt-band .abt-shift-row > b {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .abt-band .abt-shift-row > b::before {
+    content: '→ ';
+    color: var(--abt-link);
+  }
+}
+/* shared column widths so all three transition lines start and end at the same x */
+@media (min-width: 801px) {
+  .abt-band .abt-shift-row {
+    grid-template-columns: 150px minmax(40px, 1fr) 210px;
+  }
+}
+
+/* transitions on one shared grid (29 Oct 2026): every row's icon, "from", line and "to" sit in the
+   same four columns, sized to the longest phrase (subgrid), so the lines start and end together at
+   any zoom; spacing instead of separators */
+@media (min-width: 801px) {
+  .abt-band .abt-shifts {
+    grid-template-columns: 46px max-content minmax(56px, 1fr) max-content;
+    column-gap: 20px;
+    row-gap: 30px;
+  }
+  .abt-band .abt-shifts li,
+  .abt-band .abt-shifts li:last-child {
+    grid-column: 1 / -1;
+    grid-template-columns: subgrid;
+    column-gap: 20px;
+    row-gap: 4px;
+    padding: 0;
+  }
+  .abt-band .abt-shifts li + li {
+    border-top: 0;
+  }
+  .abt-band .abt-shift-head {
+    grid-column: 2 / -1;
+  }
+  .abt-band .abt-shift-row,
+  .abt-band .abt-shift-row {
+    display: contents;
+  }
+  .abt-band .abt-shift-row > span { grid-column: 2; grid-row: 2; }
+  .abt-band .abt-shift-row::before,
+  .abt-band .abt-shift-row::after { grid-column: 3; grid-row: 2; align-self: center; }
+  .abt-band .abt-shift-row > b { grid-column: 4; grid-row: 2; }
+  .abt-band .abt-shift-row > span,
+  .abt-band .abt-shift-row > b {
+    font-size: 18px;
+  }
+}
+
+/* data-page links, matching the four ways in (29 Oct 2026): icon disc, title, description, arrow
+   top right; every part at the same position in both cards */
+.abt-band .abt-backing {
+  align-self: center;
+}
+.abt-band .abt-back {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 22px 24px 24px;
+}
+.abt-band .abt-back-icon {
+  margin-bottom: 10px;
+}
+.abt-band .abt-back-body {
+  flex: none;
+  font-size: 13.5px;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+.abt-band .abt-back > svg {
+  position: absolute;
+  top: 37px;
+  right: 24px;
+  margin: 0;
+  color: var(--abt-link);
+}
+.abt-band .abt-back:hover {
+  transform: none;
+}
+.abt-band .abt-back:hover > svg {
+  transform: translateX(4px);
+}
+
+/* every section subheading on the page at one size (user, 29 Oct 2026): the intro's two heads and
+   the three lower sections' heads; well below the page title (28px) */
+.abt .abt-intro .abt-intro-head,
+.abt .abt-intro .abt-note + .abt-note .abt-intro-head,
+.abt .abt-band .abt-title-sm {
+  font-size: 20px;
+  line-height: 1.25;
+  letter-spacing: 0;
+}
+@media (max-width: 800px) {
+  .abt .abt-intro .abt-intro-head,
+  .abt .abt-intro .abt-note + .abt-note .abt-intro-head,
+  .abt .abt-band .abt-title-sm {
+    font-size: 18px;
+  }
+}
+
+/* data-page links as two stacked link rows (29 Oct 2026): icon | title + description | arrow,
+   titles below the section head's size; the whole row is the link, and hover brings in the
+   accent border and slides the arrow */
+.abt-band .abt-backing {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+.abt-band .abt-back {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  column-gap: 18px;
+  row-gap: 2px;
+  align-items: center;
+  height: auto;
+  padding: 16px 22px;
+}
+.abt-band .abt-back-icon {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  margin: 0;
+}
+.abt-band .abt-back-head {
+  grid-column: 2;
+  grid-row: 1;
+  font-size: 17px;
+}
+.abt-band .abt-back-body {
+  grid-column: 2;
+  grid-row: 2;
+}
+.abt-band .abt-back > svg {
+  position: static;
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  align-self: center;
+}
+
+/* data-page rows, final pass: titles clearly under the section head, tighter rows so the pair
+   ends level with the paragraph, a touch more air between title and description */
+.abt-band .abt-backing {
+  gap: 10px;
+}
+.abt-band .abt-back {
+  row-gap: 4px;
+  padding: 13px 20px;
+}
+.abt-band .abt-back-head {
+  font-size: 15.5px;
+  line-height: 1.3;
+}
+.abt-band .abt-back-body {
+  font-size: 13px;
+  line-height: 1.45;
+}
+.abt-band .abt-back-icon {
+  width: 40px;
+  height: 40px;
+}
+.abt-band .abt-back-icon svg {
+  width: 20px;
+  height: 20px;
+}
+.abt-band .abt-back {
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+}
+/* both rows the same height whatever their description length */
+.abt-band .abt-backing {
+  grid-auto-rows: 1fr;
+}
+.abt-band .abt-back {
+  align-content: center;
+}
+
+/* data-page links in the transitions' language (user, 29 Oct 2026): open rows, no boxes; the same
+   46px icon disc, the title as the same blue small-caps label, the description beneath, and the
+   rows spaced like the transitions. Still links: hover underlines the label, slides the arrow */
+.abt-band .abt-backing {
+  grid-auto-rows: auto;
+  gap: 30px;
+}
+.abt-band .abt-back,
+.abt-band .abt-back:hover {
+  grid-template-columns: 46px minmax(0, 1fr) auto;
+  column-gap: 20px;
+  row-gap: 4px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.abt-band .abt-back-icon {
+  width: 46px;
+  height: 46px;
+}
+.abt-band .abt-back-icon svg {
+  width: 23px;
+  height: 23px;
+}
+.abt-band .abt-back-head {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  color: var(--abt-link);
+}
+.abt-band .abt-back:hover .abt-back-head {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.abt-band .abt-back-body {
+  font-size: 15px;
+  line-height: 1.55;
+  color: color-mix(in srgb, var(--ink) 80%, transparent);
+}
+/* the arrow rules above (.abt-back svg) must not reach the icon inside the disc: keep it centred,
+   at the icon stroke weight, and still on hover */
+.abt-band .abt-back .abt-back-icon svg,
+.abt-band .abt-back:hover .abt-back-icon svg {
+  grid-column: auto;
+  grid-row: auto;
+  align-self: center;
+  margin: 0;
+  stroke-width: 1.6;
+  transform: none;
+  transition: none;
+}
+
+/* section subheadings in a warm accent (user, 29 Oct 2026): amber-sand from the page's dusk
+   photo, complementing the blue that labels, links and icons already use; a deeper tone on the
+   light theme for contrast */
+.abt {
+  --abt-head: #e9c48c;
+}
+:root:not([data-theme='dark']) .abt {
+  --abt-head: #8f5314;
+}
+.abt .abt-intro .abt-intro-head,
+.abt .abt-intro .abt-note + .abt-note .abt-intro-head,
+.abt .abt-band .abt-title-sm {
+  color: var(--abt-head);
 }

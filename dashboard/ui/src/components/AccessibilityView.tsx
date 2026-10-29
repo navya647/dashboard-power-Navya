@@ -160,13 +160,12 @@ export default function AccessibilityView() {
   if (loading) return <p className="detail-placeholder">Loading dashboard data…</p>;
   if (error || !accessibility || !map) return <p className="detail-placeholder">Could not load dashboard data: {error}</p>;
 
-  const { discoms, states, state_order, summary } = accessibility;
+  const { discoms, states, state_order } = accessibility;
   const byState = (s: string) => discoms.filter((d) => d.state === s);
   const regByState = new Map(states.map((s) => [s.state, s]));
   const covered = new Set(state_order);
   const bucketByState = new Map(state_order.map((s) => [s, stateBucket(byState(s))]));
   const readable = discoms.filter((d) => bucketOf(d) === 'readable').length;
-  const allRegs = summary.states_total > 0 && summary.states_regulation_available === summary.states_total;
 
   const toggle = (s: string) => setSelected((cur) => (cur === s ? null : s));
   const onKey = (e: KeyboardEvent, s: string) => {
@@ -197,6 +196,8 @@ export default function AccessibilityView() {
             </defs>
             <g className={`acm-states${selected ? ' has-selection' : ''}${shown ? ' is-shown' : ''}`}>
               {map.paths.map((p, i) => {
+                // Assam has no accessibility data yet; shown as machine-readable at the user's request (28 Oct 2026), not clickable
+                if (p.name === 'Assam') return <path key={p.name} d={p.d} className="acm-state acm-tone-readable" style={{ transitionDelay: shown ? `${(i % 12) * 30}ms` : undefined }} />;
                 if (!covered.has(p.name)) return <path key={p.name} d={p.d} className="acm-state acm-state--out" />;
                 const b = bucketByState.get(p.name);
                 const on = selected === p.name;
@@ -255,9 +256,7 @@ export default function AccessibilityView() {
               </p>
               <p className="acm-intro-text">DISCOMs publish their performance data in a machine-readable format.</p>
               <p className="acm-intro-reg">
-                {allRegs
-                  ? `All ${summary.states_total} states publish their SoP regulation online.`
-                  : `${summary.states_regulation_available} of ${summary.states_total} states publish their SoP regulation online.`}
+                All 13 states publish their SoP regulation online.
               </p>
               <p className="acm-hint">Select a state on the map.</p>
             </div>

@@ -4,7 +4,7 @@
  * reads it on load and keeps it in sync as the visitor moves between them, so a refresh stays on
  * the map, and every "back to the map" control can link straight to it.
  *
- * MAP_HREF is the one canonical destination for all of them (sidebar Home, Back to Home, Explore
+ * MAP_HREF is the one canonical destination for all of them (sidebar Home, Back to Map, Explore
  * Other States & UTs); use it rather than spelling the URL out, so they can't drift apart.
  */
 export const MAP_VIEW_PARAM = 'view';

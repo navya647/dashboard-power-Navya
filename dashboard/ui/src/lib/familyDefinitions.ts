@@ -3,11 +3,11 @@
  * Glossary labels them so and keeps every state's own wording underneath. Keys are the sheet's
  * `indicator_family`, exactly. */
 export const FAMILY_DEFINITIONS: Record<string, string> = {
-  SAIDI: "Average total time a consumer is without power over the period, from interruptions longer than 5 minutes.",
-  SAIFI: "Average number of times a consumer’s supply is interrupted for longer than 5 minutes over the period.",
-  CAIDI: "Average time taken to restore supply after an interruption (SAIDI ÷ SAIFI).",
+  SAIDI: "Average total duration of sustained supply interruptions per consumer served over the period. What counts as sustained (the minimum duration) is set by each regulation.",
+  SAIFI: "Average number of sustained supply interruptions per consumer served over the period. What counts as sustained (the minimum duration) is set by each regulation.",
+  CAIDI: "Average duration of a sustained interruption for the consumers affected (SAIDI ÷ SAIFI).",
   CAIFI: "Average number of interruptions per consumer, counting only consumers who had at least one interruption.",
-  MAIFI: "Average number of momentary interruptions (5 minutes or shorter) a consumer experiences.",
+  MAIFI: "Average number of momentary interruptions per consumer served over the period. The cut-off between momentary and sustained is set by each regulation.",
   "Hours of supply": "Number of hours a day for which electricity is supplied.",
   "Voltage variation limit - LV": "How far supply voltage at low voltage may stray above or below its declared value.",
   "Voltage complaint - no network expansion needed":

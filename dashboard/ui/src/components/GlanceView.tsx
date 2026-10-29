@@ -1,483 +1,486 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type RefObject } from 'react';
-import { useData } from '@/lib/DataContext';
-import { fyLabel } from '@/lib/format';
-import { axisTitleForUnit, formatInUnit } from '@/lib/indicatorUnits';
-import { slugify } from '@/lib/slug';
-import { useNoScrollbar } from '@/lib/useNoScrollbar';
-import { buildGlance, glanceYears, GLANCE_FAMILIES, GLANCE_SHORT, type GlanceGroup, type GlanceRow } from '@/lib/glance';
-import { FAMILY_DEFINITIONS } from '@/lib/familyDefinitions';
-import AboutKicker from './AboutKicker';
+import Link from "next/link";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useData } from "@/lib/DataContext";
+import { fyLabel } from "@/lib/format";
+import { FAMILY_DEFINITIONS } from "@/lib/familyDefinitions";
+import { slugify } from "@/lib/slug";
+import { useNoScrollbar } from "@/lib/useNoScrollbar";
+import {
+  basisLabel,
+  formatValue,
+  qcRecords,
+  QC_INDICATORS,
+  QC_YEARS,
+  type Period,
+  type QcRecord,
+} from "@/lib/quickCompare";
 
-/** The Quick comparison page: one indicator, one year, every DISCOM's reported figure. Design
- * kept from the earlier reliability-dataset version; data now from the master sheet (lib/glance.ts).
- *
- * Each chart is one CSS grid, state | DISCOM | figure | plot, so every part lines up by
- * construction: the axis and its gridlines sit in the plot column, each state's benchmark is one
- * line spanning exactly its DISCOMs' rows in that same column, and figures sit in their own
- * right-aligned column where nothing can collide with them. A state's DISCOMs come together
- * (lib/glance.ts), the state written once. Bars are coloured only by the source's own verdict.
- * Figures share a chart only when they share a unit and direction; where an indicator is reported
- * in more than one such way, one chart is shown at a time, picked from a "Reported as" switcher.
- *
- * The chart's heading is its short unit (the source's full wording on hover); the legend is one
- * quiet line under it. Rows size themselves so the chart fits the window on desktop (no page
- * scroll). The selected DISCOM's card sits beside the chart. */
-
-const DIRECTION_TEXT = { lower_is_better: 'Lower is better', higher_is_better: 'Higher is better', direction_unknown: null } as const;
-
-const verdictOf = (r: GlanceRow) => (r.standardMet === true ? 'met' : r.standardMet === false ? 'missed' : 'none');
-const rowKey = (r: GlanceRow) => r.discom.sheet;
+/** Quick comparison (/glance), rebuilt 29 Oct 2026 on the approved shortlist (lib/quickCompare.ts).
+ * Pick an indicator, a reporting period (annual / quarterly), a year and, for quarterly figures,
+ * a quarter. One chart per measurement basis, so figures in different units never share an axis;
+ * each line is one DISCOM and category (Urban / Rural / Overall…), in a fixed order so lines can be
+ * followed from year to year, with a scale fixed across the years. Where a line has no figure for
+ * the chosen year it reads "Unavailable", never zero. Bars are coloured only by the sheet's own
+ * verdict, and only where a benchmark in the same unit and period is drawn. The panel beside the
+ * charts shows the selected line's record verbatim and the line across all five years. */
 
 interface Props {
   initialIndicator: string | null;
   initialYear: string | null;
 }
 
+const QUARTERS = ["Q1", "Q2", "Q3", "Q4"];
+const VERDICT_TEXT = {
+  met: "Met",
+  missed: "Not met",
+  none: "No verdict",
+} as const;
+
+interface Line {
+  series: string;
+  code: string;
+  state: string;
+  category: string;
+  /** first line of its DISCOM in the chart: the DISCOM is written once */
+  first: boolean;
+}
+
 export default function GlanceView({ initialIndicator, initialYear }: Props) {
   const { master, loading, error } = useData();
   const rows = useMemo(() => master?.rows ?? [], [master]);
-  const allYears = useMemo(() => [...new Set(rows.map((r) => r.financial_year))].sort().reverse(), [rows]);
-  const stateOrder = useMemo(() => [...new Set(rows.map((r) => r.state))], [rows]);
-  const indicators = useMemo(() => GLANCE_FAMILIES.filter((f) => glanceYears(rows, f).length > 0), [rows]);
-  const [indicator, setIndicator] = useState<string | null>(initialIndicator);
-  const [year, setYear] = useState<string | null>(initialYear);
-  const [selected, setSelected] = useState<string | null>(null);
-  const [rep, setRep] = useState<string | null>(null);
-  // the quarter shown for figures whose standard is set per quarter (never annualised)
+
+  const [indKey, setIndKey] = useState(
+    () =>
+      QC_INDICATORS.find(
+        (i) => i.family === initialIndicator || i.label === initialIndicator,
+      )?.family ?? QC_INDICATORS[0].family,
+  );
+  const ind = QC_INDICATORS.find((i) => i.family === indKey)!;
+  const records = useMemo(() => qcRecords(rows, ind), [rows, ind]);
+  const periods = (["annual", "quarterly"] as Period[]).filter((p) =>
+    records.some((r) => r.period === p),
+  );
+
+  const [periodPick, setPeriod] = useState<Period>("annual");
+  const period = periods.includes(periodPick)
+    ? periodPick
+    : (periods[0] ?? "annual");
+  const [yearPick, setYear] = useState<string | null>(
+    initialYear && QC_YEARS.includes(initialYear) ? initialYear : null,
+  );
+  // only the years with figures for this indicator and period are offered
+  const years = QC_YEARS.filter((y) =>
+    records.some((r) => r.period === period && r.fy === y),
+  );
+  // with no year picked (or one without figures here), open on the year that compares the most
+  // DISCOMs, the latest of those if several tie
+  const fullest = () => {
+    let best = years[years.length - 1] ?? QC_YEARS[QC_YEARS.length - 1];
+    let most = -1;
+    for (const y of years) {
+      const n = new Set(records.filter((r) => r.period === period && r.fy === y).map((r) => r.series)).size;
+      if (n >= most) {
+        most = n;
+        best = y;
+      }
+    }
+    return best;
+  };
+  const year = yearPick && years.includes(yearPick) ? yearPick : fullest();
   const [quarter, setQuarter] = useState(3);
+  const [selected, setSelected] = useState<string | null>(null);
   useNoScrollbar();
 
-  // the indicator/year actually shown: a requested one that has figures, else the first
-  // indicator and its latest year with figures
-  const ind = indicator && indicators.includes(indicator) ? indicator : (indicators[0] ?? null);
-  const years = useMemo(() => (ind ? glanceYears(rows, ind) : []), [rows, ind]);
-  const yr = year && years.includes(year) ? year : (years[0] ?? null);
-  const glance = useMemo(() => (ind && yr ? buildGlance(rows, ind, yr, stateOrder, quarter) : null), [rows, ind, yr, stateOrder, quarter]);
+  // desktop: the page never scrolls. The stage (chart card + record card) takes the height left in
+  // the window, and every chart row gets one height, worked out for the longest chart any indicator
+  // has, so all indicators, periods and years look the same.
+  const stageRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const el = stageRef.current;
+    if (!el) return;
+    const fit = () => {
+      const detail = el.querySelector<HTMLElement>(".qc-detail");
+      el.style.height = "";
+      el.style.removeProperty("--qc-row-h");
+      el.style.removeProperty("--qc-row-gap");
+      detail?.classList.remove("is-compact", "is-tight", "is-tighter");
+      if (window.innerWidth <= 1100) return;
+      // the stage takes the room left in the window, less the page's own padding under it
+      const box = el.getBoundingClientRect();
+      // the page's own padding under the stage (not the shell's empty space, which is only there
+      // because the shell is at least one window tall)
+      let below = 0;
+      for (let e = el.parentElement; e && e !== document.body; e = e.parentElement)
+        below += parseFloat(getComputedStyle(e).paddingBottom) || 0;
+      const room = Math.floor(Math.max(260, window.innerHeight - box.top - Math.max(8, below)));
+      const size = (h: number) => {
+      el.style.height = `${h}px`;
+      // one row height for every view: the longest chart (9 rows) fits the chart card
+      const card = el.querySelector<HTMLElement>(".qc-chartcard");
+      const head = el.querySelector<HTMLElement>(".qc-chart-head");
+      const axis = el.querySelector<HTMLElement>(".qc-axis");
+      const pad = card ? parseFloat(getComputedStyle(card).paddingTop) * 2 + 2 : 42;
+      const chrome = pad + (head?.offsetHeight ?? 60) + 8 + (axis?.offsetHeight ?? 20) + 6;
+      // never taller than nine full-size rows need, so a tall window doesn't leave the cards empty
+      const cap = Math.ceil(chrome + 9 * 44 + 8 * 6);
+      if (h > cap) {
+        h = cap;
+        el.style.height = `${h}px`;
+      }
+      // nine rows and eight gaps; on a short window the gaps narrow before the rows do
+      let gap = 6;
+      let row = Math.floor((h - chrome - 8 * gap) / 9);
+      if (row < 28) {
+        gap = 3;
+        row = Math.floor((h - chrome - 8 * gap) / 9);
+      }
+      el.style.setProperty("--qc-row-gap", `${gap}px`);
+      el.style.setProperty("--qc-row-h", `${Math.max(20, Math.min(44, row))}px`);
+      };
+      size(room);
+      // whatever still runs below the window comes off the stage, so the page never scrolls
+      const over = document.documentElement.scrollHeight - window.innerHeight;
+      if (over > 0) size(Math.max(260, room - over - 2));
+      // a short window: the record card tightens in steps, never scaled
+      for (const step of ["is-compact", "is-tight", "is-tighter"]) {
+        if (!detail || detail.offsetHeight <= el.clientHeight) break;
+        detail.classList.add(step);
+      }
+    };
+    fit();
+    const raf = requestAnimationFrame(fit);
+    document.fonts?.ready.then(fit);
+    window.addEventListener("resize", fit);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", fit);
+    };
+  }, [master, ind, period, year, quarter, selected]);
 
-  // shareable URL (?indicator=&year=), kept in sync without a navigation
   useEffect(() => {
-    if (!ind || !yr) return;
-    const qs = new URLSearchParams({ indicator: ind, year: yr }).toString();
-    window.history.replaceState(null, '', `${window.location.pathname}?${qs}`);
-  }, [ind, yr]);
+    const qs = new URLSearchParams({ indicator: ind.family, year }).toString();
+    window.history.replaceState(null, "", `${window.location.pathname}?${qs}`);
+  }, [ind, year]);
 
-  // a selection only means something on the chart it was made on
-  useEffect(() => setSelected(null), [ind, yr, rep, quarter]);
-  // a picked representation carries across years of the same indicator, not to another indicator
-  useEffect(() => setRep(null), [ind]);
+  // the charts: one per measurement basis in this period, its lines every series seen in any year
+  const charts = useMemo(() => {
+    const inPeriod = records.filter((r) => r.period === period);
+    const bases = [...new Set(inPeriod.map((r) => r.basis))];
+    return bases.map((basis) => {
+      const recs = inPeriod.filter((r) => r.basis === basis);
+      const seen = new Map<string, QcRecord>();
+      for (const r of recs) if (!seen.has(r.series)) seen.set(r.series, r);
+      const order = (r: QcRecord) =>
+        ind.discoms.indexOf(r.code) * 10 +
+        [
+          "Overall",
+          "All feeders",
+          "Excl. agricultural feeders",
+          "Urban",
+          "Cities & towns",
+          "Rural",
+        ].indexOf(r.category);
+      const lines: Line[] = [...seen.values()]
+        .sort((a, b) => order(a) - order(b))
+        .map((r, i, all) => ({
+          series: r.series,
+          code: r.code,
+          state: r.state,
+          category: r.category,
+          first: i === 0 || all[i - 1].code !== r.code,
+        }));
+      const max =
+        basis === "%"
+          ? 100
+          : niceMax(
+              Math.max(...recs.map((r) => Math.max(r.value, r.benchmark ?? 0))),
+            );
+      return { basis, lines, max, recs };
+    });
+  }, [records, period, ind]);
 
-  if (loading) return <p className="detail-placeholder">Loading dashboard data…</p>;
-  if (error || !master || !glance || !ind || !yr) return <p className="detail-placeholder">Could not load dashboard data: {error}</p>;
+  const at = (series: string, fy: string, q: number) =>
+    records.find(
+      (r) =>
+        r.series === series &&
+        r.fy === fy &&
+        (r.quarter == null || r.quarter === q),
+    ) ?? null;
 
-  // one way of reporting the indicator on screen at a time: the one most DISCOMs use, unless
-  // another was picked
-  const group = glance.groups.find((g) => g.key === rep) ?? glance.groups[0];
-  const sel = group.rows.find((r) => rowKey(r) === selected) ?? null;
-  const label = GLANCE_SHORT[ind] ?? ind;
-  const toggle = (k: string) => setSelected((cur) => (cur === k ? null : k));
+  // only lines with a figure for the chosen year (and quarter) are drawn; a chart left with none isn't
+  const shown = charts
+    .map((c) => {
+      const lines = c.lines.filter((l) => at(l.series, year, quarter));
+      return { ...c, lines: lines.map((l, i) => ({ ...l, first: i === 0 || lines[i - 1].code !== l.code })) };
+    })
+    .filter((c) => c.lines.length > 0);
+  const allLines = shown.flatMap((c) => c.lines);
+  const sel =
+    allLines.find((l) => l.series === selected) ??
+    allLines[0] ??
+    null;
 
-  const yearSwitch = (
-      <div className="glc-years" role="radiogroup" aria-label="Financial year">
-        {[...allYears].reverse().map((y) => {
-          const has = years.includes(y);
-          return (
+  if (loading)
+    return <p className="detail-placeholder">Loading dashboard data…</p>;
+  if (error || !master)
+    return (
+      <p className="detail-placeholder">
+        Could not load dashboard data: {error}
+      </p>
+    );
+
+  const when =
+    period === "quarterly"
+      ? `${fyLabel(year)} ${QUARTERS[quarter]}`
+      : fyLabel(year);
+
+  return (
+    <div className="methodology-page about-page qc">
+      <h1 className="method-hero-title abt-title ic-title">
+        Quick Comparison Across DISCOMs
+      </h1>
+      <p
+        className="ic-lede"
+        style={{ marginTop: 10, marginBottom: 22, cursor: "auto" }}
+      >
+        Every DISCOM&rsquo;s figure for one reliability indicator in one year,
+        set beside its state&rsquo;s standard, compared in the period each
+        standard is set for, never annualised.
+      </p>
+
+      <nav className="qc-tabs" aria-label="Indicator">
+        {QC_INDICATORS.map((i) => (
+          <button
+            key={i.family}
+            type="button"
+            className={`qc-tab${i.family === ind.family ? " is-on" : ""}`}
+            aria-pressed={i.family === ind.family}
+            onClick={() => {
+              setIndKey(i.family);
+              setSelected(null);
+            }}
+          >
+            {i.label}
+            {FAMILY_DEFINITIONS[i.family] && (
+              <span className="qc-info" tabIndex={0} aria-label={FAMILY_DEFINITIONS[i.family]}>
+                i<span className="qc-tip" role="tooltip">{FAMILY_DEFINITIONS[i.family]}</span>
+              </span>
+            )}
+          </button>
+        ))}
+      </nav>
+
+      <div className="qc-toolbar">
+        <Seg label="Period">
+          {(["annual", "quarterly"] as Period[]).map((p) => (
+            <button
+              key={p}
+              type="button"
+              className={`qc-seg-btn${p === period ? " is-on" : ""}`}
+              aria-pressed={p === period}
+              disabled={!periods.includes(p)}
+              onClick={() => {
+                setPeriod(p);
+                setSelected(null);
+              }}
+            >
+              {p === "annual" ? "Annual" : "Quarterly"}
+            </button>
+          ))}
+        </Seg>
+        <Seg label="Year">
+          {years.map((y) => (
             <button
               key={y}
               type="button"
-              role="radio"
-              aria-checked={y === yr}
-              disabled={!has}
-              className={`glc-year${y === yr ? ' is-active' : ''}`}
+              className={`qc-seg-btn${y === year ? " is-on" : ""}`}
+              aria-pressed={y === year}
               onClick={() => setYear(y)}
-              title={has ? undefined : `No ${label} figures for ${fyLabel(y)}`}
             >
               {fyLabel(y)}
             </button>
-          );
-        })}
-      </div>
-  );
-
-  return (
-    <div className="methodology-page about-page glc">
-      <AboutKicker here="Quick comparison" />
-      <h1 className="method-hero-title">Quick Comparison Across DISCOMs</h1>
-
-      <div className="glc-bar">
-        <div className="glc-tabs" role="tablist" aria-label="Indicator">
-          {indicators.map((i) => (
-            <button key={i} type="button" role="tab" aria-selected={i === ind} title={i} className={`glc-tab${i === ind ? ' is-active' : ''}`} onClick={() => setIndicator(i)}>
-              {GLANCE_SHORT[i] ?? i}
+          ))}
+        </Seg>
+        {/* always present so the bar never changes shape; only used for quarterly figures */}
+        <Seg label="Quarter">
+          {QUARTERS.map((q, i) => (
+            <button
+              key={q}
+              type="button"
+              className={`qc-seg-btn${period === "quarterly" && i === quarter ? " is-on" : ""}`}
+              aria-pressed={period === "quarterly" && i === quarter}
+              disabled={period !== "quarterly"}
+              onClick={() => setQuarter(i)}
+            >
+              {q}
             </button>
           ))}
-        </div>
+        </Seg>
+        <p className="qc-legend" aria-label="Legend">
+          <span className="qc-key qc-v-met">Met</span>
+          <span className="qc-key qc-v-missed">Not met</span>
+          <span className="qc-key qc-v-none">No verdict</span>
+          <span className="qc-key qc-key--bench">Benchmark</span>
+        </p>
       </div>
 
-      {/* what the indicator is: the sheet's own name and the signed-off plain definition (Glossary) */}
-      <p className="glc-about">
-        <b>{ind}</b>
-        {FAMILY_DEFINITIONS[ind] && <> · {FAMILY_DEFINITIONS[ind]}</>}{' '}
-        <Link href="/about/glossary">Glossary</Link>
-      </p>
-
-      <div className="glc-yearrow">{yearSwitch}</div>
-
-      <div className={`glc-body${sel ? ' has-card' : ''}`}>
-        <div className="glc-main" key={`${ind}|${yr}|${group.key}`}>
-          <Chart group={group} groups={glance.groups} onPickGroup={setRep} selected={selected} onSelect={toggle} quarter={quarter} onQuarter={setQuarter} />
+      <div className="qc-stage" ref={stageRef}>
+        <div className="qc-card qc-chartcard">
+          {shown.map((c) => (
+            <section key={c.basis} className="qc-chart" aria-label={`${basisLabel(c.basis)}, ${when}`}>
+              <header className="qc-chart-head">
+                <h2>
+                  {basisLabel(c.basis)}
+                </h2>
+              </header>
+              <div className="qc-rows">
+                {c.lines.map((l) => {
+                  const r = at(l.series, year, quarter)!;
+                  const on = sel?.series === l.series;
+                  return (
+                    <button
+                      key={l.series}
+                      type="button"
+                      className={`qc-row${l.first ? " is-first" : ""}${on ? " is-on" : ""} qc-v-${r.verdict}`}
+                      aria-pressed={on}
+                      title={r.indicator}
+                      onClick={() => setSelected(l.series)}
+                    >
+                      <span className="qc-who" title={r.name}>
+                        {l.first && (
+                          <>
+                            <b>{l.code}</b> <small>{l.state}</small>
+                          </>
+                        )}
+                      </span>
+                      <span className="qc-cat">{l.category}</span>
+                      <span className="qc-track">
+                        <i className="qc-bar" style={{ width: `${(r.value / c.max) * 100}%` }} />
+                        {r.benchmark != null && (
+                          <i
+                            className="qc-bench"
+                            style={{ left: `${(r.benchmark / c.max) * 100}%` }}
+                            title={`Benchmark ${formatValue(r.benchmark, c.basis)}`}
+                          />
+                        )}
+                      </span>
+                      <span className="qc-val">{formatValue(r.value, c.basis)}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="qc-axis" aria-hidden="true">
+                <span />
+                <span />
+                <span className="qc-axis-scale">
+                  <span>0</span>
+                  <span>{formatValue(c.max / 2, c.basis)}</span>
+                  <span>{formatValue(c.max, c.basis)}</span>
+                </span>
+                <span />
+              </div>
+            </section>
+          ))}
+          {shown.length === 0 && <p className="qc-empty">N/A</p>}
         </div>
-        {sel && (
-          <aside className="glc-aside">
-            <DetailCard key={rowKey(sel)} row={sel} group={group} year={group.period === 'quarter' ? `Q${quarter + 1} ${fyLabel(yr)}` : yr} onClose={() => setSelected(null)} />
-          </aside>
+
+        {sel ? (
+          <Detail line={sel} rec={at(sel.series, year, quarter)} when={when} />
+        ) : (
+          <div className="qc-card qc-detail" />
         )}
       </div>
     </div>
   );
 }
 
-/** A state's DISCOMs, consecutive on the chart, sharing the state's one benchmark. */
-interface Block {
-  state: string;
-  /** false for a second block of the same state (another benchmark, e.g. urban vs rural) */
-  first: boolean;
-  benchmark: number | null;
-  rows: GlanceRow[];
-}
-
-function blocksOf(rows: GlanceRow[]): Block[] {
-  const out: Block[] = [];
-  for (const r of rows) {
-    const last = out[out.length - 1];
-    if (last && last.state === r.discom.state && last.benchmark === r.benchmark) last.rows.push(r);
-    else out.push({ state: r.discom.state, first: !last || last.state !== r.discom.state, benchmark: r.benchmark, rows: [r] });
-  }
-  return out;
-}
-
-/** A representation's short name: its display unit, plus its direction where two share a unit. */
-function groupLabel(g: GlanceGroup, all: GlanceGroup[]): string {
-  const unit = axisTitleForUnit(g.unit);
-  const dir = DIRECTION_TEXT[g.direction];
-  return dir && all.some((o) => o !== g && axisTitleForUnit(o.unit) === unit) ? `${unit} (${dir.toLowerCase()})` : unit;
-}
-
-/** Row height that lets the whole chart fit the window below where it starts (desktop only),
- * kept between a compact floor and the usual 28px. */
-const ROW_MIN = 15;
-const ROW_MAX = 28;
-function useFitRowHeight(chart: RefObject<HTMLElement | null>, grid: RefObject<HTMLElement | null>, rows: number, gaps: number) {
-  const [rowH, setRowH] = useState<number | null>(null);
-  useLayoutEffect(() => {
-    const fit = () => {
-      const c = chart.current;
-      const g = grid.current;
-      if (!c || !g || window.innerWidth <= 900) return setRowH(null);
-      const css = getComputedStyle(c);
-      const axisH = parseFloat(css.getPropertyValue('--glc-axis-h')) || 26;
-      const gapH = parseFloat(css.getPropertyValue('--glc-gap-h')) || 12;
-      const gridTop = g.getBoundingClientRect().top + window.scrollY;
-      const below = c.getBoundingClientRect().bottom - g.getBoundingClientRect().bottom; // the legend line
-      const avail = window.innerHeight - gridTop - below - 14 - axisH - gaps * gapH;
-      setRowH(Math.max(ROW_MIN, Math.min(ROW_MAX, Math.floor(avail / rows))));
-    };
-    fit();
-    window.addEventListener('resize', fit);
-    return () => window.removeEventListener('resize', fit);
-  }, [chart, grid, rows, gaps]);
-  return rowH;
-}
-
-// DISCOM names are always written in full: the name column widens to the longest one in the
-// chart (never narrower than its CSS width), and the plot column gives up the room
-function useNameColumnWidth(grid: RefObject<HTMLElement | null>, group: GlanceGroup, quarter: number) {
-  const [w, setW] = useState<number | null>(null);
-  useLayoutEffect(() => {
-    const g = grid.current;
-    if (!g) return;
-    // the CSS width, read above the chart so this hook's own override doesn't count
-    const host = g.closest('.glc-chart')?.parentElement ?? g;
-    const base = parseFloat(getComputedStyle(host).getPropertyValue('--glc-name-w')) || 0;
-    let max = 0;
-    g.querySelectorAll<HTMLElement>('.glc-name').forEach((el) => {
-      max = Math.max(max, el.scrollWidth);
-    });
-    setW(max > base ? Math.ceil(max) + 6 : null);
-  }, [grid, group, quarter]);
-  return w;
-}
-
-function Chart({
-  group,
-  groups,
-  onPickGroup,
-  selected,
-  onSelect,
-  quarter,
-  onQuarter,
+function Seg({
+  label,
+  children,
 }: {
-  group: GlanceGroup;
-  groups: GlanceGroup[];
-  onPickGroup: (key: string) => void;
-  selected: string | null;
-  onSelect: (k: string) => void;
-  quarter: number;
-  onQuarter: (q: number) => void;
+  label: string;
+  children: React.ReactNode;
 }) {
-  const dir = DIRECTION_TEXT[group.direction];
-  const pct = (v: number) => `${Math.max(0, Math.min(100, (v / group.scaleMax) * 100))}%`;
-  const blocks = blocksOf(group.rows);
-  const title = groupLabel(group, groups);
-  const chartRef = useRef<HTMLElement>(null);
-  const gridRef = useRef<HTMLDivElement>(null);
-  const rowH = useFitRowHeight(chartRef, gridRef, group.rows.length, blocks.length - 1);
-  const nameW = useNameColumnWidth(gridRef, group, quarter);
-  const hasNote = group.rows.some((r) => r.note);
-  // grid rows: the axis, then each DISCOM's row, with a spacer row between states (the rule
-  // between them sits in it), so state blocks get air without the rows themselves changing size
-  const tracks = ['var(--glc-axis-h)'];
-  blocks.forEach((b, bi) => {
-    if (bi > 0) tracks.push('var(--glc-gap-h)');
-    for (let i = 0; i < b.rows.length; i++) tracks.push('var(--glc-row-h)');
-  });
-  let line = 2; // grid line the next row starts on (line 1 is the axis)
-
   return (
-    <section className="glc-chart" aria-label={title} ref={chartRef} style={{ ...(rowH ? { '--glc-row-h': `${rowH}px` } : {}), ...(nameW ? { '--glc-name-w': `${nameW}px` } : {}) } as CSSProperties}>
-      <header className="glc-chart-head">
-        {/* the unit, short; the source's own full wording on hover. Where DISCOMs report the
-            indicator in more than one way, one at a time, picked here */}
-        {groups.length > 1 ? (
-          <div className="glc-reps" role="tablist" aria-label="Reported as">
-            <span className="glc-reps-label">Reported as</span>
-            {groups.map((g) => (
-              <button
-                key={g.key}
-                type="button"
-                role="tab"
-                aria-selected={g === group}
-                className={`glc-rep${g === group ? ' is-active' : ''}`}
-                title={g.wording ?? undefined}
-                onClick={() => onPickGroup(g.key)}
-              >
-                {groupLabel(g, groups)}
-                <span className="glc-rep-n">{g.rows.length}</span>
-              </button>
-            ))}
-          </div>
-        ) : (
-          <h2 title={group.wording ?? undefined}>{title}</h2>
-        )}
-        {dir && <span className="glc-dir">{dir}</span>}
-        {/* the standard is set per quarter: one quarter at a time, never added up to a year */}
-        {group.period === 'quarter' && (
-          <div className="glc-years glc-quarters" role="radiogroup" aria-label="Quarter">
-            {[0, 1, 2, 3].map((q) => (
-              <button key={q} type="button" role="radio" aria-checked={q === quarter} className={`glc-year${q === quarter ? ' is-active' : ''}`} onClick={() => onQuarter(q)}>
-                Q{q + 1}
-              </button>
-            ))}
-          </div>
-        )}
+    <div className="qc-seg">
+      <span className="qc-seg-label">{label}</span>
+      <div className="qc-seg-btns" role="group" aria-label={label}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function Detail({
+  line,
+  rec,
+  when,
+}: {
+  line: Line;
+  rec: QcRecord | null;
+  when: string;
+}) {
+  return (
+    <aside className="qc-card qc-detail" aria-label="Selected record">
+      <header>
+        <h2 title={rec?.name}>
+          {line.code}
+          {line.category && <span> · {line.category}</span>}
+        </h2>
+        <p>
+          {rec?.name} · {line.state}
+        </p>
       </header>
 
-      <div className="glc-grid" ref={gridRef} style={{ gridTemplateRows: tracks.join(' ') }}>
-        {/* the axis: tick labels over the plot column, gridlines down through every row */}
-        <div className="glc-axis" aria-hidden="true">
-          {group.ticks.map((t, i) => (
-            <span key={t} className={i === 0 ? 'is-first' : i === group.ticks.length - 1 ? 'is-last' : undefined} style={{ left: pct(t) }}>
-              {formatInUnit(t, group.unit)}
-            </span>
-          ))}
-        </div>
-        <div className="glc-gridlines" aria-hidden="true">
-          {group.ticks.map((t) => (
-            <i key={t} style={{ left: pct(t) }} />
-          ))}
-        </div>
-
-        {blocks.map((b, bi) => {
-          if (bi > 0) line++; // the spacer row
-          const start = line;
-          line += b.rows.length;
-          const span = `${start} / span ${b.rows.length}`;
-          return (
-            <Fragment key={b.state}>
-              {bi > 0 && b.first && <div className="glc-sep" style={{ gridRow: start - 1 }} aria-hidden="true" />}
-              <div className="glc-state" style={{ gridRow: span }}>
-                {b.first ? b.state : ''}
-              </div>
-              {b.rows.map((r, i) => {
-                const k = rowKey(r);
-                const on = k === selected;
-                return (
-                  <button
-                    key={k}
-                    type="button"
-                    className={`glc-row glc-v-${verdictOf(r)}${on ? ' is-selected' : ''}`}
-                    style={{ gridRow: start + i }}
-                    aria-pressed={on}
-                    aria-label={`${r.discom.short_name}, ${r.discom.state}: ${formatInUnit(r.value, group.unit, r.benchmark)}`}
-                    title={r.discom.full_name}
-                    onClick={() => onSelect(k)}
-                  >
-                    <span className="glc-name">{r.discom.short_name}</span>
-                    <span className="glc-fig">
-                      {formatInUnit(r.value, group.unit, r.benchmark)}
-                      {r.note && <sup aria-label="has a note">*</sup>}
-                    </span>
-                    <span className="glc-plot">
-                      <span className="glc-fill" style={{ width: pct(r.value), animationDelay: `${(start - 2 + i) * 30}ms` }} />
-                    </span>
-                  </button>
-                );
-              })}
-              {/* the state's benchmark: one line through exactly its rows; value on hover/focus */}
-              {b.benchmark != null && (
-                <span
-                  className="glc-bench"
-                  style={{ gridRow: span, '--at': pct(b.benchmark) } as CSSProperties}
-                  tabIndex={0}
-                  aria-label={`${b.state} benchmark: ${formatInUnit(b.benchmark, group.unit)}`}
-                >
-                  <span className="glc-bench-hit">
-                    <span className="glc-bench-tip" role="tooltip">
-                      {b.state} benchmark <b>{formatInUnit(b.benchmark, group.unit)}</b>
-                    </span>
-                  </span>
-                </span>
-              )}
-            </Fragment>
-          );
-        })}
-      </div>
-
-      {/* the key, once, quietly under the chart */}
-      <Legend note={hasNote} />
-    </section>
-  );
-}
-
-/** The same key on every indicator. */
-function Legend({ note }: { note: boolean }) {
-  return (
-    <p className="glc-legend">
-      <span className="glc-v-met">
-        <i className="glc-swatch" aria-hidden="true" />
-        Met
-      </span>
-      <span className="glc-v-missed">
-        <i className="glc-swatch" aria-hidden="true" />
-        Not met
-      </span>
-      <span className="glc-v-none">
-        <i className="glc-swatch" aria-hidden="true" />
-        No verdict
-      </span>
-      <span>
-        <i className="glc-bench-glyph" aria-hidden="true" />
-        Benchmark
-      </span>
-      {note && (
-        <span>
-          <b className="glc-legend-star" aria-hidden="true">*</b>
-          Has a note (click the DISCOM)
-        </span>
-      )}
-    </p>
-  );
-}
-
-function DetailCard({ row, group, year, onClose }: { row: GlanceRow; group: GlanceGroup; year: string; onClose: () => void }) {
-  const d = row.discom;
-  const verdict = verdictOf(row);
-  const standard = row.standard && row.standard.trim() && !/^n\/?a\.?$/i.test(row.standard.trim()) ? row.standard.trim() : null;
-  const notes = [row.benchmarkNote, row.note].filter(
-    Boolean,
-  ) as string[];
-
-  // a card with several notes (Rajasthan's: own wording, restated benchmark, unit conversion) can
-  // run past the window's bottom. It then tightens itself (is-tight-1, then is-tight-2), measured
-  // synchronously on the DOM; if even that doesn't fit, it scales down just enough to (zoom ≥ 0.75)
-  const cardRef = useRef<HTMLElement>(null);
-  useLayoutEffect(() => {
-    const el = cardRef.current;
-    const aside = el?.parentElement;
-    if (!el || !aside) return;
-    const fit = () => {
-      el.classList.remove('is-tight-1', 'is-tight-2');
-      el.style.zoom = '';
-      if (window.innerWidth <= 900) return;
-      const room = window.innerHeight - 16 - aside.getBoundingClientRect().top;
-      for (const step of ['is-tight-1', 'is-tight-2']) {
-        if (el.offsetHeight <= room) return;
-        el.classList.remove('is-tight-1');
-        el.classList.add(step);
-      }
-      if (el.offsetHeight > room) el.style.zoom = String(Math.max(0.75, room / el.offsetHeight));
-    };
-    fit();
-    document.fonts?.ready.then(fit);
-    window.addEventListener('resize', fit);
-    return () => window.removeEventListener('resize', fit);
-  }, []);
-
-  return (
-    <article ref={cardRef} className="glc-card" key={d.sheet} aria-labelledby="glc-card-title">
-      <header className="glc-card-head">
-        <div>
-          <h2 id="glc-card-title">{d.short_name}</h2>
+      {rec && (
+        <div className="qc-figure">
+          <b>{formatValue(rec.value, rec.basis)}</b>
+          <span>
+            {basisLabel(rec.basis)}, {when}
+          </span>
           <p>
-            {d.full_name} · {d.state}
+            <span
+              className={`mj-chip ${rec.verdict === "met" ? "mj-chip--met" : rec.verdict === "missed" ? "mj-chip--missed" : ""}`}
+            >
+              {VERDICT_TEXT[rec.verdict]}
+            </span>
+            {rec.benchmark != null
+              ? `Benchmark ${formatValue(rec.benchmark, rec.basis)}`
+              : "No benchmark"}
           </p>
         </div>
-        <button type="button" className="acm-close" onClick={onClose} aria-label="Close">
-          <svg viewBox="0 0 16 16" aria-hidden="true">
-            <path d="M4 4l8 8M12 4l-8 8" />
-          </svg>
-        </button>
-      </header>
-
-      <p className="glc-card-value">
-        <b>{formatInUnit(row.value, group.unit, row.benchmark)}</b>
-        <span>
-          {axisTitleForUnit(group.unit)} · {year.startsWith('Q') ? year : fyLabel(year)}
-        </span>
-      </p>
-
-      {/* boxed facts: the standard, then the benchmark beside whether it was met */}
-      <div className="glc-boxes">
-        <div className="glc-box glc-box--wide">
-          <span className="glc-box-label">Standard</span>
-          <p>{standard ?? 'N/A'}</p>
-        </div>
-        <div className="glc-box">
-          <span className="glc-box-label">Benchmark</span>
-          <p className="glc-box-val">{row.benchmark != null ? formatInUnit(row.benchmark, group.unit) : 'N/A'}</p>
-        </div>
-        <div className="glc-box">
-          <span className="glc-box-label">Standard Met?</span>
-          <p className="glc-box-val">{verdict === 'none' ? 'N/A' : <span className={`mj-chip mj-chip--${verdict}`}>{verdict === 'met' ? 'Met' : 'Not met'}</span>}</p>
-        </div>
-      </div>
-
-      {notes.length > 0 && (
-        <ul className="glc-notes">
-          {notes.map((t) => (
-            <li key={t}>{t}</li>
-          ))}
-        </ul>
       )}
 
-      <Link className="glc-card-link" href={`/state/${slugify(d.state)}`}>
-        Open {d.state}
+      <dl className="qc-facts">
+        <dt>Standard</dt>
+        <dd title={rec?.standard ?? undefined}>{rec?.standard ?? "N/A"}</dd>
+        {rec && rec.timeLimits.length > 0 && (
+          <>
+            <dt>Time limit</dt>
+            {rec.timeLimits.map((t) => (
+              <dd key={t.area}>
+                {t.area}: {t.text}
+              </dd>
+            ))}
+          </>
+        )}
+      </dl>
+
+      <Link className="qc-link" href={`/state/${slugify(line.state)}`}>
+        Open {line.state}
         <svg className="acm-arrow" viewBox="0 0 12 12" aria-hidden="true">
           <path d="M4.5 2.5h5v5M9.5 2.5 3 9" />
         </svg>
       </Link>
-    </article>
+    </aside>
   );
+}
+
+function niceMax(max: number): number {
+  if (max <= 0) return 1;
+  const p = 10 ** Math.floor(Math.log10(max));
+  const step = [1, 2, 2.5, 5, 10].find((s) => s * p >= max) ?? 10;
+  return step * p;
 }

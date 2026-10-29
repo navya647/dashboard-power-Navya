@@ -211,7 +211,7 @@ export default function MethodologyView() {
       <h1 className="method-hero-title">How the Evidence Base Was Built</h1>
       {discoms && (
         <p className="mth-meta">
-          {discoms.state_order.length} states · {discoms.discoms.length} DISCOMs · {fyLabel(yearsAsc[0])}–{fyLabel(yearsAsc[yearsAsc.length - 1])}
+          13 states · 35 DISCOMs · {fyLabel(yearsAsc[0])}–{fyLabel(yearsAsc[yearsAsc.length - 1])}
         </p>
       )}
 

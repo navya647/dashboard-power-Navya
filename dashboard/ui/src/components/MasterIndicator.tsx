@@ -1,16 +1,18 @@
 'use client';
 
-import { useId, useRef, useState, type ReactNode } from 'react';
+import Link from 'next/link';
+
+import { useId, useRef, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import type { Chart as ChartJS } from 'chart.js';
 import { cssVar, useThemeTick } from '@/lib/chartTheme';
 import { fyLabel } from '@/lib/format';
-import { quarterVerdicts, standardParts, timeSpecs, type MasterDiscom } from '@/lib/master';
+import { borrowedTimes, quarterVerdicts, standardParts, timeLimitText, timeSpecified, timeSpecs, type MasterDiscom } from '@/lib/master';
 import { plotBenchmark, plotFigure, quarterFigures, standardLimit, type PlotBenchmark } from '@/lib/plotFigures';
 import { isQuarterly, unitOf } from '@/lib/glance';
-import { FAMILY_DEFINITIONS } from '@/lib/familyDefinitions';
 import { compareColor } from '@/lib/computations';
 import type { MasterRow } from '@/lib/types';
+import { useData } from '@/lib/DataContext';
 
 /** One indicator on the State page, read straight from DISCOM_SoP_master.xlsx, with no table,
  * everything full width:
@@ -19,9 +21,9 @@ import type { MasterRow } from '@/lib/types';
  *  - the DISCOM tracks: one line per DISCOM, one stop per FY (two small stops where the sheet
  *    splits a year by regulation period), filled by the sheet's own Standard met, the figure
  *    under it where there is one;
- *  - the evidence flow: the selected row as five linked steps left to right (regulation →
- *    standard → reported → standardised → verdict), each with its headline text and an ⓘ
- *    pop-over holding the full wording and the step's notes, every column of the row, verbatim.
+ *  - the evidence card (Evidence): the selected row's verdict and headline figure, what the
+ *    regulation requires beside what the DISCOM reported, every other column under "Sources and
+ *    notes"; all verbatim, nothing clipped.
  * Clicking a stop or a chart point selects that row. */
 
 const NA = 'N/A';
@@ -76,9 +78,11 @@ interface Props {
   chartOnly?: boolean;
   /** Compare: the selected states, so each gets its own benchmark line in its map colour */
   states?: string[];
+  /** Compare: open the evidence on this year's row (the latest year the shown DISCOMs share) */
+  initialYear?: string;
 }
 
-export default function MasterIndicator({ indicator, rows, discoms, yearsAsc, hideTimes = false, annualOnly = false, chartOnly = false, states }: Props) {
+export default function MasterIndicator({ indicator, rows, discoms, yearsAsc, hideTimes = false, annualOnly = false, chartOnly = false, states, initialYear }: Props) {
   const uid = useId();
   const present = discoms.filter((d) => rows.some((r) => r.discom_code === d.code));
   // stops per DISCOM per year, sheet order within a year
@@ -87,6 +91,8 @@ export default function MasterIndicator({ indicator, rows, discoms, yearsAsc, hi
   // default: the latest row with a figure, else the latest row with a verdict, else the first row
   const pickDefault = () => {
     const latestFirst = [...rows].sort((a, b) => b.financial_year.localeCompare(a.financial_year));
+    const inYear = initialYear ? latestFirst.find((r) => r.financial_year === initialYear && plotFigure(r)) : undefined;
+    if (inYear) return inYear.id;
     return (latestFirst.find((r) => plotFigure(r)) ?? latestFirst.find((r) => quarterVerdicts(r) || r.standard_met === 'Yes' || r.standard_met === 'No') ?? rows[0])?.id ?? null;
   };
   const [selectedId, setSelectedId] = useState<string | null>(pickDefault);
@@ -115,9 +121,12 @@ export default function MasterIndicator({ indicator, rows, discoms, yearsAsc, hi
         <p className="im-eyebrow">
           {categories.join(' / ')}
         </p>
-        <h3 id={`${uid}-title`} className="mi-name">
-          {indicator}
-        </h3>
+        <div className="mi-name-row">
+          <h3 id={`${uid}-title`} className="mi-name">
+            {indicator}
+          </h3>
+          <DefinitionInfo definitions={definitions} family={first.indicator_family} />
+        </div>
         {/* the time limits the state's standards set, as written, one sentence per line; standards
             are state-level, so no DISCOM tag even where only one DISCOM's row spells them out */}
         {!hideTimes && times.length > 0 && (
@@ -138,14 +147,6 @@ export default function MasterIndicator({ indicator, rows, discoms, yearsAsc, hi
               ))}
             </ul>
           </div>
-        )}
-        {/* once here when every row words it the same; otherwise on the Regulation step */}
-        {definitions.length === 1 && <p className="mi-def">{definitions[0]}</p>}
-        {/* the signed-off plain definition for the indicator family, where there is one */}
-        {FAMILY_DEFINITIONS[first.indicator_family] && (
-          <p className="mi-short">
-            <span>In short</span> {FAMILY_DEFINITIONS[first.indicator_family]}
-          </p>
         )}
       </header>
 
@@ -229,83 +230,170 @@ export default function MasterIndicator({ indicator, rows, discoms, yearsAsc, hi
         <span className="mi-key-hint">Select a point to follow its evidence</span>
       </p>
 
-      {/* the selected row, left to right: where the rule comes from → what it asks → what was
-          reported → how it was standardised → the sheet's verdict */}
-      <section className="mi-flow-wrap" aria-live="polite" aria-label="Evidence for the selected point" style={{ ['--key' as string]: selDiscom?.color }}>
-        <p className="mi-flow-head">
-          <span className="mi-trail-swatch" aria-hidden="true" />
-          <b>{selected.discom_code}</b>
-          <span>{fyLabel(selected.financial_year)}</span>
-        </p>
-        <ol className="mi-flow">
-          <Step label="Regulation" text={selected.applicable_regulation} more={definitions.length > 1 ? [{ label: 'Definition', text: selected.definition }] : []} />
-          {/* the threshold sentence(s) only, the time limits being under the indicator name; a
-              standard with no separate threshold sentence is shown whole. Full standard in the ⓘ. */}
-          <Step label="Assessed against" text={assessedAgainst(selected)} more={[{ label: 'Standard', text: selected.standard }]} />
-          <Step
-            label="Reported data"
-            text={selected.reported_data}
-            more={[
-              { label: 'Source', text: selected.reported_data_source },
-              { label: 'File', text: selected.source_file },
-            ]}
-          />
-          <Step label="Standardised data" text={selected.standardised_data} more={[{ label: 'Documentation', text: selected.documentation }]} />
-          <Step
-            label={selQ ? 'Met each quarter' : 'Standard met'}
-            verdict={selQ ? null : selected.standard_met}
-            quarters={selQ}
-            text={`Comparison possible: ${show(selected.comparison_possible)}`}
-            more={[
-              // for quarterly rows the detail's trailing "(FY: …)" is the year verdict, not shown
-              ...(selQ ? [] : [{ label: 'Detail', text: selected.standard_met_detail }]),
-              ...(selected.why_not_comparable ? [{ label: 'Why not comparable', text: selected.why_not_comparable }] : []),
-              { label: 'Interpretation', text: selected.interpretation },
-            ]}
-          />
-        </ol>
-      </section>
+      <Evidence row={selected} discom={selDiscom} quarters={selQ} showDefinition={definitions.length > 1} />
     </article>
   );
 }
 
-/** One link in the evidence flow: its headline text (cut to three lines), and an ⓘ that opens the
- * full wording plus the step's notes in a pop-over, so every column is there without a text wall. */
-function Step({ label, text, body, verdict, quarters, more = [] }: { label: string; text: string | null; body?: ReactNode; verdict?: string | null; quarters?: (string | null)[] | null; more?: { label: string; text: string | null }[] }) {
+/** ⓘ beside the indicator's name: its definition as the sheet words it (every distinct wording),
+ * in a small pop-over with a link to the family's section of the Glossary. */
+function DefinitionInfo({ definitions, family }: { definitions: string[]; family: string }) {
   const id = useId();
   const [open, setOpen] = useState(false);
   return (
-    <li className={`mi-step${verdict !== undefined ? ` mi-step--verdict${verdictMod(verdict)}` : ''}`} onMouseLeave={() => setOpen(false)}>
-      <span className="mi-step-node" aria-hidden="true" />
-      <div className="mi-step-top">
-        <p className="mi-step-label">{label}</p>
-        <button type="button" className="mi-step-info" aria-expanded={open} aria-controls={id} aria-label={`${label}: full text and notes`} onClick={() => setOpen((o) => !o)}>
-          i
-        </button>
-      </div>
-      {quarters ? (
-        <span className="mi-quarters">
-          {quarters.map((v, i) => (
-            <span key={i} className={`mi-verdict${v == null ? '' : verdictMod(v)}`}>
-              Q{i + 1} {v ?? 'Not reported'}
-            </span>
-          ))}
-        </span>
-      ) : (
-        verdict !== undefined && <span className={`mi-verdict${verdictMod(verdict)}`}>{show(verdict)}</span>
-      )}
-      {body ?? <p className="mi-step-text">{show(text)}</p>}
+    <span className="mi-name-info" onMouseLeave={() => setOpen(false)}>
+      <button type="button" className="mi-step-info" aria-expanded={open} aria-controls={id} aria-label="Definition" onClick={() => setOpen((o) => !o)}>
+        i
+      </button>
       {open && (
-        <div className="mi-pop" id={id} role="note">
-          {verdict === undefined && more[0]?.text !== text && <p>{show(text)}</p>}
-          {more.map((m) => (
-            <p key={m.label}>
-              <b>{m.label}:</b> {show(m.text)}
-            </p>
-          ))}
+        <div className="mi-pop mi-pop--def" id={id} role="note">
+          {definitions.length ? definitions.map((d) => <p key={d}>{d}</p>) : <p>N/A</p>}
+          <p>
+            <Link href={`/about/glossary?family=${encodeURIComponent(family)}`}>See it in the Glossary →</Link>
+          </p>
         </div>
       )}
-    </li>
+    </span>
+  );
+}
+
+/** A reported-data cell written as "Lead: item; item; item; …" (four or more items): its lead and
+ * items, each exactly as written, so a month-by-month list reads as a grid. null otherwise. */
+function listParts(text: string | null): { lead: string; items: string[] } | null {
+  const m = text?.match(/^([^:;]{3,120}:)\s*([\s\S]+)$/);
+  if (!m) return null;
+  const items = m[2].split(/;\s*/).filter(Boolean);
+  return items.length >= 4 ? { lead: m[1], items } : null;
+}
+
+/** A regulation citation's name: the text before its first bracket when that leaves a real
+ * title, else the whole citation. The full citation is one click away, never cut. */
+function citationTitle(text: string): string {
+  const i = text.indexOf(' (');
+  return i > 24 ? text.slice(0, i) : text;
+}
+
+/** The selected row as one card: verdict and headline figure first, then what the regulation
+ * requires beside what the DISCOM reported, then every remaining column under "Sources and
+ * notes". Every cell verbatim and in full. */
+function Evidence({ row, discom, quarters, showDefinition }: { row: MasterRow; discom?: MasterDiscom; quarters: (string | null)[] | null; showDefinition: boolean }) {
+  const id = useId();
+  const [notesOpen, setNotesOpen] = useState(false);
+  const [citeOpen, setCiteOpen] = useState(false);
+  const fig = plotFigure(row);
+  const unit = fig?.unit === '%' ? null : fig?.unit ?? row.unit;
+  const reg = row.applicable_regulation ?? '';
+  const title = citationTitle(reg);
+  const list = listParts(row.reported_data);
+  const { master } = useData();
+  // the time limit the requirement is within: the row's own time sentence where the bold line shows
+  // only the threshold (Rajasthan "Restoration within 4 h (…)"), else sibling rows' (borrowedTimes)
+  const ownTime = assessedAgainst(row) !== row.standard ? timeSpecified(row) : null;
+  const borrowed = ownTime ? [{ area: '', standard: ownTime, time: '' }] : borrowedTimes(row, master?.rows ?? []);
+  const notes = [
+    ...(showDefinition ? [{ label: 'Definition', text: row.definition }] : []),
+    { label: 'Standard (full)', text: row.standard },
+    ...(quarters ? [] : [{ label: 'Verdict detail', text: row.standard_met_detail }]),
+    ...(row.why_not_comparable ? [{ label: 'Why not comparable', text: row.why_not_comparable }] : []),
+    { label: 'Interpretation', text: row.interpretation },
+    { label: 'How it was standardised', text: row.documentation },
+    { label: 'Data source', text: row.reported_data_source },
+    { label: 'File', text: row.source_file },
+  ];
+
+  return (
+    <section className="ev" aria-live="polite" aria-label="Evidence for the selected point" style={{ ['--key' as string]: discom?.color }}>
+      <header className="ev-head">
+        <p className="ev-who">
+          <span className="ev-swatch" aria-hidden="true" />
+          <b>{row.discom_code}</b>
+          <span>{fyLabel(row.financial_year)}</span>
+        </p>
+        <div className="ev-verdict">
+          <span className="ev-kicker">{quarters ? 'Standard met, by quarter' : 'Standard met'}</span>
+          {quarters ? (
+            <span className="ev-quarters">
+              {quarters.map((v, i) => (
+                <span key={i} className={`ev-pill${v == null ? ' is-none' : verdictMod(v)}`}>
+                  Q{i + 1} {v ?? 'Not reported'}
+                </span>
+              ))}
+            </span>
+          ) : (
+            <span className={`ev-pill ev-pill--lg${verdictMod(row.standard_met)}`}>{show(row.standard_met)}</span>
+          )}
+          <span className="ev-comp">Comparison possible: {show(row.comparison_possible)}</span>
+        </div>
+      </header>
+
+      <div className="ev-hero">
+        <span className="ev-kicker">Standardised data</span>
+        {fig && (
+          <p className="ev-figure">
+            {fig.text.length <= 24 ? fig.text : fig.value.toLocaleString('en-IN')}
+            {unit && <span className="ev-unit">{unit}</span>}
+          </p>
+        )}
+        {(!fig || fig.text !== row.standardised_data) && <p className="ev-sentence">{show(row.standardised_data)}</p>}
+      </div>
+
+      <div className="ev-cols">
+        <div className="ev-col">
+          <h4 className="ev-kicker">What the regulation requires</h4>
+          <p className="ev-lead">{show(assessedAgainst(row))}</p>
+          {borrowed.length > 0 && (
+            <ul className="ev-times">
+              {borrowed.map((b) => (
+                <li key={b.area + b.standard}>
+                  <span>{b.area ? `Time limit, ${b.area}` : 'Time limit'}</span>
+                  {b.standard}
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="ev-cite">
+            {reg ? (citeOpen ? reg : title) : NA}
+            {reg && title !== reg && (
+              <button type="button" className="ev-link" aria-expanded={citeOpen} onClick={() => setCiteOpen((o) => !o)}>
+                {citeOpen ? 'Shorter' : 'Full citation'}
+              </button>
+            )}
+          </p>
+        </div>
+        <div className="ev-col">
+          <h4 className="ev-kicker">What the DISCOM reported</h4>
+          {list ? (
+            <>
+              <p className="ev-list-lead">{list.lead}</p>
+              <ul className="ev-list">
+                {list.items.map((it, i) => (
+                  <li key={i}>{it}</li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            <p className="ev-body">{show(row.reported_data)}</p>
+          )}
+        </div>
+      </div>
+
+      <div className="ev-notes">
+        <button type="button" className="ev-toggle" aria-expanded={notesOpen} aria-controls={id} onClick={() => setNotesOpen((o) => !o)}>
+          <span className="ev-chev" aria-hidden="true" />
+          Sources and notes
+        </button>
+        {notesOpen && (
+          <dl className="ev-dl" id={id}>
+            {notes.map((n) => (
+              <div key={n.label}>
+                <dt>{n.label}</dt>
+                <dd>{show(n.text)}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+      </div>
+    </section>
   );
 }
 
@@ -316,6 +404,7 @@ function Step({ label, text, body, verdict, quarters, more = [] }: { label: stri
  * otherwise one dotted line per DISCOM in its colour; labelled on the line itself. */
 function MasterTrend({ rows, discoms, yearsAsc, sheetUnit, selectedId, onSelect, annualOnly = false, yearVerdicts = false, table = false, benchStates }: { annualOnly?: boolean; yearVerdicts?: boolean; table?: boolean; benchStates?: string[]; rows: MasterRow[]; discoms: MasterDiscom[]; yearsAsc: string[]; sheetUnit: string | null; selectedId: string; onSelect: (id: string) => void }) {
   useThemeTick();
+  const { master } = useData();
   const good = cssVar('--good', '#2f8f4e');
   const critical = cssVar('--critical', '#c8432f');
   const panel = cssVar('--panel', '#fff');
@@ -361,16 +450,29 @@ function MasterTrend({ rows, discoms, yearsAsc, sheetUnit, selectedId, onSelect,
         const bench = share ?? (lim?.period === 'quarter' ? { value: lim.value, label: perQuarter(lim.value) } : null);
         return { r, q, value, text: `Q${q + 1}: ${perQuarter(value)}`, bench, verdict: yesNo(quarterVerdicts(r)?.[q]) };
       });
-      return { d, at };
+      // the benchmark line runs through every year the DISCOM's standard sets one, figure or not
+      // (user, 29 Oct 2026): a year with no figure reads its own row's standard in the chart's unit
+      const bench = slots.map(({ y, q }, i) => {
+        if (at[i]?.bench || q >= 0 || !chartUnit) return at[i]?.bench ?? null;
+        const own = rows.filter((x) => x.discom_code === d.code && x.financial_year === y);
+        for (const x of own) {
+          const b = plotBenchmark(x, { value: 0, unit: chartUnit, text: '' });
+          if (b) return b;
+        }
+        return null;
+      });
+      return { d, at, bench };
     })
     .filter((l) => l.at.some((p) => p != null));
 
   const axisUnit = chartUnit ? (chartUnit === '%' ? '%' : quarterMode ? `${chartUnit} per quarter` : chartUnit) : sheetUnit;
 
   // one shared line when, slot by slot, every DISCOM with a benchmark gives the same number
-  const benchBySlot = slots.map((_, i) => [...new Set(lines.map((l) => l.at[i]?.bench?.value).filter((v): v is number => v != null))]);
+  const benchBySlot = slots.map((_, i) => [...new Set(lines.map((l) => l.bench[i]?.value).filter((v): v is number => v != null))]);
   type BenchLine = { label: string; color: string; points: (PlotBenchmark | null)[]; byState?: boolean };
-  const perDiscom = (ls: typeof lines): BenchLine[] => ls.map((l) => ({ label: `${l.d.code} benchmark`, color: l.d.color, points: l.at.map((p) => p?.bench ?? null) }));
+  const perDiscom = (ls: typeof lines): BenchLine[] => ls.map((l) => ({ label: `${l.d.code} benchmark`, color: l.d.color, points: l.bench }));
+  // the state page's one line is named for the state: "Odisha benchmark: 0.1%" (user, 28 Oct 2026)
+  const sharedBenchLabel = `${rows[0]?.state ?? ''} benchmark`.trim();
   let shared = benchBySlot.every((vals) => vals.length <= 1);
   let benchLines: BenchLine[];
   if (benchStates) {
@@ -380,12 +482,12 @@ function MasterTrend({ rows, discoms, yearsAsc, sheetUnit, selectedId, onSelect,
     benchLines = [];
     for (const st of benchStates) {
       const ls = lines.filter((l) => l.at.some((p) => p?.r.state === st));
-      const vals = slots.map((_, i) => [...new Set(ls.map((l) => l.at[i]?.bench?.value).filter((v): v is number => v != null))]);
+      const vals = slots.map((_, i) => [...new Set(ls.map((l) => l.bench[i]?.value).filter((v): v is number => v != null))]);
       if (!vals.every((v) => v.length <= 1)) {
         benchLines.push(...perDiscom(ls));
         continue;
       }
-      const points = slots.map((_, i) => ls.map((l) => l.at[i]?.bench).find((b) => b) ?? null);
+      const points = slots.map((_, i) => ls.map((l) => l.bench[i]).find((b) => b) ?? null);
       if (!points.some((p) => p)) continue;
       // another state's line holding the same single value (over whatever years each covers): one
       // line named for both, "Telangana, Odisha benchmark" (user, 28 Oct 2026)
@@ -400,10 +502,25 @@ function MasterTrend({ rows, discoms, yearsAsc, sheetUnit, selectedId, onSelect,
       } else benchLines.push({ label: `${st} benchmark`, color: compareColor(benchStates, st) ?? benchColor, points, byState: true });
     }
   } else {
-    benchLines = shared ? [{ label: 'Benchmark', color: benchColor, points: slots.map((_, i) => lines.map((l) => l.at[i]?.bench).find((b) => b) ?? null) }] : perDiscom(lines);
+    benchLines = shared ? [{ label: sharedBenchLabel, color: benchColor, points: slots.map((_, i) => lines.map((l) => l.bench[i]).find((b) => b) ?? null) }] : perDiscom(lines);
   }
   const drawnBench = benchLines.filter((b) => b.points.some((p) => p));
-  const sharedBenchLabel = 'Benchmark';
+  // a % benchmark is only half a standard: the label also gives the time limit it is within, as the
+  // standards of its last year write it ("95% within 24 hours"); several distinct times are all listed
+  // (user, 29 Oct 2026)
+  const timeFor = (b: BenchLine) => {
+    let last = -1;
+    b.points.forEach((p, i) => p && (last = i));
+    if (last < 0 || chartUnit !== '%') return '';
+    const yr = slots[last].y;
+    const all = master?.rows ?? rows;
+    const times = [...new Set(rows.filter((r) => r.financial_year === yr).map((r) => timeLimitText(r, all)).filter((t): t is string => !!t))];
+    return times.length ? ` within ${times.join(' / ')}` : '';
+  };
+  drawnBench.forEach((b) => {
+    const t = timeFor(b);
+    if (t) b.points = b.points.map((p) => (p ? { ...p, label: `${p.label}${t}` } : p));
+  });
 
   // filled only where there is a benchmark to judge the figure against; otherwise hollow (N/A),
   // never "not met" (user, 28 Oct 2026)
@@ -423,6 +540,37 @@ function MasterTrend({ rows, discoms, yearsAsc, sheetUnit, selectedId, onSelect,
       const { ctx } = chart;
       const { drawnBench, lineCount, shared, sharedBenchLabel } = benchNow.current;
       const usedY: number[] = [];
+      // the benchmark itself: one dotted segment across each year's whole column, dotted risers
+      // where it changes, so a benchmark set for a single year is still a visible line
+      const xs = chart.scales.x;
+      const n = chart.data.labels?.length ?? 1;
+      const half = n > 1 ? (xs.getPixelForValue(1) - xs.getPixelForValue(0)) / 2 : (chart.chartArea.right - chart.chartArea.left) / 2;
+      drawnBench.forEach((b, bi) => {
+        const ds = chart.data.datasets[lineCount + bi];
+        if (!ds || !chart.isDatasetVisible(lineCount + bi)) return;
+        const ys = chart.scales.y;
+        ctx.save();
+        ctx.strokeStyle = typeof ds.borderColor === 'string' ? ds.borderColor : benchColor;
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([3, 4]);
+        ctx.beginPath();
+        let prevY: number | null = null;
+        b.points.forEach((p, i) => {
+          if (!p) return void (prevY = null);
+          const x = xs.getPixelForValue(i);
+          const y = ys.getPixelForValue(p.value);
+          const x0 = Math.max(chart.chartArea.left, x - half);
+          if (prevY != null && prevY !== y) {
+            ctx.moveTo(x0, prevY);
+            ctx.lineTo(x0, y);
+          }
+          ctx.moveTo(x0, y);
+          ctx.lineTo(Math.min(chart.chartArea.right, x + half), y);
+          prevY = y;
+        });
+        ctx.stroke();
+        ctx.restore();
+      });
       chart.data.datasets.forEach((ds, di) => {
         const b = drawnBench[di - lineCount];
         if (!b || !chart.isDatasetVisible(di)) return;
@@ -449,25 +597,33 @@ function MasterTrend({ rows, discoms, yearsAsc, sheetUnit, selectedId, onSelect,
           ctx.restore();
           return;
         }
-        // centred between the last two year columns, so the label never sits on a data point
-        const prev = meta.data[last - 1];
+        // centred between the last two year columns, so the label never sits on a data point; a
+        // single benchmark year: centred over its own segment
+        const prev = b.points[last - 1] ? meta.data[last - 1] : undefined;
         const lx = prev ? (prev.x + el.x) / 2 : el.x;
         ctx.save();
         ctx.font = `600 11px ${cssVar('--font-sans', 'system-ui, sans-serif')}`;
         ctx.fillStyle = typeof ds.borderColor === 'string' ? ds.borderColor : benchColor;
-        ctx.textAlign = prev ? 'center' : 'right';
+        ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
         // two labels at nearly the same height: the later one moves below its line
         let y = el.y - 6;
-        if (usedY.some((u) => Math.abs(u - y) < 14)) {
+        // below the line when a data point sits in the label's way (figures just above the benchmark)
+        const lo = Math.min(lx, prev ? prev.x : lx) - 4;
+        const hi = Math.max(lx, el.x) + 4;
+        const blocked = chart.data.datasets.slice(0, lineCount).some((_, li) =>
+          chart.getDatasetMeta(li).data.some((pt) => pt && pt.x >= lo - 60 && pt.x <= hi + 60 && pt.y >= y - 20 && pt.y <= y + 4),
+        );
+        if (blocked || usedY.some((u) => Math.abs(u - y) < 14)) {
           y = el.y + 18;
         }
         usedY.push(y);
         const text = `${shared ? sharedBenchLabel : b.label}: ${b.points[last]!.label}`;
         // a panel-coloured backing so the label reads where it crosses the data lines
         const w = ctx.measureText(text).width;
-        const tx = prev ? lx : el.x + 10;
-        const left = prev ? lx - w / 2 : tx - w;
+        // kept inside the plot: a long label ("95% within 24 hours (Cities and towns), …") slides left
+        const tx = Math.max(chart.chartArea.left + w / 2 + 4, Math.min(lx, chart.chartArea.right - w / 2 - 4));
+        const left = tx - w / 2;
         ctx.fillStyle = panel;
         ctx.globalAlpha = 0.85;
         ctx.fillRect(left - 4, y - 13, w + 8, 15);
@@ -503,11 +659,12 @@ function MasterTrend({ rows, discoms, yearsAsc, sheetUnit, selectedId, onSelect,
               ...drawnBench.map((b) => ({
                 label: b.label,
                 data: b.points.map((p) => p?.value ?? null),
+                // drawn by the miBenchLabels plugin (full-column segments); the dataset only sets
+                // the y-scale and carries the colour
                 borderColor: b.color,
                 backgroundColor: b.color,
-                borderWidth: 1.5,
-                borderDash: [3, 4],
-                stepped: 'middle' as const,
+                borderWidth: 0,
+                showLine: false,
                 spanGaps: false,
                 pointRadius: 0,
                 pointHoverRadius: 0,
@@ -564,7 +721,8 @@ function MasterTrend({ rows, discoms, yearsAsc, sheetUnit, selectedId, onSelect,
                 // figures are never negative: start at zero; a share's axis reaches at least 100%
                 beginAtZero: true,
                 min: 0,
-                ...(chartUnit === '%' ? { suggestedMax: 100 } : {}),
+                // (not for small limits like "not more than 0.1% of bills", which would sit flat on zero)
+                ...(chartUnit === '%' && Math.max(0, ...lines.flatMap((l) => l.at.flatMap((p) => (p ? [p.value, p.bench?.value ?? 0] : [])))) > 20 ? { suggestedMax: 100 } : {}),
                 // fixed width = the tracks' name column, so chart years sit over the track stops
                 afterFit: (scale) => {
                   scale.width = labelColFor(discoms);

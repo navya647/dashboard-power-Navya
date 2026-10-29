@@ -1,0 +1,610 @@
+/* ---- Glossary (/about/glossary, GlossaryView + GlossaryList). One screen on desktop, no page
+   scroll: a title row, a segmented category switch with Find, then the panel, paged by measured
+   height. Index: one tile per indicator family with a state-coverage strip. Detail: the family's
+   plain definition and coverage, then each state's own wording as a card. No outer frame; tiles
+   and cards carry the structure. Colours are local aliases of the theme tokens. ---- */
+
+.glossary-body {
+  margin-top: 18px;
+}
+
+/* title: the About page's heading as is (.abt-title: size, hairline, level with the logo) */
+.about-page > .gl-title {
+  margin-bottom: 22px !important;
+  padding-bottom: 14px;
+}
+.gl-lede {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--text-supporting, var(--muted));
+}
+
+.gl {
+  --gl-accent: var(--accent-hover);
+  --gl-meta: color-mix(in srgb, var(--accent-text) 38%, var(--text-supporting, var(--muted)));
+  --gl-line: color-mix(in srgb, var(--line) 85%, transparent);
+  --gl-sel-bg: color-mix(in srgb, var(--accent) 10%, var(--panel));
+  --gl-tile: color-mix(in srgb, var(--panel) 88%, transparent);
+  --gl-tile-hover: var(--panel);
+  --gl-on: color-mix(in srgb, var(--accent) 16%, var(--panel));
+  --gl-on-ink: var(--accent-hover);
+  display: flex;
+  flex-direction: column;
+  min-height: 340px;
+  max-width: 1320px;
+}
+:root[data-theme='dark'] .gl {
+  --gl-accent: var(--accent-text);
+  --gl-sel-bg: color-mix(in srgb, var(--accent) 28%, var(--panel));
+  --gl-tile: color-mix(in srgb, var(--panel) 72%, transparent);
+  --gl-tile-hover: color-mix(in srgb, var(--panel) 92%, transparent);
+  --gl-on: color-mix(in srgb, var(--accent) 45%, var(--panel));
+  --gl-on-ink: var(--ink);
+  color-scheme: dark;
+}
+
+/* ---- top bar: segmented category switch, Find at the far end ---- */
+.gl-bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.gl-tabs {
+  flex: 0 1 auto;
+  min-width: 0;
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  border: 1px solid var(--gl-line);
+  border-radius: 12px;
+  background: var(--gl-tile);
+  backdrop-filter: blur(10px);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.gl-tabs::-webkit-scrollbar {
+  display: none;
+}
+.gl-tab {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 14px;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--gl-meta);
+  cursor: pointer;
+  transition: color 150ms var(--ease), background-color 150ms var(--ease), box-shadow 150ms var(--ease);
+}
+.gl-tab:hover {
+  color: var(--ink);
+}
+.gl-tab:focus-visible {
+  outline: 2px solid var(--gl-accent);
+  outline-offset: -2px;
+}
+.gl-tab.is-active {
+  background: var(--gl-sel-bg);
+  color: var(--ink);
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gl-accent) 30%, transparent);
+}
+.gl-tab-n {
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--gl-meta);
+}
+.gl-tab.is-active .gl-tab-n {
+  color: var(--gl-accent);
+}
+
+.gl-find {
+  flex: none;
+  margin-left: auto;
+}
+/* index view: the pager sits on the tab row, Find after it */
+.gl-bar > .gl-pager {
+  margin-left: auto;
+}
+.gl-bar > .gl-pager + .gl-find {
+  margin-left: 4px;
+}
+/* index view: no head row (the active tab names the category); kept for screen readers */
+.gl-panel-head.gl-panel-head.gl-panel-head--hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.gl-panel:has(> .gl-panel-head--hidden) > .gl-terms:not(.gl-terms--measure) {
+  /* index view: the tiles sit centred between the tab row and the note below */
+  align-content: center;
+  padding-bottom: 2px;
+}
+.gl-find-open {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--gl-line);
+  border-radius: 12px;
+  background: var(--gl-tile);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--gl-meta);
+  cursor: pointer;
+  transition: color 120ms var(--ease), border-color 120ms var(--ease);
+}
+.gl-find-open:hover {
+  color: var(--ink);
+  border-color: color-mix(in srgb, var(--gl-accent) 45%, var(--line));
+}
+.gl-find-open:focus-visible {
+  outline: 2px solid var(--gl-accent);
+  outline-offset: 2px;
+}
+.gl-find-open svg,
+.gl-find-field > svg {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+.gl-find-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 300px;
+  height: 40px;
+  padding: 0 5px 0 13px;
+  border: 1px solid var(--gl-accent);
+  border-radius: 12px;
+  background: var(--panel);
+  color: var(--gl-meta);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gl-accent) 16%, transparent);
+  animation: gl-find-in 160ms var(--ease);
+}
+@keyframes gl-find-in {
+  from {
+    width: 120px;
+    opacity: 0.4;
+  }
+}
+.gl-find-field input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--ink);
+}
+.gl-find-field input::placeholder {
+  color: var(--gl-meta);
+}
+.gl-find-field input::-webkit-search-cancel-button {
+  display: none;
+}
+.gl-find-close {
+  all: unset;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.gl-find-close:hover {
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
+}
+.gl-find-close:focus-visible {
+  outline: 2px solid var(--gl-accent);
+}
+.gl-find-close svg {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: var(--gl-meta);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+.gl-find-empty {
+  margin: 0;
+  padding: 24px 0;
+  font-size: 14px;
+  color: var(--ink);
+}
+.gl mark {
+  padding: 0 1px;
+  border-radius: 3px;
+  background: color-mix(in srgb, #f0b44c 45%, transparent);
+  color: inherit;
+}
+
+/* ---- the panel ---- */
+.gl-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+.gl-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  /* keeps the hidden measuring copy from lengthening the page */
+  overflow: hidden;
+}
+.gl-panel-head {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 20px;
+  padding: 16px 0 14px;
+}
+.gl-panel-head h2 {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  line-height: 1.3;
+  color: var(--gl-meta);
+}
+/* detail: the family name becomes the page's second heading, in the title serif */
+.gl-panel-head--family h2 {
+  font-family: var(--font-serif, Georgia, serif);
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink);
+}
+.gl-back {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px 5px 6px;
+  border: 1px solid var(--gl-line);
+  border-radius: 8px;
+  background: var(--gl-tile);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--gl-meta);
+  cursor: pointer;
+  transition: color 120ms var(--ease), border-color 120ms var(--ease);
+}
+.gl-back:hover {
+  color: var(--ink);
+  border-color: color-mix(in srgb, var(--gl-accent) 45%, var(--line));
+}
+
+/* pager */
+.gl-pager {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--gl-meta);
+}
+.gl-pager span {
+  margin-right: 6px;
+}
+.gl-pager button {
+  all: unset;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--gl-line);
+  border-radius: 10px;
+  background: var(--gl-tile);
+  cursor: pointer;
+  transition: background-color 120ms var(--ease), border-color 120ms var(--ease);
+}
+.gl-pager button:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--gl-accent) 45%, var(--line));
+  background: var(--gl-sel-bg);
+}
+.gl-pager button:focus-visible {
+  outline: 2px solid var(--gl-accent);
+  outline-offset: 2px;
+}
+.gl-pager button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.gl-pager svg,
+.gl-family-open svg,
+.gl-back svg {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.gl-pager svg {
+  stroke: var(--ink);
+}
+
+.gl-states-label {
+  margin-right: 8px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gl-accent);
+}
+
+/* coverage strip: every state in the sheet, lit where the indicator is set */
+.gl-cov {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+.gl-cov-s {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 18px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: color-mix(in srgb, var(--gl-meta) 55%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gl-line) 70%, transparent);
+}
+.gl-cov-s.is-on {
+  background: var(--gl-on);
+  color: var(--gl-on-ink);
+  box-shadow: none;
+}
+
+/* ---- terms grid: index tiles (3 across) or wording cards (2 across) ---- */
+.gl-terms {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  align-content: start;
+  gap: 18px;
+  margin: 0;
+  padding: 2px 0 4px;
+  overflow-y: auto;
+  scrollbar-width: none;
+  animation: gl-in 220ms var(--ease);
+}
+.gl-terms::-webkit-scrollbar {
+  display: none;
+}
+.gl-terms--index {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.gl-terms--words {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@keyframes gl-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+/* the hidden copy GlossaryList measures to cut pages: same grid, same width, invisible */
+.gl-terms--measure {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  visibility: hidden;
+  pointer-events: none;
+  overflow: visible;
+  animation: none;
+}
+
+.gl-term {
+  display: flex;
+  flex-direction: column;
+  padding: 20px 22px;
+  border: 1px solid var(--gl-line);
+  border-radius: 14px;
+  background: var(--gl-tile);
+  backdrop-filter: blur(10px);
+}
+.gl-term dt {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--ink);
+}
+.gl-term dd {
+  margin: 6px 0 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-body, var(--ink));
+}
+.gl-term-where {
+  margin-bottom: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gl-meta);
+}
+.gl-term dd.gl-reading {
+  font-size: 12.5px;
+  color: var(--gl-meta);
+}
+.gl-term dd.gl-reading span {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* states under a wording: pills, pushed to the card's foot */
+.gl-term dd.gl-states {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  margin-top: auto;
+  padding-top: 12px;
+  font-size: 12px;
+  color: var(--gl-meta);
+}
+.gl-pill {
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--gl-on);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--gl-on-ink);
+}
+
+/* index tile: the whole tile opens the family */
+.gl-family {
+  cursor: pointer;
+  transition: border-color 150ms var(--ease), background-color 150ms var(--ease), transform 150ms var(--ease);
+}
+.gl-family:hover {
+  border-color: color-mix(in srgb, var(--gl-accent) 50%, var(--line));
+  background: var(--gl-tile-hover);
+  transform: translateY(-2px);
+}
+.gl-family-open {
+  all: unset;
+  display: inline;
+  cursor: pointer;
+}
+.gl-family-open svg {
+  margin-left: 6px;
+  vertical-align: -1px;
+}
+.gl-family-open svg {
+  color: var(--gl-accent);
+  transition: transform 150ms var(--ease);
+}
+.gl-family:hover .gl-family-open svg {
+  transform: translateX(3px);
+}
+.gl-family-open:focus-visible {
+  outline: 2px solid var(--gl-accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+.gl-family > dd:not(.gl-family-foot) {
+  margin-top: 10px;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--text-body, var(--ink));
+}
+.gl-term dd.gl-family-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+  margin-top: auto;
+  padding-top: 16px;
+}
+.gl-family dt {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+/* index view: the one hint on how to go further, bottom right under the tiles */
+.gl-note {
+  flex: none;
+  margin: 0;
+  align-self: flex-end;
+  font-size: 12.5px;
+  color: var(--text-supporting, var(--muted));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gl-terms,
+  .gl-find-field {
+    animation: none;
+  }
+  .gl-family:hover {
+    transform: none;
+  }
+}
+
+/* narrower desktops */
+@media (max-width: 1200px) {
+  .gl-terms--index {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .gl-terms--words {
+    grid-template-columns: 1fr;
+  }
+}
+/* tablet and phone: natural height, page scrolls */
+@media (max-width: 900px) {
+  .gl-bar {
+    flex-wrap: wrap;
+  }
+  .gl-find:has(.gl-find-field) {
+    flex-basis: 100%;
+  }
+  .gl-find-field {
+    width: 100%;
+  }
+  .gl-terms--index {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* short desktop windows (laptops, zoomed browsers): the same tiles a little tighter, so two rows
+   still fit */
+@media (min-width: 901px) and (max-height: 720px) {
+  
+  .gl-terms {
+    gap: 12px;
+  }
+  .gl-term {
+    padding: 12px 18px;
+  }
+  .gl-family > dd:not(.gl-family-foot) {
+    margin-top: 5px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .gl-term dd.gl-family-foot {
+    padding-top: 8px;
+  }
+}

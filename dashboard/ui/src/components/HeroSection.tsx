@@ -185,6 +185,42 @@ export default function HeroSection({
     window.addEventListener('resize', sync);
     return () => window.removeEventListener('resize', sync);
   }, [view]);
+  // The sunset photo is hidden behind the India Gate one until the visitor scrolls left on the
+  // landing view (horizontal wheel / trackpad, ArrowLeft, or a swipe to the right); scrolling
+  // right (or ArrowRight, a swipe left) hides it again.
+  const [sunOn, setSunOn] = useState(false);
+  useEffect(() => {
+    if (view !== 'landing') return;
+    const onWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaX) <= Math.abs(e.deltaY) || Math.abs(e.deltaX) < 8) return;
+      setSunOn(e.deltaX < 0);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') setSunOn(true);
+      else if (e.key === 'ArrowRight') setSunOn(false);
+    };
+    let startX = 0;
+    let startY = 0;
+    const onTouchStart = (e: TouchEvent) => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+    };
+    const onTouchEnd = (e: TouchEvent) => {
+      const dx = e.changedTouches[0].clientX - startX;
+      const dy = e.changedTouches[0].clientY - startY;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) setSunOn(dx > 0);
+    };
+    window.addEventListener('wheel', onWheel, { passive: true });
+    window.addEventListener('keydown', onKey);
+    window.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchend', onTouchEnd, { passive: true });
+    return () => {
+      window.removeEventListener('wheel', onWheel);
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchend', onTouchEnd);
+    };
+  }, [view]);
   useEffect(
     () => () => {
       // leaving the home page
@@ -200,6 +236,7 @@ export default function HeroSection({
       <div className="hero-landing hero-on-street">
         <div className="hero-bg-fabric">
           <div className="street-layer hero-photo-layer" aria-hidden="true" />
+          <div className={`street-layer hero-photo-layer hero-photo-sun${sunOn ? ' is-on' : ''}`} aria-hidden="true" />
         </div>
 
         <div className="hero-coverage-badge">

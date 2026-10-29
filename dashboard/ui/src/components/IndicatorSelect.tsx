@@ -12,6 +12,10 @@ export interface IndicatorOption {
 interface Props {
   options: IndicatorOption[];
   selected: string[];
+  /** key indicators, listed first under their own heading, in this order */
+  pinned?: string[];
+  /** Strongest first within each category (indicatorStrength); alphabetical when absent or tied. */
+  rank?: Map<string, number>;
   onChange: (next: string[]) => void;
 }
 
@@ -60,8 +64,12 @@ function MultiSummary({ names }: { names: string[] }) {
  * trigger names what's selected: the indicator itself (its type as secondary text) for one, both
  * names or a count for several (see MultiSummary). The trigger/menu shell is the shared
  * FilterDropdown. */
-export default function IndicatorSelect({ options, selected, onChange }: Props) {
+const KEY_GROUP = 'Key indicators';
+
+export default function IndicatorSelect({ options, selected, pinned = [], rank, onChange }: Props) {
   const [query, setQuery] = useState('');
+  // a category heading clicked in the list: only that category's indicators show until clicked again
+  const [onlyCat, setOnlyCat] = useState<string | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
   const groups = useMemo(() => {
@@ -69,14 +77,24 @@ export default function IndicatorSelect({ options, selected, onChange }: Props) 
     // the sheet's own category → indicators, categories in the order the options list them
     const byBucket = new Map<string, string[]>();
     for (const o of options) {
+      if (onlyCat && o.category !== onlyCat) continue;
       if (q && ![o.indicator, o.category, o.type].some((s) => s.toLowerCase().includes(q))) continue;
       (byBucket.get(o.category) ?? byBucket.set(o.category, []).get(o.category)!).push(o.indicator);
     }
-    return [...byBucket].map(([bucket, indicators]) => ({
-      bucket,
-      indicators: [...new Set(indicators)].sort((a, b) => a.localeCompare(b)),
-    }));
-  }, [options, query]);
+    // the key indicators head the list once, and leave their category groups
+    const top = pinned.filter((i) => [...byBucket.values()].some((l) => l.includes(i)));
+    const rest = [...byBucket]
+      .map(([bucket, indicators]) => ({
+        bucket,
+        indicators: [...new Set(indicators.filter((i) => !top.includes(i)))].sort(
+          (a, b) => (rank?.get(b) ?? 0) - (rank?.get(a) ?? 0) || a.localeCompare(b),
+        ),
+      }))
+      .filter((g) => g.indicators.length);
+    return top.length ? [{ bucket: KEY_GROUP, indicators: top }, ...rest] : rest;
+  }, [options, query, onlyCat, pinned, rank]);
+
+  const singleCat = new Set(options.map((o) => o.category)).size === 1;
 
   function toggle(indicator: string) {
     onChange(selected.includes(indicator) ? selected.filter((k) => k !== indicator) : [...selected, indicator]);
@@ -103,7 +121,10 @@ export default function IndicatorSelect({ options, selected, onChange }: Props) 
       maxHeight={340}
       minPanelWidth={260}
       initialFocus={() => searchRef.current}
-      onClose={() => setQuery('')}
+      onClose={() => {
+        setQuery('');
+        setOnlyCat(null);
+      }}
     >
       <>
         <input
@@ -118,9 +139,22 @@ export default function IndicatorSelect({ options, selected, onChange }: Props) 
         {groups.length === 0 && <p className="indicator-select-empty">No indicator matches “{query}”</p>}
         {groups.map((g) => (
           <div key={g.bucket} role="group" aria-label={g.bucket} className="indicator-select-group">
-            <div className="indicator-select-category" aria-hidden="true">
+            {/* one category on offer (the Category filter picked it): its heading would only repeat the filter */}
+            {g.bucket === KEY_GROUP ? (
+              <div className="indicator-select-category">{KEY_GROUP}</div>
+            ) : singleCat ? null : (
+            <button
+              type="button"
+              className={`indicator-select-category indicator-select-category--btn${onlyCat ? ' is-only' : ''}`}
+              aria-pressed={onlyCat === g.bucket}
+              title={onlyCat ? 'Show all categories' : `Show only ${g.bucket}`}
+              onClick={() => setOnlyCat(onlyCat ? null : g.bucket)}
+            >
+              {onlyCat && <span aria-hidden="true">‹ </span>}
               {g.bucket}
-            </div>
+              {onlyCat && <span className="indicator-select-category-all"> · all categories</span>}
+            </button>
+            )}
             {g.indicators.map((ind) => (
               <label key={ind} className="discom-multiselect-option">
                 <input type="checkbox" checked={selected.includes(ind)} onChange={() => toggle(ind)} />

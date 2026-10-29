@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { GlossaryEntry } from "@/lib/glossary";
 import { FAMILY_DEFINITIONS } from "@/lib/familyDefinitions";
 
@@ -42,6 +42,10 @@ function Term({ e, query, showWhere }: { e: GlossaryEntry; query: string; showWh
       )}
       <dt>{highlight(e.indicator, query)}</dt>
       <dd>{e.definition ? highlight(e.definition, query) : "N/A"}</dd>
+      <dd className="gl-states">
+        <span className="gl-states-label">{e.states.length === 1 ? "State/UT" : "States/UTs"}</span>
+        {e.states.length ? [...e.states].sort().map((s) => <span key={s} className="gl-pill">{s}</span>) : "N/A"}
+      </dd>
       {e.readings.map((r) => (
         <dd className="gl-reading" key={r.measure}>
           <span>Reported as</span> {r.measure} <span>{r.direction === "direction_unknown" ? "Interpretation" : r.direction === "higher_is_better" ? "Higher is better" : "Lower is better"}</span>
@@ -118,15 +122,47 @@ function familyDefinition(name: string, es: GlossaryEntry[]): string | null {
   return best;
 }
 
+/** short codes for the coverage strip; a state missing here falls back to its first two letters */
+const STATE_CODES: Record<string, string> = {
+  "Andhra Pradesh": "AP",
+  Assam: "AS",
+  Bihar: "BR",
+  Gujarat: "GJ",
+  Karnataka: "KA",
+  "Madhya Pradesh": "MP",
+  Maharashtra: "MH",
+  Odisha: "OD",
+  Rajasthan: "RJ",
+  "Tamil Nadu": "TN",
+  Telangana: "TG",
+  "Uttar Pradesh": "UP",
+  "West Bengal": "WB",
+};
+const stateCode = (s: string) => STATE_CODES[s] ?? s.slice(0, 2).toUpperCase();
+
+/** every state in the sheet, one mark each, lit where `has` carries the indicator */
+function Coverage({ all, has }: { all: string[]; has: string[] }) {
+  const on = new Set(has);
+  return (
+    <div className="gl-cov" aria-label={`Set in: ${[...on].sort().join(", ")}`}>
+      {all.map((s) => (
+        <span key={s} className={`gl-cov-s${on.has(s) ? " is-on" : ""}`} title={s}>
+          {stateCode(s)}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 /** what the panel lists: a tab's indicator families (the sheet's `indicator_family`), or the
  * indicators themselves, each wording exactly as the sheet has it */
-type Item = { kind: "family"; name: string; n: number; def: string | null } | { kind: "entry"; e: GlossaryEntry };
+type Item = { kind: "family"; name: string; def: string | null; states: string[] } | { kind: "entry"; e: GlossaryEntry };
 const itemKey = (it: Item) => (it.kind === "family" ? `family::${it.name}` : termKey(it.e));
 
 /** one indicator family: opens to its indicators */
-function FamilyTerm({ name, n, def, onOpen }: { name: string; n: number; def: string | null; onOpen?: () => void }) {
+function FamilyTerm({ name, def, states, allStates, onOpen }: { name: string; def: string | null; states: string[]; allStates: string[]; onOpen?: () => void }) {
   return (
-    <div className="gl-term gl-family">
+    <div className="gl-term gl-family" onClick={onOpen}>
       <dt>
         <button type="button" className="gl-family-open" onClick={onOpen} tabIndex={onOpen ? undefined : -1}>
           {name}
@@ -136,16 +172,16 @@ function FamilyTerm({ name, n, def, onOpen }: { name: string; n: number; def: st
         </button>
       </dt>
       <dd>{def ?? "N/A"}</dd>
-      <dd className="gl-family-n">
-        {n} {n === 1 ? "indicator" : "indicators"} as worded across states
+      <dd className="gl-family-foot">
+        <Coverage all={allStates} has={states} />
       </dd>
     </div>
   );
 }
 
-function ItemView({ it, query, showWhere, onOpen }: { it: Item; query: string; showWhere: boolean; onOpen?: (name: string) => void }) {
+function ItemView({ it, query, showWhere, allStates, onOpen }: { it: Item; query: string; showWhere: boolean; allStates: string[]; onOpen?: (name: string) => void }) {
   return it.kind === "family" ? (
-    <FamilyTerm name={it.name} n={it.n} def={it.def} onOpen={onOpen && (() => onOpen(it.name))} />
+    <FamilyTerm name={it.name} def={it.def} states={it.states} allStates={allStates} onOpen={onOpen && (() => onOpen(it.name))} />
   ) : (
     <Term e={it.e} query={query} showWhere={showWhere} />
   );
@@ -214,7 +250,9 @@ export default function GlossaryList({ entries }: { entries: GlossaryEntry[] }) 
     ? results.map((e) => ({ kind: "entry", e }))
     : family
       ? familyEntries.map((e) => ({ kind: "entry", e }))
-      : families.map(([name, es]) => ({ kind: "family", name, n: es.length, def: familyDefinition(name, es) }));
+      : families.map(([name, es]) => ({ kind: "family", name, def: familyDefinition(name, es), states: [...new Set(es.flatMap((e) => e.states))] }));
+  const mode = finding || family ? "gl-terms--words" : "gl-terms--index";
+  const allStates = useMemo(() => [...new Set(entries.flatMap((e) => e.states))].sort(), [entries]);
   const pages = starts.length;
   const current = Math.min(page, pages - 1);
   const from = starts[current] ?? 0;
@@ -285,6 +323,19 @@ export default function GlossaryList({ entries }: { entries: GlossaryEntry[] }) 
     setQuery("");
     setPage(0);
   }
+  // deep link from an indicator card's ⓘ: /about/glossary?family=<indicator_family> opens that
+  // family in its category tab
+  useEffect(() => {
+    const want = new URLSearchParams(window.location.search).get("family");
+    if (!want) return;
+    const i = all.findIndex(([, gs]) => gs.some((g) => g.entries.some((e) => e.category === want)));
+    if (i < 0) return;
+    setBucketIdx(i);
+    setGroupId(all[i][1].find((g) => g.entries.some((e) => e.category === want))?.id ?? null);
+    setFamily(want);
+    setPage(0);
+  }, [all]);
+
   function chooseBucket(i: number) {
     if (findOpen) closeFind();
     setBucketIdx(i);
@@ -306,6 +357,26 @@ export default function GlossaryList({ entries }: { entries: GlossaryEntry[] }) 
     setPage(0);
   }
 
+  const indexView = !finding && !family;
+  const pager =
+    pages > 1 ? (
+      <div className="gl-pager">
+        <span>
+          {from + 1}–{to} of {list.length}
+        </span>
+        <button type="button" onClick={() => setPage(current - 1)} disabled={current === 0} aria-label="Previous page">
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M10 3.5 5.5 8l4.5 4.5" />
+          </svg>
+        </button>
+        <button type="button" onClick={() => setPage(current + 1)} disabled={current >= pages - 1} aria-label="Next page">
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="m6 3.5 4.5 4.5L6 12.5" />
+          </svg>
+        </button>
+      </div>
+    ) : null;
+
   return (
     <div className="gl" ref={rootRef}>
       <div className="gl-bar">
@@ -320,6 +391,7 @@ export default function GlossaryList({ entries }: { entries: GlossaryEntry[] }) 
             );
           })}
         </div>
+        {indexView && pager}
         <div className="gl-find">
           {findOpen ? (
             <label className="gl-find-field">
@@ -362,7 +434,7 @@ export default function GlossaryList({ entries }: { entries: GlossaryEntry[] }) 
       <div className="gl-body">
         {group && (
           <section className="gl-panel" ref={panelRef} aria-label={finding ? "Find results" : group.category}>
-            <header className="gl-panel-head">
+            <header className={`gl-panel-head${indexView ? " gl-panel-head--hidden" : ""}${!finding && family ? " gl-panel-head--family" : ""}`}>
               <h2 aria-live={finding ? "polite" : undefined}>
                 {finding ? (
                   `${results.length} ${results.length === 1 ? "match" : "matches"} for “${q}”`
@@ -380,46 +452,26 @@ export default function GlossaryList({ entries }: { entries: GlossaryEntry[] }) 
                   group.category
                 )}
               </h2>
-              {!finding && family && FAMILY_DEFINITIONS[family] && (
-                <p className="gl-family-summary">
-                  <span>In short</span> {FAMILY_DEFINITIONS[family]} <em>Each state’s own wording follows.</em>
-                </p>
-              )}
-              {pages > 1 && (
-                <div className="gl-pager">
-                  <span>
-                    {from + 1}–{to} of {list.length}
-                  </span>
-                  <button type="button" onClick={() => setPage(current - 1)} disabled={current === 0} aria-label="Previous page">
-                    <svg viewBox="0 0 16 16" aria-hidden="true">
-                      <path d="M10 3.5 5.5 8l4.5 4.5" />
-                    </svg>
-                  </button>
-                  <button type="button" onClick={() => setPage(current + 1)} disabled={current >= pages - 1} aria-label="Next page">
-                    <svg viewBox="0 0 16 16" aria-hidden="true">
-                      <path d="m6 3.5 4.5 4.5L6 12.5" />
-                    </svg>
-                  </button>
-                </div>
-              )}
+              {!indexView && pager}
             </header>
             {finding && results.length === 0 ? (
               <p className="gl-find-empty">No indicator names or definitions contain “{q}”. Try a shorter word.</p>
             ) : (
-              <dl className="gl-terms" key={`${listKey}:${from}`}>
+              <dl className={`gl-terms ${mode}`} key={`${listKey}:${from}`}>
                 {pageEntries.map((it) => (
-                  <ItemView key={itemKey(it)} it={it} query={q} showWhere={finding} onOpen={openFamily} />
+                  <ItemView key={itemKey(it)} it={it} query={q} showWhere={finding} allStates={allStates} onOpen={openFamily} />
                 ))}
               </dl>
             )}
-            <dl className="gl-terms gl-terms--measure" ref={measureRef} aria-hidden="true">
+            <dl className={`gl-terms gl-terms--measure ${mode}`} ref={measureRef} aria-hidden="true">
               {list.map((it) => (
-                <ItemView key={itemKey(it)} it={it} query={q} showWhere={finding} />
+                <ItemView key={itemKey(it)} it={it} query={q} showWhere={finding} allStates={allStates} />
               ))}
             </dl>
           </section>
         )}
       </div>
+      {indexView && <p className="gl-note">Open an indicator to see how each state words and defines it.</p>}
     </div>
   );
 }

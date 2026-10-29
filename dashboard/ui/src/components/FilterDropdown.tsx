@@ -85,11 +85,16 @@ export default function FilterDropdown({ value, ariaLabel, panelClassName, maxHe
     place();
     const raf = requestAnimationFrame(place);
     window.addEventListener('resize', place);
-    window.addEventListener('scroll', place, { passive: true, capture: true });
+    // the page scrolling moves the trigger; the panel's own list scrolling doesn't
+    const onScroll = (e: Event) => {
+      if (panelRef.current && e.target instanceof Node && panelRef.current.contains(e.target)) return;
+      place();
+    };
+    window.addEventListener('scroll', onScroll, { passive: true, capture: true });
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener('resize', place);
-      window.removeEventListener('scroll', place, { capture: true });
+      window.removeEventListener('scroll', onScroll, { capture: true });
     };
   }, [open, place]);
 
@@ -156,7 +161,9 @@ export default function FilterDropdown({ value, ariaLabel, panelClassName, maxHe
                     left: pos.left,
                     top: pos.top,
                     bottom: pos.bottom,
-                    minWidth: pos.width,
+                    // exactly the trigger's width (within the min/max bounds); long rows wrap rather
+                    // than widening the panel past its trigger
+                    width: pos.width,
                     maxHeight: pos.maxHeight,
                   }
                 : { visibility: 'hidden' }

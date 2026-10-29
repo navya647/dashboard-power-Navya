@@ -9,7 +9,9 @@ import { stateHueMap } from '@/lib/colors';
 import { stateIsTracked, stateReportedYears } from '@/lib/computations';
 import { fyRunsLabel } from '@/lib/format';
 import { REGULATORS } from '@/lib/regulators';
-import { defaultIndicator, indicatorOptionsFor, masterYears, rowsForState, stateDiscoms } from '@/lib/master';
+import { discomFullName } from '@/lib/discomNames';
+import { defaultDiscom, defaultIndicators, pinnedIndicators } from '@/lib/priorityIndicators';
+import { indicatorOptionsFor, indicatorStrength, masterYears, rowsForState, stateDiscoms } from '@/lib/master';
 import CompilingState from './CompilingState';
 import DiscomMultiSelect from './DiscomMultiSelect';
 import IndicatorSelect, { type IndicatorOption } from './IndicatorSelect';
@@ -27,6 +29,8 @@ export default function StateDetail({ name }: { name: string }) {
   // An empty DISCOM list means all DISCOMs; an empty indicator list shows nothing until one is picked.
   const [selectedDiscoms, setSelectedDiscoms] = useState<string[]>([]);
   const [selectedIndicators, setSelectedIndicators] = useState<string[]>([]);
+  // the sheet's three categories; empty = all
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   // Set when a DISCOM change left none of the picked indicators available, so the page fell back
   // to that DISCOM selection's own default indicator instead of going empty, says what happened.
   const [fallbackNote, setFallbackNote] = useState<string | null>(null);
@@ -37,9 +41,12 @@ export default function StateDetail({ name }: { name: string }) {
   const discoms = stateDiscoms(master, name);
 
   function applyDefaultView(rows: typeof stateRows) {
-    const preferred = defaultIndicator(rows);
-    setSelectedDiscoms([]);
-    setSelectedIndicators(preferred ? [preferred] : []);
+    // one DISCOM selected by default (user, 29 Oct 2026), with its own primary indicators
+    const d = defaultDiscom(name, discoms.map((x) => x.code), stateRows);
+    const picked = d ? [d] : [];
+    setSelectedDiscoms(picked);
+    setSelectedCategories([]);
+    setSelectedIndicators(defaultIndicators(name, picked, rows.filter((r) => !d || r.discom_code === d)));
     setFallbackNote(null);
   }
 
@@ -66,7 +73,7 @@ export default function StateDetail({ name }: { name: string }) {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
-            Back to Home
+            Back to Map
           </button>
           <div className="breadcrumb">
             India Power Supply, Service Quality and Safety Dashboard <span>/</span> <b>{name}</b>
@@ -86,7 +93,20 @@ export default function StateDetail({ name }: { name: string }) {
   const inDiscoms = (keys: string[]) => stateRows.filter((r) => keys.length === 0 || keys.includes(r.discom_code));
   const discomScope = inDiscoms(selectedDiscoms);
   // the sheet's own category heads each group; `type` carries the indicator family
-  const indicatorOpts: IndicatorOption[] = indicatorOptionsFor(discomScope).map((o) => ({ indicator: o.indicator, category: o.category, type: o.family }));
+  const allIndicatorOpts: IndicatorOption[] = indicatorOptionsFor(discomScope).map((o) => ({ indicator: o.indicator, category: o.category, type: o.family }));
+  const categoryOpts = [...new Set(allIndicatorOpts.map((o) => o.category))].map((c) => ({ key: c, label: c }));
+  const inCategories = (o: IndicatorOption, cats: string[]) => cats.length === 0 || cats.includes(o.category);
+  const indicatorOpts = allIndicatorOpts.filter((o) => inCategories(o, selectedCategories));
+  const indicatorRank = indicatorStrength(discomScope);
+
+  // category change: keep the picked indicators still in it, else the first one it offers
+  function changeCategories(next: string[]) {
+    setSelectedCategories(next);
+    const opts = allIndicatorOpts.filter((o) => inCategories(o, next));
+    const kept = selectedIndicators.filter((i) => opts.some((o) => o.indicator === i));
+    setSelectedIndicators(kept.length ? kept : opts.length ? [opts[0].indicator] : []);
+    setFallbackNote(null);
+  }
 
   // DISCOM change: keep whichever picked indicators the new DISCOM selection still has; if none
   // survive, fall back to that selection's own default rather than leaving the page empty.
@@ -95,12 +115,19 @@ export default function StateDetail({ name }: { name: string }) {
     const available = new Set(scope.map((r) => r.indicator));
     const kept = selectedIndicators.filter((i) => available.has(i));
     setSelectedDiscoms(next);
+    // still on the default picks: move to the new DISCOM selection's own primaries
+    const sameSet = (a: string[], b: string[]) => a.length === b.length && a.every((x) => b.includes(x));
+    if (sameSet(selectedIndicators, defaultIndicators(name, selectedDiscoms, inDiscoms(selectedDiscoms)))) {
+      setSelectedIndicators(defaultIndicators(name, next, scope));
+      setFallbackNote(null);
+      return;
+    }
     if (kept.length > 0 || selectedIndicators.length === 0) {
       setSelectedIndicators(kept);
       setFallbackNote(null);
       return;
     }
-    const preferred = defaultIndicator(scope);
+    const preferred = defaultIndicators(name, next, scope)[0] ?? null;
     const n = selectedIndicators.length;
     const lost = n === 1 ? selectedIndicators[0] : selectedIndicators.slice(0, -1).join(', ') + ' and ' + selectedIndicators[n - 1];
     const verb = n === 1 ? 'isn’t' : 'aren’t';
@@ -114,10 +141,13 @@ export default function StateDetail({ name }: { name: string }) {
   }
 
   // Reset only appears once the view differs from the page-load default (see applyDefaultView)
-  const defaultInd = defaultIndicator(stateRows);
+  const defDiscom = defaultDiscom(name, discoms.map((x) => x.code), stateRows);
+  const defaultInds = defaultIndicators(name, defDiscom ? [defDiscom] : [], inDiscoms(defDiscom ? [defDiscom] : []));
   const atDefault =
-    selectedDiscoms.length === 0 &&
-    (defaultInd ? selectedIndicators.length === 1 && selectedIndicators[0] === defaultInd : selectedIndicators.length === 0);
+    (defDiscom ? selectedDiscoms.length === 1 && selectedDiscoms[0] === defDiscom : selectedDiscoms.length === 0) &&
+    selectedCategories.length === 0 &&
+    selectedIndicators.length === defaultInds.length &&
+    selectedIndicators.every((i) => defaultInds.includes(i));
   const shownDiscoms = selectedDiscoms.length ? discoms.filter((d) => selectedDiscoms.includes(d.code)) : discoms;
 
   // plain counts of what the sheet lists, never a score
@@ -133,7 +163,7 @@ export default function StateDetail({ name }: { name: string }) {
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
-          Back to Home
+          Back to Map
         </button>
         <div className="breadcrumb">
           India Power Supply, Service Quality and Safety Dashboard <span>/</span> <b>{name}</b>
@@ -170,13 +200,16 @@ export default function StateDetail({ name }: { name: string }) {
               )}
               {(discoms.length >= 5 ? [discoms.slice(0, Math.ceil(discoms.length / 2)), discoms.slice(Math.ceil(discoms.length / 2))] : [discoms]).map((col, ci) => (
                 <ul key={ci} aria-label="DISCOMs">
-                  {/* code then the sheet's discom_name; where the sheet gives only the code, it's shown once */}
-                  {col.map((d) => (
-                    <li key={d.code} className={d.name === d.code ? 'hero-discom-list-fullonly' : undefined}>
-                      {d.name !== d.code && <b>{d.code}</b>}
-                      <span>{d.name}</span>
-                    </li>
-                  ))}
+                  {/* code then the sheet's discom_name, or discomFullName's where the sheet gives only the code */}
+                  {col.map((d) => {
+                    const full = discomFullName(d.code, d.name);
+                    return (
+                      <li key={d.code} className={full === d.code ? 'hero-discom-list-fullonly' : undefined}>
+                        {full !== d.code && <b>{d.code}</b>}
+                        <span>{full}</span>
+                      </li>
+                    );
+                  })}
                 </ul>
               ))}
             </div>
@@ -199,10 +232,24 @@ export default function StateDetail({ name }: { name: string }) {
           />
         </div>
 
+        <div className="toolbar-field">
+          <label>Select Category</label>
+          <DiscomMultiSelect
+            options={categoryOpts}
+            selected={selectedCategories}
+            label="Category"
+            allLabel="All categories"
+            summaryText={(sel, opts) => (sel.length === 0 || sel.length === opts.length ? 'All categories' : sel.length === 1 ? sel[0] : `${sel.length} categories`)}
+            onChange={changeCategories}
+          />
+        </div>
+
         <div className="toolbar-field toolbar-field--indicator">
           <label>Select Indicator</label>
           <IndicatorSelect
             options={indicatorOpts}
+            pinned={pinnedIndicators(name, selectedDiscoms)}
+            rank={indicatorRank}
             selected={selectedIndicators}
             onChange={(next) => {
               setSelectedIndicators(next);

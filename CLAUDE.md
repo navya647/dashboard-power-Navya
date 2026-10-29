@@ -58,7 +58,15 @@ Accessibility page.
   28 Oct 2026 at the user's request: one CSS grid, state blocks, benchmark line per block, verdict colours, DISCOM card).
   Only the data layer changed: `lib/glance.ts` builds the groups from the master sheet for `GLANCE_FAMILIES` (SAIDI,
   SAIFI, DT failure, line breakdown, DT fuse, reconnection) via `plotFigure` / `plotBenchmark`; a state block splits
-  where its rows' benchmarks differ (state name written once); several rows of one DISCOM get one bar each.
+  where its rows' benchmarks differ (state name written once); several rows of one DISCOM get one bar each. **Superseded 29 Oct 2026:** the page was rebuilt from scratch at the
+  user's request (only the title + lede kept): `GlanceView.tsx` + `lib/quickCompare.ts` + `styles/glance.css` (`qc-*`).
+  Data = highest-confidence records only (user, 29 Oct 2026): a figure is kept only where the DISCOM's own return states
+  it for that period, nothing the sheet summed, combined or computed from counts (`QC_INDICATORS`: Rajasthan quarterly,
+  Odisha + TGNPDCL annual; exclusions listed there; change only with sign-off). No explanatory/internal wording on the page. Filters: indicator tabs, Annual/Quarterly, FY22–26, Q1–Q4. One chart per
+  measurement basis, one row per DISCOM × category in a fixed order; a line with no figure for the chosen year/quarter is not drawn
+  and the year picker only offers years with figures (user, 29 Oct 2026); record panel with
+  the sheet's indicator name / reported text / standard verbatim and a five-year strip. `lib/glance.ts` stays only for
+  `isQuarterly`/`unitOf` (used by `MasterIndicator.tsx`). The `GlanceView.tsx` notes under Shared UI patterns are historical.
   **Never annualise** (user, 28 Oct 2026): figures are compared in the period their standard is set for. Rows the sheet
   assesses by quarter, or held to a per-quarter limit, go in a separate "… per quarter" chart with a Q1–Q4 picker:
   the quarter's figure from `reported_data` (`quarterFigures`), that quarter's verdict, the per-quarter limit
@@ -68,7 +76,7 @@ Accessibility page.
   should be annual and below that the quarterly data should be there as it is now"): each row's FY figure only, no
   Q1–Q4 slots; a quarter-assessed row's point stays hollow (no yearly verdict) while its track stop keeps the four
   quarter marks; points are filled only where a benchmark is drawn. The header
-  also shows the family's signed-off plain definition ("In short", `lib/familyDefinitions.ts`).
+  also shows the family's signed-off plain definition (the Glossary tiles, `lib/familyDefinitions.ts`).
 - Compare (`/compare?states=`, `CompareView.tsx`) is back since 28 Oct 2026 at the user's request, read from the
   master sheet: the map's View/Compare switch picks states; the page has one DISCOM picker per state and an indicator
   picker over the `indicator_family` values every selected state has (states word indicators differently); each pick is
@@ -77,6 +85,23 @@ Accessibility page.
   with a year figure (`plotFigure`) only, `annualOnly` (no Q1–Q4 slots) and `hideTimes` (no merged time-limit list) on
   `MasterIndicator`; a DISCOM-year with several rows keeps only the one worded "Overall …" / "All feeder …" /
   "… combined" when exactly one is, else all of them (`annualView` in `CompareView.tsx`).
+  Compare defaults + order (user, 29 Oct 2026): `familyFit()` in `CompareView.tsx` (internal, never shown) ranks the
+  common families: figures shared across the selected states in 2+ FYs with a drawn benchmark in every state > shared
+  in 2+ FYs > the rest, then shared years, consumer-facing, DISCOM count. It picks the default family, orders
+  `IndicatorSelect` (`rank`), ticks by default only DISCOMs whose figures share the family's main unit, and opens the
+  evidence on the latest shared year (`initialYear` on `MasterIndicator`). Kept out of defaults only (still selectable):
+  per-kW / connected-load figures, TGNPDCL SAIDI FY26 (year total disagrees with its quarters), MSEDCL % shares.
+- State page default + dropdown order (user, 29 Oct 2026): `indicatorStrength()` in `lib/master.ts` (internal only, never
+  displayed; sheet Met/Not met ignored) ranks indicators: figures in 2+ FYs with a drawn benchmark in 2+ FYs > figures in
+  2+ FYs > the rest, then years, consumer-facing (SAIDI/SAIFI/billing/meters/DT failure), "Overall". It picks
+  `defaultIndicator`, the default DISCOM where `priorityIndicators.ts` lists none, and orders indicators within each
+  category of `IndicatorSelect` (`rank` prop; Compare stays alphabetical). The user's `PRIORITY` list still wins.
+- 29 Oct 2026 (user): `headlineFigure` also reads FY figures written without a basis ("FY SAIFI: 91.44 Nos.") using the
+  row's own `unit` column when it names the same measure; "Not annualised" rows stay off the chart. The benchmark is drawn
+  by the `miBenchLabels` plugin as full-column dotted segments through every year the standard sets one (figure or not),
+  and a % benchmark's label carries its time limit (`timeLimitText` / `borrowedTimes` in `lib/master.ts`: the row's own,
+  else the same DISCOM-year's Guaranteed-standard or per-area sibling rows, verbatim). The evidence card (`Evidence` in
+  `MasterIndicator.tsx`, `.ev-*`) lists those sibling time standards under "What the regulation requires".
 - The Methodology page is kept exactly as it was (user, 27 Oct 2026). It loads
   `discoms2.json` and `state_specific.json` itself (`useEarlierData` in
   `MethodologyView.tsx`), so those two files must stay in `ui/public/data/`.

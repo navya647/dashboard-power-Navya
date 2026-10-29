@@ -673,8 +673,8 @@
   top: 12px;
   height: 2px;
   border-radius: 2px;
-  background: var(--key);
-  opacity: 0.5;
+  background: var(--im-rule);
+  opacity: 1;
   /* from the centre of column --from to the centre of column --to */
   left: calc(var(--label-col) + (100% - var(--label-col)) / var(--cols) * (var(--from) + 0.5));
   width: calc((100% - var(--label-col)) / var(--cols) * (var(--to) - var(--from)));
@@ -818,7 +818,7 @@
   left: 6px;
   right: calc((100% - 80px) / 5 - 6px);
   height: 2px;
-  background: color-mix(in srgb, var(--key, var(--ink)) 45%, transparent);
+  background: var(--im-rule);
 }
 .mi-step {
   position: relative;
@@ -832,7 +832,7 @@
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  border: 2.5px solid var(--key, var(--ink));
+  border: 2px solid var(--im-quiet);
   background: var(--panel);
   box-sizing: border-box;
 }
@@ -889,11 +889,8 @@
   font-size: 13px;
   line-height: 1.45;
   font-weight: 500;
-  overflow-wrap: anywhere;
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  /* full text, never clipped mid-sentence (user, 29 Oct 2026) */
+  overflow-wrap: break-word;
 }
 .mi-step--verdict .mi-step-text {
   font-size: 12px;
@@ -1141,3 +1138,316 @@
   background: color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
+
+/* indicator name with its ⓘ: the definition (and a Glossary link) in a pop-over under it */
+.mi-name-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mi-name-info {
+  position: relative;
+  display: inline-flex;
+}
+.mi-pop--def {
+  top: calc(100% + 6px);
+  bottom: auto;
+  left: -8px;
+  width: min(440px, calc(100vw - 48px));
+}
+.mi-pop--def a {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+/* bridges the 6px gap, so moving the mouse from the ⓘ to the link doesn't close the pop-over */
+.mi-pop--def::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -8px;
+  height: 8px;
+}
+
+/* ---- evidence card (Evidence in MasterIndicator.tsx), redesigned 29 Oct 2026 ----
+   verdict + headline figure, then requires | reported, then one "Sources and notes" disclosure */
+.ev {
+  margin-top: 20px;
+  border: 1px solid var(--im-rule);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--ink) 2.5%, transparent);
+  overflow: hidden;
+}
+.ev-kicker {
+  display: block;
+  margin: 0 0 8px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--im-quiet);
+}
+.ev-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 18px 22px 0;
+}
+.ev-who {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 15px;
+}
+.ev-who span:last-child {
+  color: var(--im-quiet);
+  font-weight: 600;
+}
+.ev-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--key, var(--im-quiet));
+}
+.ev-verdict {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  text-align: right;
+}
+.ev-verdict .ev-kicker {
+  margin: 0;
+}
+.ev-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+  color: var(--im-quiet);
+}
+.ev-pill--lg {
+  padding: 5px 14px;
+  font-size: 14px;
+}
+.ev-pill.is-yes {
+  background: color-mix(in srgb, var(--good) 20%, transparent);
+  color: var(--good);
+}
+.ev-pill.is-no {
+  background: color-mix(in srgb, var(--critical) 20%, transparent);
+  color: var(--critical);
+}
+.ev-pill.is-none {
+  opacity: 0.7;
+}
+.ev-quarters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.ev-comp {
+  font-size: 12px;
+  color: var(--im-quiet);
+}
+.ev-hero {
+  padding: 4px 22px 18px;
+}
+.ev-figure {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 40px;
+  line-height: 1.1;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+.ev-unit {
+  margin-left: 10px;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--im-quiet);
+}
+.ev-sentence {
+  margin: 6px 0 0;
+  max-width: 72ch;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--im-quiet);
+}
+.ev-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1px solid var(--im-rule);
+}
+.ev-col {
+  min-width: 0;
+  padding: 18px 22px 20px;
+}
+.ev-col + .ev-col {
+  border-left: 1px solid var(--im-rule);
+}
+.ev-lead {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  font-weight: 600;
+}
+.ev-cite {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--im-quiet);
+  overflow-wrap: break-word;
+}
+.ev-link {
+  margin-left: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--accent);
+  cursor: pointer;
+}
+.ev-link:hover {
+  text-decoration: underline;
+}
+.ev-body {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  overflow-wrap: break-word;
+}
+.ev-list-lead {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--im-quiet);
+}
+.ev-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: 6px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.ev-list li {
+  padding: 4px 0;
+  border-bottom: 1px dashed var(--im-rule);
+}
+.ev-notes {
+  border-top: 1px solid var(--im-rule);
+}
+.ev-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 22px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--im-quiet);
+  cursor: pointer;
+  text-align: left;
+}
+.ev-toggle:hover {
+  color: var(--ink);
+}
+.ev-toggle:focus-visible,
+.ev-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.ev-chev {
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 0.2s ease;
+}
+.ev-toggle[aria-expanded='true'] .ev-chev {
+  transform: rotate(45deg);
+}
+.ev-dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 28px;
+  margin: 0;
+  padding: 2px 22px 20px;
+}
+.ev-dl dt {
+  margin-bottom: 3px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--im-quiet);
+}
+.ev-dl dd {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: break-word;
+}
+@media (max-width: 760px) {
+  .ev-head {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .ev-verdict {
+    align-items: flex-start;
+    text-align: left;
+  }
+  .ev-quarters {
+    justify-content: flex-start;
+  }
+  .ev-figure {
+    font-size: 32px;
+  }
+  .ev-cols,
+  .ev-dl {
+    grid-template-columns: 1fr;
+  }
+  .ev-col + .ev-col {
+    border-left: 0;
+    border-top: 1px solid var(--im-rule);
+  }
+}
+/* the time limit an "Overall standard" leaves out, from its sibling rows, verbatim */
+.ev-times {
+  display: grid;
+  gap: 6px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+.ev-times span {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--im-quiet);
+}

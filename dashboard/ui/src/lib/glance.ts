@@ -91,6 +91,7 @@ export function isQuarterly(r: MasterRow): boolean {
 }
 
 const hasFigure = (r: MasterRow) => (isQuarterly(r) ? true : plotFigure(r)?.unit != null);
+
 const inFamily = (rows: MasterRow[], family: string) => rows.filter((r) => r.indicator_family === family && hasFigure(r));
 
 /** Years (newest first) with at least one figure for the indicator. */

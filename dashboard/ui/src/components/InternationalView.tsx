@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import AboutKicker from './AboutKicker';
 import {
   COMPARATOR_GROUPS,
   CONTEXT,
@@ -18,7 +17,7 @@ import {
 /** The International Comparison page (/about/international, reached from the About page): a one-line
  * lede beside India's weighted benchmark, then the working note's SAIDI/SAIFI table drawn as two dot
  * plots sharing one row per geography (one CSS grid, so rows line up by construction), each row tagged
- * with why that comparator was chosen, beside a card with the selected geography's full entry. India
+ * with why that comparator was chosen; clicking a row opens a card with that geography's full entry. India
  * is a range of state regulatory benchmarks (an open bar, with its weighted benchmark as a tick);
  * every other row is observed performance (a dot), drawn differently because the note is explicit
  * that they are not like-for-like. Values span six orders of magnitude, so both axes are log scale.
@@ -61,7 +60,18 @@ function Plot({ value, axis, kind, mark }: { value: Geography['saidi']; axis: Ax
       <span className="ic-plot">
         {grid}
         <span className="ic-range" style={{ left: `${l}%`, width: `${r - l}%` }} />
-        {mark != null && <span className="ic-mark" style={{ left: `${pct(mark, axis)}%` }} />}
+        {mark != null && (
+          <>
+            <span className="ic-mark" style={{ left: `${pct(mark, axis)}%` }} />
+            <span
+              className={`ic-mark-val${pct(mark, axis) > 85 ? ' ic-mark-val--end' : ''}`}
+              style={{ left: `${pct(mark, axis)}%` }}
+              title={`Weighted benchmark. ${INDIA_WEIGHTED.text}`}
+            >
+              {fmt(mark)}
+            </span>
+          </>
+        )}
         <span className="ic-val ic-val--left" style={{ left: `${l}%` }}>
           {fmt(lo)}–{fmt(hi)}
         </span>
@@ -134,37 +144,42 @@ function DetailCard({ g }: { g: Geography }) {
 }
 
 export default function InternationalView() {
-  const [selected, setSelected] = useState(GEOGRAPHIES[0].name);
-  const sel = GEOGRAPHIES.find((g) => g.name === selected) ?? GEOGRAPHIES[0];
+  // no card until a country is clicked; clicking it again closes the card
+  const [selected, setSelected] = useState<string | null>(null);
+  const sel = GEOGRAPHIES.find((g) => g.name === selected) ?? null;
 
   return (
     <div className="methodology-page about-page ic">
       <header className="ic-hero">
         <div>
-          <AboutKicker here="International comparison" />
-          <h1 className="method-hero-title">International Comparison</h1>
+          <h1 className="method-hero-title abt-title ic-title">International Comparison</h1>
           <p className="ic-lede" title={CONTEXT.join('\n\n')}>
-            {LEDE}
+            {/* one sentence per line, never broken mid-sentence */}
+            {LEDE.split(/(?<=\.)\s+/).map((t) => (
+              <span key={t} className="ic-lede-line">
+                {t}
+              </span>
+            ))}
           </p>
-        </div>
-        <div className="ic-hero-stat" title={INDIA_WEIGHTED.text}>
-          <span className="ic-hero-label">India · weighted benchmark</span>
-          <span className="ic-hero-figs">
-            <span>
-              <b>{INDIA_WEIGHTED.saidi.toLocaleString('en-IN')}</b>
-              <small>SAIDI</small>
-              <span>min</span>
+          <div className="ic-hero-stat" title={INDIA_WEIGHTED.text}>
+            <span className="ic-hero-label">India · weighted benchmark</span>
+            <span className="ic-hero-figs">
+              <span>
+                <b>{INDIA_WEIGHTED.saidi.toLocaleString('en-IN')}</b>
+                <small>SAIDI</small>
+                <span>{SAIDI_UNIT.replace(/\//g, '/​')}</span>
+              </span>
+              <span>
+                <b>{INDIA_WEIGHTED.saifi}</b>
+                <small>SAIFI</small>
+                <span>{SAIFI_UNIT.replace(/\//g, '/​')}</span>
+              </span>
             </span>
-            <span>
-              <b>{INDIA_WEIGHTED.saifi}</b>
-              <small>SAIFI</small>
-              <span>interruptions</span>
-            </span>
-          </span>
+          </div>
         </div>
       </header>
 
-      <div className="ic-body">
+      <div className={`ic-body${sel ? ' ic-body--open' : ''}`}>
         <div className="ic-chart-wrap">
           <div className="ic-chart">
             <span className="ic-head ic-head--geo" aria-hidden="true" />
@@ -184,7 +199,7 @@ export default function InternationalView() {
                 className={`ic-row${g.name === selected ? ' is-active' : ''}${g.kind === 'benchmark-range' ? ' ic-row--india' : ''}`}
                 aria-pressed={g.name === selected}
                 aria-label={`${g.name}: SAIDI ${g.saidiText}; SAIFI ${g.saifiText}`}
-                onClick={() => setSelected(g.name)}
+                onClick={() => setSelected((cur) => (cur === g.name ? null : g.name))}
               >
                 <span className="ic-geo">
                   {g.name}
@@ -210,13 +225,15 @@ export default function InternationalView() {
             <span>
               <i className="ic-key-dot" /> Observed performance
             </span>
-            <span>Log scale · lower is better</span>
+            <span>Log scale · lower is better{sel ? '' : ' · click a country for details'}</span>
           </p>
         </div>
 
+        {sel && (
         <aside className="ic-aside">
           <DetailCard g={sel} />
         </aside>
+        )}
       </div>
 
       <footer className="ic-notes" aria-label="Methodological notes">

@@ -8,7 +8,7 @@ import { useData } from '@/lib/DataContext';
 import { CATEGORICAL } from '@/lib/colors';
 import { compareColor, stateHasReportedData } from '@/lib/computations';
 import { masterYears, rowsForState, stateDiscoms, type MasterDiscom } from '@/lib/master';
-import { plotFigure } from '@/lib/plotFigures';
+import { plotBenchmark, plotFigure } from '@/lib/plotFigures';
 import type { MasterRow } from '@/lib/types';
 import DiscomMultiSelect from './DiscomMultiSelect';
 import IndicatorSelect, { type IndicatorOption } from './IndicatorSelect';
@@ -34,6 +34,55 @@ function annualView(rows: MasterRow[]): MasterRow[] {
     (g.length > 1 && overall.length === 1 ? overall : g).forEach((r) => keep.add(r));
   }
   return rows.filter((r) => keep.has(r));
+}
+
+// Rows kept out of the default view only; they stay selectable. A figure stated per kW of connected
+// load though the sheet's unit says per consumer (Odisha, TGSPDCL), a year total that disagrees with
+// its own quarters (TGNPDCL SAIDI FY26: 1,693 vs about 365), MSEDCL's % shares (12-66%, far below
+// every other DISCOM: likely another basis).
+const PER_LOAD = /per kw|connected load/i;
+const DEFAULT_EXCLUDE = new Set(['TGNPDCL-2025-26-51']);
+const figUnit = (r: MasterRow) => (plotFigure(r)?.unit ?? r.unit ?? '').toLowerCase();
+const defaultEligible = (r: MasterRow) =>
+  !DEFAULT_EXCLUDE.has(r.id) && !PER_LOAD.test(r.reported_data ?? '') && !(r.discom_code === 'MSEDCL' && figUnit(r) === '%');
+
+const CONSUMER_FACING = /SAIDI|SAIFI|billing|meter|transformer failure/i;
+
+interface FamilyFit {
+  score: number;
+  /** DISCOMs with default-eligible figures in the family's main unit */
+  discoms: Set<string>;
+  /** latest year at least two of the selected states (or, for one state, two DISCOMs) have figures */
+  latestShared: string | null;
+}
+
+/** Internal only, never shown (user, 29 Oct 2026): how well one family compares across the selected
+ * states. Only default-eligible figures in the unit most of them use count. Tier 1 = figures shared
+ * across states in 2+ years and a drawn benchmark in every state, tier 2 = shared in 2+ years, tier
+ * 3 = the rest; then shared years, consumer-facing families, DISCOMs with figures. The sheet's
+ * Met/Not met is not used. */
+function familyFit(rows: MasterRow[], states: string[]): FamilyFit {
+  const ok = rows.filter(defaultEligible);
+  const units = new Map<string, number>();
+  ok.forEach((r) => units.set(figUnit(r), (units.get(figUnit(r)) ?? 0) + 1));
+  const main = [...units].sort((a, b) => b[1] - a[1])[0]?.[0];
+  const inUnit = ok.filter((r) => figUnit(r) === main);
+  const byYear = new Map<string, { states: Set<string>; discoms: Set<string> }>();
+  for (const r of inUnit) {
+    const y = byYear.get(r.financial_year) ?? byYear.set(r.financial_year, { states: new Set(), discoms: new Set() }).get(r.financial_year)!;
+    y.states.add(r.state);
+    y.discoms.add(r.discom_code);
+  }
+  const shared = [...byYear].filter(([, y]) => (states.length > 1 ? y.states.size >= 2 : y.discoms.size >= 2)).map(([fy]) => fy).sort();
+  const benchStates = new Set(inUnit.filter((r) => plotBenchmark(r, plotFigure(r))).map((r) => r.state));
+  const discoms = new Set(inUnit.map((r) => r.discom_code));
+  const tier = shared.length >= 2 && states.every((s) => benchStates.has(s)) ? 1 : shared.length >= 2 ? 2 : 3;
+  const f = rows[0]?.indicator_family ?? '';
+  return {
+    score: (3 - tier) * 100000 + shared.length * 1000 + (CONSUMER_FACING.test(f) ? 500 : 0) + discoms.size * 10 + benchStates.size,
+    discoms,
+    latestShared: shared[shared.length - 1] ?? null,
+  };
 }
 
 interface Props {
@@ -74,7 +123,7 @@ export default function CompareView({ states }: Props) {
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
         <path d="M19 12H5M12 19l-7-7 7-7" />
       </svg>
-      Back to Home
+      Back to Map
     </button>
   );
 
@@ -93,29 +142,39 @@ export default function CompareView({ states }: Props) {
   const discomsByState = new Map(states.map((s) => [s, stateDiscoms(master, s)]));
   const allDiscoms: MasterDiscom[] = states.flatMap((s) => discomsByState.get(s) ?? []).map((d, i) => ({ ...d, color: CATEGORICAL[i % CATEGORICAL.length] }));
 
-  const ticked = (s: string) => selectedDiscoms[s] ?? [];
-  const rowsByState = new Map<string, MasterRow[]>(
-    states.map((s) => {
-      const keys = ticked(s);
-      // only rows with a year figure to chart (user: "lose granularity and use annual data where
-      // defensibly possible"), narrowed to the sheet's overall row where it has one
-      return [s, annualView(rowsForState(master, s).filter((r) => (keys.length === 0 || keys.includes(r.discom_code)) && plotFigure(r) != null))];
-    }),
-  );
+  // the DISCOMs the viewer has ticked (undefined until they touch that state's picker; [] = all)
+  const chosen = (s: string) => selectedDiscoms[s] ?? [];
+  // only rows with a year figure to chart (user: "lose granularity and use annual data where
+  // defensibly possible"), narrowed to the sheet's overall row where it has one
+  const rowsFor = (s: string, keys: string[]) =>
+    annualView(rowsForState(master, s).filter((r) => (keys.length === 0 || keys.includes(r.discom_code)) && plotFigure(r) != null));
+  const baseByState = new Map<string, MasterRow[]>(states.map((s) => [s, rowsFor(s, chosen(s))]));
 
   // families every selected state has, in the first state's sheet order, grouped by the sheet's category
   const familiesOf = (rows: MasterRow[]) => new Set(rows.map((r) => r.indicator_family));
-  const common = [...familiesOf(rowsByState.get(states[0]) ?? [])].filter((f) => states.every((s) => familiesOf(rowsByState.get(s) ?? []).has(f)));
+  const common = [...familiesOf(baseByState.get(states[0]) ?? [])].filter((f) => states.every((s) => familiesOf(baseByState.get(s) ?? []).has(f)));
+  const baseRows = states.flatMap((s) => baseByState.get(s) ?? []);
+  const fit = new Map(common.map((f) => [f, familyFit(baseRows.filter((r) => r.indicator_family === f), states)]));
+  const rank = new Map(common.map((f) => [f, fit.get(f)!.score]));
+
+  // default: the family that compares best across the selected states (familyFit)
+  const defaultFamily = common.reduce<string | null>((best, f) => (best == null || rank.get(f)! > rank.get(best)! ? f : best), null);
+  const isDefaultView = selectedFamilies == null;
+  const shownFamilies = (selectedFamilies ?? (defaultFamily ? [defaultFamily] : [])).filter((f) => common.includes(f));
+
+  // in the default view, a state the viewer hasn't narrowed ticks only the DISCOMs whose figures
+  // compare on the default family's basis (all of them when that's every DISCOM or none)
+  const defaultTicks = (s: string): string[] => {
+    if (!isDefaultView || !defaultFamily || selectedDiscoms[s] !== undefined) return chosen(s);
+    const all = discomsByState.get(s) ?? [];
+    const keep = all.filter((d) => fit.get(defaultFamily)!.discoms.has(d.code)).map((d) => d.code);
+    return keep.length === 0 || keep.length === all.length ? [] : keep;
+  };
+  const ticked = (s: string) => defaultTicks(s);
+  const rowsByState = new Map<string, MasterRow[]>(states.map((s) => [s, rowsFor(s, ticked(s))]));
   const allRows = states.flatMap((s) => rowsByState.get(s) ?? []);
   const familyRows = (f: string) => allRows.filter((r) => r.indicator_family === f);
-  const indicatorOpts: IndicatorOption[] = common.map((f) => ({ indicator: f, category: familyRows(f)[0].category, type: f }));
-
-  // default: the common family with the most chart figures
-  const defaultFamily = common.reduce<string | null>((best, f) => {
-    const n = familyRows(f).filter((r) => plotFigure(r) != null).length;
-    return best == null || n > familyRows(best).filter((r) => plotFigure(r) != null).length ? f : best;
-  }, null);
-  const shownFamilies = (selectedFamilies ?? (defaultFamily ? [defaultFamily] : [])).filter((f) => common.includes(f));
+  const indicatorOpts: IndicatorOption[] = common.map((f) => ({ indicator: f, category: (familyRows(f)[0] ?? baseRows.find((r) => r.indicator_family === f))!.category, type: f }));
 
   const shownDiscoms = allDiscoms.filter((d) => {
     const s = states.find((st) => (discomsByState.get(st) ?? []).some((x) => x.code === d.code))!;
@@ -175,7 +234,7 @@ export default function CompareView({ states }: Props) {
       <div className="toolbar">
         <div className="toolbar-field toolbar-field--indicator">
           <label>Select Indicator</label>
-          <IndicatorSelect options={indicatorOpts} selected={shownFamilies} onChange={setSelectedFamilies} />
+          <IndicatorSelect options={indicatorOpts} selected={shownFamilies} rank={rank} onChange={setSelectedFamilies} />
         </div>
       </div>
 
@@ -192,7 +251,7 @@ export default function CompareView({ states }: Props) {
       ) : (
         <div className="im-stack">
           {shownFamilies.map((f) => (
-            <MasterIndicator key={f} indicator={f} rows={familyRows(f)} discoms={shownDiscoms} yearsAsc={YEARS_ASC} hideTimes annualOnly chartOnly states={states} />
+            <MasterIndicator key={f} indicator={f} rows={familyRows(f)} discoms={shownDiscoms} yearsAsc={YEARS_ASC} hideTimes annualOnly chartOnly states={states} initialYear={isDefaultView ? (fit.get(f)?.latestShared ?? undefined) : undefined} />
           ))}
         </div>
       )}
